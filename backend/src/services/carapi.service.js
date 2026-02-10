@@ -77,13 +77,18 @@ class CarApiService {
    * Toutes les marques, triees par nom
    */
   async getMakes() {
+    // Always include local European brands
+    const localMakes = vehicleBrands.map(b => b.name);
+
     try {
       const result = await this._fetch('/makes/v2?limit=1000&sort=Makes.name&direction=asc');
-      const makes = (result.data || []).map(m => m.name).sort();
-      return makes;
+      const apiMakes = (result.data || []).map(m => m.name);
+      // Merge and deduplicate
+      const merged = [...new Set([...localMakes, ...apiMakes])].sort();
+      return merged;
     } catch (err) {
       console.error('[CarAPI] getMakes fallback:', err.message);
-      return vehicleBrands.map(b => b.name).sort();
+      return localMakes.sort();
     }
   }
 
@@ -91,16 +96,21 @@ class CarApiService {
    * Modeles d'une marque
    */
   async getModels(make) {
+    // Always include local models for this brand
+    const localBrand = vehicleBrands.find(b => b.name.toLowerCase() === make.toLowerCase());
+    const localModels = localBrand ? localBrand.models : [];
+
     try {
       const result = await this._fetch(
         `/models/v2?make=${encodeURIComponent(make)}&limit=1000&sort=OemMakeModels.name&direction=asc`
       );
-      const models = [...new Set((result.data || []).map(m => m.name))].sort();
-      return models;
+      const apiModels = (result.data || []).map(m => m.name);
+      // Merge and deduplicate
+      const merged = [...new Set([...localModels, ...apiModels])].sort();
+      return merged;
     } catch (err) {
       console.error('[CarAPI] getModels fallback:', err.message);
-      const brand = vehicleBrands.find(b => b.name.toLowerCase() === make.toLowerCase());
-      return brand ? brand.models.sort() : [];
+      return localModels.sort();
     }
   }
 

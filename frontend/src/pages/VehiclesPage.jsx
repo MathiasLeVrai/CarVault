@@ -19,6 +19,16 @@ const fuelOpts = [
   { value: 'OTHER', label: 'Autre' },
 ];
 
+// Generate year options from current+1 down to 1990
+const currentYear = new Date().getFullYear();
+const yearOpts = [
+  { value: '', label: 'Année...' },
+  ...Array.from({ length: currentYear + 1 - 1990 + 1 }, (_, i) => {
+    const y = currentYear + 1 - i;
+    return { value: String(y), label: String(y) };
+  }),
+];
+
 export default function VehiclesPage() {
   const navigate = useNavigate();
   const [vehicles, setVehicles] = useState([]);
@@ -190,7 +200,7 @@ export default function VehiclesPage() {
       <Modal isOpen={showModal} onClose={() => { setShowModal(false); resetForm(); }} title="Nouveau véhicule">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-3 gap-3">
-            <Input label="Année *" type="number" placeholder="2023" value={form.year}
+            <Select label="Année *" options={yearOpts} value={form.year}
               onChange={e => handleYearChange(e.target.value)} required />
             <Autocomplete label="Marque *" value={form.brand} options={brands}
               onChange={handleBrandChange} placeholder="Marque" required allowCustom />
