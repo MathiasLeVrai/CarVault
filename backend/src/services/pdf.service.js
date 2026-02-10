@@ -5,7 +5,7 @@ const fs = require('fs');
 // Labels français
 const DOC_TYPES = {
   INSURANCE: 'Assurance', TECHNICAL_INSPECTION: 'Contrôle technique',
-  INVOICE: 'Facture', WARRANTY: 'Garantie', OTHER: 'Autre',
+  INVOICE: 'Facture', WARRANTY: 'Garantie', REGISTRATION: 'Carte grise', OTHER: 'Autre',
 };
 const EXP_CATS = {
   MAINTENANCE: 'Entretien', TIRES: 'Pneus', FUEL: 'Carburant',
@@ -25,14 +25,19 @@ const COLORS = {
   accent: '#7c5cfc',
   white: '#ffffff',
   lightGray: '#e5e5e5',
+  green: '#22c55e',
+  yellow: '#eab308',
+  orange: '#f97316',
+  red: '#ef4444',
 };
 
 class PdfService {
   /**
    * Générer le dossier PDF complet d'un véhicule
+   * @param {object} health - Score santé (optionnel)
    * @returns {Promise<Buffer>}
    */
-  async generateVehicleDossier(vehicle, documents, expenses, stats) {
+  async generateVehicleDossier(vehicle, documents, expenses, stats, health) {
     return new Promise((resolve, reject) => {
       const doc = new PDFDocument({
         size: 'A4',
@@ -51,11 +56,11 @@ class PdfService {
       doc.on('error', reject);
 
       try {
-        this._drawCover(doc, vehicle);
-        this._drawVehicleInfo(doc, vehicle);
+        this._drawCover(doc, vehicle, health);
+        this._drawVehicleInfo(doc, vehicle, health);
         this._drawExpenseHistory(doc, expenses, stats);
         this._drawDocumentList(doc, documents);
-        this._drawFinancialSummary(doc, expenses, stats);
+        this._drawFinancialSummary(doc, expenses, stats, health);
         this._drawFooter(doc);
         doc.end();
       } catch (err) {
@@ -66,13 +71,21 @@ class PdfService {
 
   // ===================== PAGE 1 : COUVERTURE =====================
 
-  _drawCover(doc, vehicle) {
+  _drawCover(doc, vehicle, health) {
     // Fond sombre
     doc.rect(0, 0, doc.page.width, doc.page.height).fill(COLORS.dark);
 
     // Logo texte
     doc.fontSize(14).fillColor(COLORS.lime).font('Helvetica-Bold').text('CARVAULT', 50, 50);
     doc.fontSize(9).fillColor(COLORS.muted).font('Helvetica').text('Dossier véhicule', 50, 68);
+
+    // Score santé en haut à droite de la couverture
+    if (health) {
+      const scoreColor = this._getScoreColor(health.score);
+      doc.fontSize(9).fillColor(COLORS.muted).font('Helvetica').text('Score santé', doc.page.width - 150, 50, { width: 100, align: 'right' });
+      doc.fontSize(28).fillColor(scoreColor).font('Helvetica-Bold').text(`${health.score}/100`, doc.page.width - 150, 63, { width: 100, align: 'right' });
+      doc.fontSize(9).fillColor(scoreColor).font('Helvetica').text(health.grade === 'A' ? 'Excellent' : health.grade === 'B' ? 'Bon' : health.grade === 'C' ? 'Moyen' : 'À améliorer', doc.page.width - 150, 93, { width: 100, align: 'right' });
+    }
 
     // Photo du véhicule si disponible
     let photoY = 180;
@@ -118,7 +131,7 @@ class PdfService {
 
   // ===================== PAGE 2 : FICHE VÉHICULE =====================
 
-  _drawVehicleInfo(doc, vehicle) {
+  _drawVehicleInfo(doc, vehicle, health) {
     this._drawHeader(doc, 'Fiche véhicule');
 
     let y = 120;
@@ -131,8 +144,16 @@ class PdfService {
       ['Couleur', vehicle.color || 'N/C'],
       ['Type de carburant', FUEL_TYPES[vehicle.fuelType] || 'N/C'],
       ['Prix d\'achat', vehicle.purchasePrice ? `${vehicle.purchasePrice.toLocaleString('fr-FR')} €` : 'N/C'],
-      ['Ajouté le', new Date(vehicle.createdAt).toLocaleDateString('fr-FR')],
     ];
+
+    // Specs techniques (depuis CarAPI)
+    if (vehicle.horsepower) fields.push(['Puissance', `${vehicle.horsepower} ch`]);
+    if (vehicle.engineSize) fields.push(['Cylindrée', `${vehicle.engineSize} L`]);
+    if (vehicle.transmission) fields.push(['Transmission', vehicle.transmission]);
+    if (vehicle.bodyType) fields.push(['Carrosserie', vehicle.bodyType]);
+    if (vehicle.doors) fields.push(['Portes', String(vehicle.doors)]);
+
+    fields.push(['Ajouté le', new Date(vehicle.createdAt).toLocaleDateString('fr-FR')]);
 
     fields.forEach(([label, value], i) => {
       const bgColor = i % 2 === 0 ? '#f9f7f4' : COLORS.white;
@@ -141,6 +162,37 @@ class PdfService {
       doc.fontSize(10).fillColor(COLORS.dark).font('Helvetica-Bold').text(value, 280, y + 9);
       y += 30;
     });
+
+    // Score santé breakdown
+    if (health && y < doc.page.height - 200) {
+      y += 20;
+      doc.fontSize(13).fillColor(COLORS.dark).font('Helvetica-Bold').text('Score Santé', 50, y);
+      y += 22;
+
+      const breakdown = [
+        ['Entretien', health.breakdown.maintenance.score, health.breakdown.maintenance.max],
+        ['Documents', health.breakdown.documents.score, health.breakdown.documents.max],
+        ['Coût maîtrisé', health.breakdown.cost.score, health.breakdown.cost.max],
+        ['Complétude', health.breakdown.completeness.score, health.breakdown.completeness.max],
+      ];
+
+      for (const [label, score, max] of breakdown) {
+        const pct = max > 0 ? score / max : 0;
+        const barWidth = pct * 200;
+        const color = this._getScoreColor(pct * 100);
+
+        doc.rect(50, y, 200, 10).fill(COLORS.lightGray);
+        doc.rect(50, y, barWidth, 10).fill(color);
+        doc.fontSize(9).fillColor(COLORS.dark).font('Helvetica-Bold').text(label, 260, y + 0);
+        doc.fontSize(9).fillColor(COLORS.muted).font('Helvetica').text(`${score}/${max}`, 380, y + 0);
+        y += 20;
+      }
+
+      // Total
+      const scoreColor = this._getScoreColor(health.score);
+      doc.fontSize(11).fillColor(scoreColor).font('Helvetica-Bold')
+        .text(`Score global : ${health.score}/100 (${health.grade})`, 50, y + 5);
+    }
 
     doc.addPage();
   }
@@ -251,7 +303,7 @@ class PdfService {
 
   // ===================== RÉSUMÉ FINANCIER =====================
 
-  _drawFinancialSummary(doc, expenses, stats) {
+  _drawFinancialSummary(doc, expenses, stats, health) {
     this._drawHeader(doc, 'Résumé financier');
 
     let y = 120;
@@ -270,6 +322,11 @@ class PdfService {
       ['Moyenne mensuelle', `${avgMonthly.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €`],
       ['Nombre de dépenses', String(expenses.length)],
     ];
+
+    // Ajouter la valeur estimée si disponible
+    if (health?.estimatedValue) {
+      summaryItems.push(['Valeur estimée', `${health.estimatedValue.toLocaleString('fr-FR')} €`]);
+    }
 
     summaryItems.forEach(([label, value], i) => {
       const bgColor = i % 2 === 0 ? '#f9f7f4' : COLORS.white;
@@ -311,6 +368,13 @@ class PdfService {
   }
 
   // ===================== HELPERS =====================
+
+  _getScoreColor(score) {
+    if (score >= 80) return COLORS.green;
+    if (score >= 60) return COLORS.yellow;
+    if (score >= 40) return COLORS.orange;
+    return COLORS.red;
+  }
 
   _drawHeader(doc, title) {
     doc.rect(0, 0, doc.page.width, 80).fill(COLORS.dark);

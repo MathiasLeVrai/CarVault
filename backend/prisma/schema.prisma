@@ -23,24 +23,31 @@ model User {
 }
 
 model Vehicle {
-  id          String   @id @default(uuid())
-  brand       String
-  model       String
-  year        Int
-  mileage     Int      @default(0)
-  photo       String?
-  licensePlate String?
-  color       String?
-  fuelType    FuelType @default(GASOLINE)
+  id            String   @id @default(uuid())
+  brand         String
+  model         String
+  year          Int
+  mileage       Int      @default(0)
+  photo         String?
+  licensePlate  String?
+  color         String?
+  fuelType      FuelType @default(GASOLINE)
   purchasePrice Float?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  carapiTrimId  Int?
+  msrp          Float?
+  horsepower    Int?
+  engineSize    Float?
+  transmission  String?
+  bodyType      String?
+  doors         Int?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  documents   Document[]
-  expenses    Expense[]
+  documents     Document[]
+  expenses      Expense[]
 
   @@map("vehicles")
 }
@@ -98,6 +105,7 @@ enum DocumentType {
   TECHNICAL_INSPECTION
   INVOICE
   WARRANTY
+  REGISTRATION
   OTHER
 }
 

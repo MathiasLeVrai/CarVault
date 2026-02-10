@@ -8,11 +8,11 @@ import Modal from '../components/ui/Modal';
 import Input from '../components/ui/Input';
 import Select from '../components/ui/Select';
 import StatCard from '../components/ui/StatCard';
-import { ArrowLeft, FileText, Wallet, Plus, Trash2, Gauge, Upload, FileDown } from 'lucide-react';
+import { ArrowLeft, FileText, Wallet, Plus, Trash2, Gauge, Upload, FileDown, Heart, TrendingDown, ShieldCheck, Wrench, FileCheck, PiggyBank, CheckCircle2 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { formatCurrency, formatDateShort, documentTypeLabels, documentTypeBadge, expenseCategoryLabels } from '../utils/helpers';
 
-const docTypeOpts = [{ value: 'INSURANCE', label: 'Assurance' },{ value: 'TECHNICAL_INSPECTION', label: 'Contrôle technique' },{ value: 'INVOICE', label: 'Facture' },{ value: 'WARRANTY', label: 'Garantie' },{ value: 'OTHER', label: 'Autre' }];
+const docTypeOpts = [{ value: 'INSURANCE', label: 'Assurance' },{ value: 'TECHNICAL_INSPECTION', label: 'Contrôle technique' },{ value: 'INVOICE', label: 'Facture' },{ value: 'WARRANTY', label: 'Garantie' },{ value: 'REGISTRATION', label: 'Carte grise' },{ value: 'OTHER', label: 'Autre' }];
 const expCatOpts = [{ value: 'MAINTENANCE', label: 'Entretien' },{ value: 'TIRES', label: 'Pneus' },{ value: 'FUEL', label: 'Carburant' },{ value: 'INSURANCE', label: 'Assurance' },{ value: 'REPAIR', label: 'Réparation' },{ value: 'PARKING', label: 'Stationnement' },{ value: 'TOLL', label: 'Péage' },{ value: 'OTHER', label: 'Autre' }];
 const monthNames = ['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Août','Sep','Oct','Nov','Déc'];
 
@@ -20,6 +20,64 @@ const ChartTip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return <div className="bg-white border-2 border-ink rounded-xl px-4 py-3 shadow-[3px_3px_0_#1a1a1a]"><p className="text-xs font-bold text-ink-light">{label}</p><p className="text-sm font-black text-ink">{formatCurrency(payload[0].value)}</p></div>;
 };
+
+// Score gauge colors
+const getScoreColor = (score) => {
+  if (score >= 80) return '#22c55e';
+  if (score >= 60) return '#eab308';
+  if (score >= 40) return '#f97316';
+  return '#ef4444';
+};
+
+const getGradeLabel = (grade) => {
+  const labels = { A: 'Excellent', B: 'Bon', C: 'Moyen', D: 'À améliorer' };
+  return labels[grade] || '';
+};
+
+// SVG circular gauge component
+function ScoreGauge({ score, grade, size = 140 }) {
+  const strokeWidth = 10;
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const progress = (score / 100) * circumference;
+  const color = getScoreColor(score);
+
+  return (
+    <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
+      <svg width={size} height={size} className="-rotate-90">
+        <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="#e5e5e5" strokeWidth={strokeWidth} />
+        <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke={color} strokeWidth={strokeWidth}
+          strokeDasharray={circumference} strokeDashoffset={circumference - progress}
+          strokeLinecap="round" className="transition-all duration-1000 ease-out" />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span className="text-3xl font-black text-ink">{score}</span>
+        <span className="text-xs font-bold mt-0.5" style={{ color }}>{getGradeLabel(grade)}</span>
+      </div>
+    </div>
+  );
+}
+
+// Sub-score bar
+function SubScoreBar({ icon: Icon, label, score, max, color }) {
+  const pct = max > 0 ? (score / max) * 100 : 0;
+  return (
+    <div className="flex items-center gap-3">
+      <div className="w-8 h-8 rounded-lg bg-bg-alt border border-ink/10 flex items-center justify-center flex-shrink-0">
+        <Icon className="w-4 h-4 text-ink-light" strokeWidth={2} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-xs font-bold text-ink">{label}</span>
+          <span className="text-xs font-bold text-ink-muted">{score}/{max}</span>
+        </div>
+        <div className="h-2 rounded-full bg-ink/10 overflow-hidden">
+          <div className="h-full rounded-full transition-all duration-700 ease-out" style={{ width: `${pct}%`, backgroundColor: color || getScoreColor((score/max)*100) }} />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function VehicleDetailPage() {
   const { id } = useParams(); const navigate = useNavigate();
@@ -42,6 +100,7 @@ export default function VehicleDetailPage() {
   if (!v) return null;
 
   const chartData = monthNames.map((name, i) => ({ month: name, total: v.stats?.monthlyExpenses?.find(m => m.month === i+1)?.total || 0 }));
+  const health = v.health;
 
   return (
     <div className="space-y-8">
@@ -68,11 +127,51 @@ export default function VehicleDetailPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 stagger">
+      <div className={`grid grid-cols-1 ${health?.estimatedValue ? 'md:grid-cols-4' : 'md:grid-cols-3'} gap-5 stagger`}>
         <StatCard icon={Gauge} label="Kilométrage" value={`${v.mileage?.toLocaleString('fr-FR')} km`} color="lime" />
         <StatCard icon={FileText} label="Documents" value={v._count?.documents || 0} color="violet" />
         <StatCard icon={Wallet} label={`Dépenses ${new Date().getFullYear()}`} value={formatCurrency(v.stats?.totalExpensesYear || 0)} color="dark" />
+        {health?.estimatedValue && (
+          <StatCard icon={TrendingDown} label="Valeur estimée" value={formatCurrency(health.estimatedValue)} color="orange" />
+        )}
       </div>
+
+      {/* Health Score */}
+      {health && (
+        <Card className="animate-slide-up" style={{ animationDelay: '80ms' }}>
+          <div className="flex items-start gap-8">
+            {/* Gauge */}
+            <div className="flex flex-col items-center gap-2 flex-shrink-0">
+              <h3 className="text-base font-black text-ink flex items-center gap-2">
+                <Heart className="w-4 h-4" strokeWidth={2.5} />Score Santé
+              </h3>
+              <ScoreGauge score={health.score} grade={health.grade} />
+            </div>
+
+            {/* Sub-scores */}
+            <div className="flex-1 space-y-4 pt-8">
+              <SubScoreBar icon={Wrench} label="Entretien" score={health.breakdown.maintenance.score} max={health.breakdown.maintenance.max} />
+              <SubScoreBar icon={FileCheck} label="Documents" score={health.breakdown.documents.score} max={health.breakdown.documents.max} />
+              <SubScoreBar icon={PiggyBank} label="Coût maîtrisé" score={health.breakdown.cost.score} max={health.breakdown.cost.max} />
+              <SubScoreBar icon={CheckCircle2} label="Complétude" score={health.breakdown.completeness.score} max={health.breakdown.completeness.max} />
+            </div>
+          </div>
+
+          {/* Missing items */}
+          {health.breakdown.completeness.missing?.length > 0 && (
+            <div className="mt-5 pt-4 border-t-2 border-ink/10">
+              <p className="text-xs font-bold text-ink-muted mb-2">Pour améliorer votre score :</p>
+              <div className="flex flex-wrap gap-2">
+                {health.breakdown.completeness.missing.map((item, i) => (
+                  <span key={i} className="px-2.5 py-1 rounded-lg bg-orange/10 border border-orange/30 text-xs font-semibold text-orange-700">
+                    {item}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </Card>
+      )}
 
       {/* Chart */}
       <Card className="animate-slide-up" style={{ animationDelay: '100ms' }}>

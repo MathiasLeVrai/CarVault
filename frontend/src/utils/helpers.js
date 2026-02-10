@@ -38,6 +38,7 @@ export const documentTypeLabels = {
   TECHNICAL_INSPECTION: 'Contrôle technique',
   INVOICE: 'Facture',
   WARRANTY: 'Garantie',
+  REGISTRATION: 'Carte grise',
   OTHER: 'Autre',
 };
 
@@ -49,6 +50,7 @@ export const documentTypeBadge = {
   TECHNICAL_INSPECTION: 'warning',
   INVOICE: 'cyan',
   WARRANTY: 'success',
+  REGISTRATION: 'violet',
   OTHER: 'default',
 };
 

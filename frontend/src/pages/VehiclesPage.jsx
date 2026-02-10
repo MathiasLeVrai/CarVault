@@ -8,7 +8,7 @@ import Input from '../components/ui/Input';
 import Select from '../components/ui/Select';
 import Autocomplete from '../components/ui/Autocomplete';
 import EmptyState from '../components/ui/EmptyState';
-import { Car, Plus, FileText, Wallet, ArrowUpRight, Gauge } from 'lucide-react';
+import { Car, Plus, FileText, Wallet, ArrowUpRight, Gauge, Zap } from 'lucide-react';
 
 const fuelOpts = [
   { value: 'GASOLINE', label: 'Essence' },
@@ -25,13 +25,19 @@ export default function VehiclesPage() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [form, setForm] = useState({ brand: '', model: '', year: '', mileage: '', licensePlate: '', color: '', fuelType: 'GASOLINE' });
+  const [form, setForm] = useState({
+    brand: '', model: '', year: '', mileage: '', licensePlate: '', color: '',
+    fuelType: 'GASOLINE', purchasePrice: '', carapiTrimId: '', msrp: '',
+    horsepower: '', engineSize: '', transmission: '', bodyType: '', doors: '',
+  });
   const [photo, setPhoto] = useState(null);
 
-  // Marques et modèles depuis l'API
+  // Marques et modèles depuis CarAPI
   const [brands, setBrands] = useState([]);
   const [models, setModels] = useState([]);
+  const [trims, setTrims] = useState([]);
   const [loadingModels, setLoadingModels] = useState(false);
+  const [loadingTrims, setLoadingTrims] = useState(false);
 
   useEffect(() => { loadVehicles(); loadBrands(); }, []);
 
@@ -45,8 +51,9 @@ export default function VehiclesPage() {
 
   // Charger les modèles quand la marque change
   const handleBrandChange = async (brand) => {
-    setForm(p => ({ ...p, brand, model: '' }));
+    setForm(p => ({ ...p, brand, model: '', carapiTrimId: '', msrp: '', horsepower: '', engineSize: '', transmission: '', bodyType: '', doors: '' }));
     setModels([]);
+    setTrims([]);
     if (!brand) return;
     setLoadingModels(true);
     try {
@@ -59,14 +66,66 @@ export default function VehiclesPage() {
     }
   };
 
-  const handleModelChange = (model) => {
-    setForm(p => ({ ...p, model }));
+  const handleModelChange = async (model) => {
+    setForm(p => ({ ...p, model, carapiTrimId: '', msrp: '', horsepower: '', engineSize: '', transmission: '', bodyType: '', doors: '' }));
+    setTrims([]);
+    if (!model || !form.brand || !form.year) return;
+    await loadTrims(form.year, form.brand, model);
+  };
+
+  const handleYearChange = async (year) => {
+    setForm(p => ({ ...p, year, carapiTrimId: '', msrp: '', horsepower: '', engineSize: '', transmission: '', bodyType: '', doors: '' }));
+    setTrims([]);
+    if (!year || !form.brand || !form.model) return;
+    await loadTrims(year, form.brand, form.model);
+  };
+
+  const loadTrims = async (year, brand, model) => {
+    setLoadingTrims(true);
+    try {
+      const t = await brandApi.getTrims(year, brand, model);
+      setTrims(t);
+    } catch (e) {
+      console.error('Erreur chargement trims:', e);
+    } finally {
+      setLoadingTrims(false);
+    }
+  };
+
+  const handleTrimSelect = async (trimId) => {
+    if (!trimId) {
+      setForm(p => ({ ...p, carapiTrimId: '', msrp: '', horsepower: '', engineSize: '', transmission: '', bodyType: '', doors: '' }));
+      return;
+    }
+    try {
+      const data = await brandApi.getTrimById(trimId);
+      if (data) {
+        setForm(p => ({
+          ...p,
+          carapiTrimId: String(data.id),
+          fuelType: data.fuelType || p.fuelType,
+          msrp: data.msrp ? String(data.msrp) : '',
+          horsepower: data.horsepower ? String(data.horsepower) : '',
+          engineSize: data.engineSize ? String(data.engineSize) : '',
+          transmission: data.transmission || '',
+          bodyType: data.bodyType || '',
+          doors: data.doors ? String(data.doors) : '',
+        }));
+      }
+    } catch (e) {
+      console.error('Erreur chargement trim:', e);
+    }
   };
 
   const resetForm = () => {
-    setForm({ brand: '', model: '', year: '', mileage: '', licensePlate: '', color: '', fuelType: 'GASOLINE' });
+    setForm({
+      brand: '', model: '', year: '', mileage: '', licensePlate: '', color: '',
+      fuelType: 'GASOLINE', purchasePrice: '', carapiTrimId: '', msrp: '',
+      horsepower: '', engineSize: '', transmission: '', bodyType: '', doors: '',
+    });
     setPhoto(null);
     setModels([]);
+    setTrims([]);
   };
 
   const handleSubmit = async (e) => {
@@ -158,13 +217,16 @@ export default function VehiclesPage() {
 
       <Modal isOpen={showModal} onClose={() => { setShowModal(false); resetForm(); }} title="Nouveau véhicule">
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-3">
+          {/* Année + Marque + Modèle */}
+          <div className="grid grid-cols-3 gap-3">
+            <Input label="Année *" type="number" placeholder="2023" value={form.year}
+              onChange={e => handleYearChange(e.target.value)} required />
             <Autocomplete
               label="Marque *"
               value={form.brand}
               options={brands}
               onChange={handleBrandChange}
-              placeholder="Sélectionner une marque"
+              placeholder="Marque"
               required
             />
             <Autocomplete
@@ -172,21 +234,45 @@ export default function VehiclesPage() {
               value={form.model}
               options={models}
               onChange={handleModelChange}
-              placeholder={loadingModels ? 'Chargement...' : 'Sélectionner un modèle'}
+              placeholder={loadingModels ? 'Chargement...' : 'Modèle'}
               disabled={!form.brand || loadingModels}
               required
             />
           </div>
+
+          {/* Sélection trim (optionnel) */}
+          {trims.length > 0 && (
+            <div>
+              <Select
+                label="Finition (auto-remplir les specs)"
+                options={[
+                  { value: '', label: loadingTrims ? 'Chargement...' : 'Sélectionner une finition...' },
+                  ...trims.map(t => ({ value: String(t.id), label: `${t.name}${t.msrp ? ` — ${t.msrp.toLocaleString('fr-FR')} $` : ''}` })),
+                ]}
+                value={form.carapiTrimId}
+                onChange={e => handleTrimSelect(e.target.value)}
+              />
+              {form.carapiTrimId && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {form.horsepower && <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-lime/30 text-[11px] font-bold text-ink"><Zap className="w-3 h-3" />{form.horsepower} ch</span>}
+                  {form.transmission && <span className="px-2 py-0.5 rounded-md bg-bg-alt text-[11px] font-bold text-ink-light">{form.transmission}</span>}
+                  {form.bodyType && <span className="px-2 py-0.5 rounded-md bg-bg-alt text-[11px] font-bold text-ink-light">{form.bodyType}</span>}
+                  {form.doors && <span className="px-2 py-0.5 rounded-md bg-bg-alt text-[11px] font-bold text-ink-light">{form.doors} portes</span>}
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="grid grid-cols-2 gap-3">
-            <Input label="Année *" type="number" placeholder="2023" value={form.year} onChange={e => setForm(p => ({ ...p, year: e.target.value }))} required />
             <Input label="Kilométrage" type="number" placeholder="45000" value={form.mileage} onChange={e => setForm(p => ({ ...p, mileage: e.target.value }))} />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <Input label="Plaque" placeholder="AB-123-CD" value={form.licensePlate} onChange={e => setForm(p => ({ ...p, licensePlate: e.target.value }))} />
             <Select label="Carburant" options={fuelOpts} value={form.fuelType} onChange={e => setForm(p => ({ ...p, fuelType: e.target.value }))} />
           </div>
           <div className="grid grid-cols-2 gap-3">
+            <Input label="Plaque" placeholder="AB-123-CD" value={form.licensePlate} onChange={e => setForm(p => ({ ...p, licensePlate: e.target.value }))} />
             <Input label="Couleur" placeholder="Noir" value={form.color} onChange={e => setForm(p => ({ ...p, color: e.target.value }))} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Input label="Prix d'achat (€)" type="number" step="0.01" placeholder="25000" value={form.purchasePrice} onChange={e => setForm(p => ({ ...p, purchasePrice: e.target.value }))} />
             <div />
           </div>
           <div className="space-y-1.5">

@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
 import StatCard from '../components/ui/StatCard';
-import { Car, Wallet, CalendarClock, Bell, ChevronRight } from 'lucide-react';
+import { Car, Wallet, CalendarClock, Bell, ChevronRight, Heart } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell,
@@ -61,8 +61,11 @@ export default function DashboardPage() {
       </Card>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 stagger">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5 stagger">
         <StatCard icon={Car} label="Véhicules" value={data?.vehicleCount || 0} color="lime" />
+        <StatCard icon={Heart} label="Score santé"
+          value={data?.avgHealthScore !== null ? `${data.avgHealthScore}/100` : '—'}
+          color={data?.avgHealthScore >= 80 ? 'lime' : data?.avgHealthScore >= 60 ? 'default' : 'orange'} />
         <StatCard icon={Wallet} label={`Total ${new Date().getFullYear()}`} value={formatCurrency(data?.totalExpensesYear || 0)} color="dark" />
         <StatCard icon={CalendarClock} label="Prochaine échéance"
           value={nextDays !== null ? `${nextDays}j` : '—'} trend={nextDeadline?.name} color="orange" />

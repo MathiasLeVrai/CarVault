@@ -9,6 +9,7 @@ router.use(authenticate);
 router.get('/', vehicleController.getAll);
 router.get('/:id', vehicleController.getById);
 router.get('/:id/pdf', vehicleController.generatePdf);
+router.get('/:id/health', vehicleController.getHealthScore);
 router.post('/', uploadVehiclePhoto.single('photo'), vehicleController.create);
 router.put('/:id', uploadVehiclePhoto.single('photo'), vehicleController.update);
 router.delete('/:id', vehicleController.delete);

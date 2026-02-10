@@ -83,6 +83,7 @@ export const dashboardApi = {
 export const vehicleApi = {
   getAll: () => api.get('/vehicles'),
   getById: (id) => api.get(`/vehicles/${id}`),
+  getHealth: (id) => api.get(`/vehicles/${id}/health`),
   create: (formData) => api.post('/vehicles', formData, true),
   update: (id, formData) => api.request(`/vehicles/${id}`, { method: 'PUT', body: formData, isFormData: true }),
   delete: (id) => api.delete(`/vehicles/${id}`),
@@ -135,11 +136,13 @@ export const alertApi = {
   delete: (id) => api.delete(`/alerts/${id}`),
 };
 
-// ===== Brands (marques & modèles) =====
+// ===== Brands (marques & modèles via CarAPI) =====
 export const brandApi = {
   getAll: () => api.get('/brands'),
   getModels: (brand) => api.get(`/brands/${encodeURIComponent(brand)}/models`),
   search: (q) => api.get(`/brands/search?q=${encodeURIComponent(q)}`),
+  getTrims: (year, make, model) => api.get(`/brands/trims?year=${year}&make=${encodeURIComponent(make)}&model=${encodeURIComponent(model)}`),
+  getTrimById: (id) => api.get(`/brands/trims/${id}`),
 };
 
 export default api;

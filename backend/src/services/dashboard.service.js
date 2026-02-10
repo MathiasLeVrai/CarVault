@@ -1,4 +1,5 @@
 const prisma = require('../lib/prisma');
+const healthService = require('./health.service');
 
 class DashboardService {
   /**
@@ -96,9 +97,32 @@ class DashboardService {
       };
     });
 
+    // Score santé moyen
+    let avgHealthScore = null;
+    try {
+      const vehicles = await prisma.vehicle.findMany({
+        where: { userId },
+        select: { id: true },
+      });
+      if (vehicles.length > 0) {
+        const scores = await Promise.all(
+          vehicles.map(v => healthService.getHealthScore(v.id, userId))
+        );
+        const validScores = scores.filter(Boolean);
+        if (validScores.length > 0) {
+          avgHealthScore = Math.round(
+            validScores.reduce((sum, s) => sum + s.score, 0) / validScores.length
+          );
+        }
+      }
+    } catch (err) {
+      console.error('Erreur calcul score moyen:', err.message);
+    }
+
     return {
       vehicleCount,
       totalExpensesYear: yearExpenses._sum.amount || 0,
+      avgHealthScore,
       monthlyExpenses: formattedMonthly,
       upcomingDeadlines: upcomingDeadlines.map(d => ({
         id: d.id,
