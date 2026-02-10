@@ -1,0 +1,230 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #f5f0eb;
+  --color-bg-alt: #ece6df;
+  --color-bg-card: #ffffff;
+  --color-bg-dark: #1a1a1a;
+  --color-bg-elevated: #faf7f4;
+
+  --color-ink: #1a1a1a;
+  --color-ink-light: #6b6b6b;
+  --color-ink-muted: #999999;
+  --color-ink-faint: #c4c4c4;
+
+  --color-lime: #b9ff66;
+  --color-lime-dark: #9de04f;
+  --color-orange: #ff6b35;
+  --color-orange-light: #ff8c61;
+  --color-violet: #7c5cfc;
+  --color-violet-light: #a28dff;
+  --color-rose: #ff4d6a;
+  --color-sky: #38bdf8;
+
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-info: #3b82f6;
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-display: swap;
+  src: local('Inter');
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #c4c4c4 transparent;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-ink);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ========= NEOBRUTALIST CARDS ========= */
+
+.nb-card {
+  background: var(--color-bg-card);
+  border: 2px solid var(--color-ink);
+  border-radius: 16px;
+  box-shadow: 4px 4px 0 var(--color-ink);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.nb-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--color-ink);
+}
+
+.nb-card-flat {
+  background: var(--color-bg-card);
+  border: 2px solid var(--color-ink);
+  border-radius: 16px;
+}
+
+.nb-card-lime {
+  background: var(--color-lime);
+  border: 2px solid var(--color-ink);
+  border-radius: 16px;
+  box-shadow: 4px 4px 0 var(--color-ink);
+  color: var(--color-ink);
+}
+
+.nb-card-dark {
+  background: var(--color-bg-dark);
+  border: 2px solid var(--color-ink);
+  border-radius: 16px;
+  box-shadow: 4px 4px 0 var(--color-ink);
+  color: white;
+}
+
+/* ========= INPUTS ========= */
+
+.nb-input {
+  background: white;
+  border: 2px solid var(--color-ink);
+  border-radius: 12px;
+  transition: box-shadow 0.15s ease;
+}
+.nb-input:focus {
+  outline: none;
+  box-shadow: 3px 3px 0 var(--color-lime);
+}
+.nb-input::placeholder {
+  color: var(--color-ink-muted);
+}
+
+/* ========= BUTTONS ========= */
+
+.nb-btn-primary {
+  background: var(--color-lime);
+  color: var(--color-ink);
+  border: 2px solid var(--color-ink);
+  border-radius: 12px;
+  box-shadow: 3px 3px 0 var(--color-ink);
+  font-weight: 700;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.nb-btn-primary:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 var(--color-ink);
+}
+.nb-btn-primary:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0 0 0 var(--color-ink);
+}
+
+.nb-btn-dark {
+  background: var(--color-bg-dark);
+  color: white;
+  border: 2px solid var(--color-ink);
+  border-radius: 12px;
+  box-shadow: 3px 3px 0 var(--color-ink);
+  font-weight: 700;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.nb-btn-dark:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 var(--color-ink);
+}
+
+.nb-btn-outline {
+  background: transparent;
+  color: var(--color-ink);
+  border: 2px solid var(--color-ink);
+  border-radius: 12px;
+  font-weight: 600;
+  transition: background 0.15s ease;
+}
+.nb-btn-outline:hover {
+  background: var(--color-bg-alt);
+}
+
+.nb-btn-danger {
+  background: var(--color-rose);
+  color: white;
+  border: 2px solid var(--color-ink);
+  border-radius: 12px;
+  box-shadow: 3px 3px 0 var(--color-ink);
+  font-weight: 700;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.nb-btn-danger:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 var(--color-ink);
+}
+
+.nb-btn-ghost {
+  background: transparent;
+  color: var(--color-ink-light);
+  border: none;
+  font-weight: 600;
+  transition: color 0.15s ease;
+}
+.nb-btn-ghost:hover {
+  color: var(--color-ink);
+}
+
+/* ========= BADGE ========= */
+
+.nb-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border: 1.5px solid var(--color-ink);
+}
+
+/* ========= ANIMATIONS ========= */
+
+@keyframes nb-pop {
+  0% { opacity: 0; transform: scale(0.9) translateY(10px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes nb-slide-up {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.animate-pop {
+  animation: nb-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.animate-slide-up {
+  animation: nb-slide-up 0.4s ease forwards;
+}
+
+.stagger > * { opacity: 0; animation: nb-slide-up 0.35s ease forwards; }
+.stagger > *:nth-child(1) { animation-delay: 0ms; }
+.stagger > *:nth-child(2) { animation-delay: 60ms; }
+.stagger > *:nth-child(3) { animation-delay: 120ms; }
+.stagger > *:nth-child(4) { animation-delay: 180ms; }
+.stagger > *:nth-child(5) { animation-delay: 240ms; }
+.stagger > *:nth-child(6) { animation-delay: 300ms; }
+.stagger > *:nth-child(7) { animation-delay: 360ms; }
+.stagger > *:nth-child(8) { animation-delay: 420ms; }
+
+/* ========= SIDEBAR NAV ========= */
+
+.nb-nav-active {
+  background: var(--color-lime);
+  border: 2px solid var(--color-ink);
+  box-shadow: 3px 3px 0 var(--color-ink);
+}
+
+/* ========= TAG COLORS ========= */
+
+.tag-lime { background: var(--color-lime); color: var(--color-ink); }
+.tag-orange { background: var(--color-orange); color: white; }
+.tag-violet { background: var(--color-violet); color: white; }
+.tag-rose { background: var(--color-rose); color: white; }
+.tag-sky { background: var(--color-sky); color: var(--color-ink); }
+.tag-dark { background: var(--color-bg-dark); color: white; }

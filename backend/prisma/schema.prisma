@@ -1,0 +1,133 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  firstName String
+  lastName  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  vehicles  Vehicle[]
+  alerts    Alert[]
+
+  @@map("users")
+}
+
+model Vehicle {
+  id          String   @id @default(uuid())
+  brand       String
+  model       String
+  year        Int
+  mileage     Int      @default(0)
+  photo       String?
+  licensePlate String?
+  color       String?
+  fuelType    FuelType @default(GASOLINE)
+  purchasePrice Float?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  documents   Document[]
+  expenses    Expense[]
+
+  @@map("vehicles")
+}
+
+model Document {
+  id           String       @id @default(uuid())
+  name         String
+  type         DocumentType
+  filePath     String
+  fileName     String
+  expirationDate DateTime?
+  notes        String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  vehicleId    String
+  vehicle      Vehicle      @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@map("documents")
+}
+
+model Expense {
+  id          String          @id @default(uuid())
+  amount      Float
+  category    ExpenseCategory
+  date        DateTime
+  description String?
+  mileage     Int?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  vehicleId   String
+  vehicle     Vehicle         @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@map("expenses")
+}
+
+model Alert {
+  id          String    @id @default(uuid())
+  title       String
+  message     String
+  type        AlertType
+  isRead      Boolean   @default(false)
+  dueDate     DateTime?
+  createdAt   DateTime  @default(now())
+
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("alerts")
+}
+
+enum DocumentType {
+  INSURANCE
+  TECHNICAL_INSPECTION
+  INVOICE
+  WARRANTY
+  OTHER
+}
+
+enum ExpenseCategory {
+  MAINTENANCE
+  TIRES
+  FUEL
+  INSURANCE
+  REPAIR
+  PARKING
+  TOLL
+  OTHER
+}
+
+enum AlertType {
+  DOCUMENT_EXPIRY
+  MAINTENANCE_DUE
+  INSPECTION_DUE
+  INSURANCE_RENEWAL
+  OIL_CHANGE
+  TIRE_SEASON
+  MILEAGE_SERVICE
+  OTHER
+}
+
+enum FuelType {
+  GASOLINE
+  DIESEL
+  HYBRID
+  ELECTRIC
+  LPG
+  OTHER
+}
