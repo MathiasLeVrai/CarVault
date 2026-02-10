@@ -193,10 +193,10 @@ export default function VehiclesPage() {
             <Input label="Année *" type="number" placeholder="2023" value={form.year}
               onChange={e => handleYearChange(e.target.value)} required />
             <Autocomplete label="Marque *" value={form.brand} options={brands}
-              onChange={handleBrandChange} placeholder="Marque" required />
+              onChange={handleBrandChange} placeholder="Marque" required allowCustom />
             <Autocomplete label="Modèle *" value={form.model} options={models}
               onChange={handleModelChange} placeholder={loadingModels ? 'Chargement...' : 'Modèle'}
-              disabled={!form.brand || loadingModels} required />
+              disabled={!form.brand || loadingModels} required allowCustom />
           </div>
 
           {trims.length > 0 && (

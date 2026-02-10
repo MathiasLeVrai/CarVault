@@ -142,7 +142,7 @@ const vehicleBrands = [
   {
     name: 'Toyota',
     maintenance: { oilChange: 15000, brakes: 30000, timingBelt: 100000, generalService: 15000 },
-    models: ['Aygo X', 'Yaris', 'Yaris Cross', 'Corolla', 'C-HR', 'RAV4', 'Highlander', 'Land Cruiser', 'Supra', 'bZ4X', 'Camry'],
+    models: ['Aygo', 'Yaris', 'Yaris Cross', 'Corolla', 'C-HR', 'RAV4', 'Highlander', 'Land Cruiser', 'Supra', 'bZ4X', 'Camry'],
   },
   {
     name: 'Volkswagen',
