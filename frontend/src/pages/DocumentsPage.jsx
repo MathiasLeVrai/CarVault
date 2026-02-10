@@ -25,13 +25,13 @@ export default function DocumentsPage() {
   const submit = async (e) => { e.preventDefault(); setSub(true); try { const fd=new FormData(); fd.append('name',form.name); fd.append('type',form.type); fd.append('vehicleId',form.vehicleId); if(form.expirationDate) fd.append('expirationDate',form.expirationDate); if(form.notes) fd.append('notes',form.notes); if(file) fd.append('file',file); await documentApi.create(fd); setShowModal(false); setForm({name:'',type:'INSURANCE',vehicleId:'',expirationDate:'',notes:''}); setFile(null); load(); } catch{} finally { setSub(false); } };
   const del = async (id) => { if(!confirm('Supprimer ?')) return; await documentApi.delete(id); load(); };
 
-  if (loading) return <div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-3 border-ink border-t-lime rounded-full animate-spin" /></div>;
+  if (loading) return <div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" /></div>;
 
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between animate-slide-up">
         <div>
-          <h1 className="text-2xl font-black text-ink">Documents</h1>
+          <h1 className="text-2xl font-bold text-ink font-display">Documents</h1>
           <p className="text-sm text-ink-light mt-1">{docs.length} document{docs.length !== 1 ? 's' : ''}</p>
         </div>
         <Button onClick={() => { if(vehicles.length) { setForm(p => ({...p, vehicleId: vehicles[0].id})); setShowModal(true); } }}><Plus className="w-4 h-4" strokeWidth={2.5} />Ajouter</Button>
@@ -41,8 +41,8 @@ export default function DocumentsPage() {
       <div className="flex gap-2 flex-wrap animate-slide-up" style={{ animationDelay: '50ms' }}>
         {typeFilters.map(opt => (
           <button key={opt.value} onClick={() => setFilter(opt.value)}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold border-2 transition-all ${
-              filter === opt.value ? 'nb-nav-active text-ink' : 'border-ink/20 text-ink-light hover:border-ink/40'
+            className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
+              filter === opt.value ? 'cv-filter-active' : 'border-ink/10 text-ink-light hover:border-ink/25'
             }`}>
             {opt.label}
           </button>
@@ -54,27 +54,27 @@ export default function DocumentsPage() {
           {docs.map(doc => {
             const days = doc.expirationDate ? daysUntil(doc.expirationDate) : null;
             return (
-              <div key={doc.id} className="nb-card-flat p-4 flex items-center justify-between group hover:bg-bg-alt transition-colors">
+              <div key={doc.id} className="cv-card-flat p-4 flex items-center justify-between group hover:bg-bg-alt/50 transition-colors">
                 <div className="flex items-center gap-4 min-w-0">
-                  <div className="w-10 h-10 rounded-xl bg-bg-alt border-2 border-ink/15 flex items-center justify-center flex-shrink-0">
-                    <FileText className="w-5 h-5 text-ink-light" strokeWidth={2} />
+                  <div className="w-10 h-10 rounded-xl bg-bg-alt border border-ink/8 flex items-center justify-center shrink-0">
+                    <FileText className="w-5 h-5 text-ink-light" strokeWidth={1.8} />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-bold text-ink truncate">{doc.name}</p>
+                    <p className="text-sm font-semibold text-ink truncate">{doc.name}</p>
                     <div className="flex items-center gap-2 mt-1">
                       <Badge variant={documentTypeBadge[doc.type]}>{documentTypeLabels[doc.type]}</Badge>
-                      {doc.vehicle && <span className="text-[10px] font-semibold text-ink-muted">{doc.vehicle.brand} {doc.vehicle.model}</span>}
+                      {doc.vehicle && <span className="text-[10px] font-medium text-ink-muted">{doc.vehicle.brand} {doc.vehicle.model}</span>}
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 flex-shrink-0 ml-3">
+                <div className="flex items-center gap-2 shrink-0 ml-3">
                   {days !== null && <Badge variant={days < 0 ? 'danger' : days <= 30 ? 'warning' : 'success'}>{days < 0 ? 'Expiré' : `${days}j`}</Badge>}
-                  {doc.expirationDate && <span className="text-[10px] font-semibold text-ink-muted hidden sm:block">{formatDateShort(doc.expirationDate)}</span>}
+                  {doc.expirationDate && <span className="text-[10px] font-medium text-ink-muted hidden sm:block">{formatDateShort(doc.expirationDate)}</span>}
                   <a href={doc.filePath} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}
-                    className="p-1.5 rounded-lg hover:bg-bg-alt text-ink-muted hover:text-violet transition-all">
+                    className="p-1.5 rounded-lg hover:bg-accent/10 text-ink-muted hover:text-accent transition-all">
                     <ExternalLink className="w-4 h-4" />
                   </a>
-                  <button onClick={() => del(doc.id)} className="p-1.5 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-rose/10 text-ink-muted hover:text-rose transition-all">
+                  <button onClick={() => del(doc.id)} className="p-1.5 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-accent/10 text-ink-muted hover:text-accent transition-all">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
@@ -94,8 +94,8 @@ export default function DocumentsPage() {
           <Select label="Type *" options={typeForm} value={form.type} onChange={e => setForm(p=>({...p,type:e.target.value}))} />
           <Input label="Date d'expiration" type="date" value={form.expirationDate} onChange={e => setForm(p=>({...p,expirationDate:e.target.value}))} />
           <div className="space-y-1.5">
-            <label className="block text-sm font-bold text-ink">Fichier *</label>
-            <label className="flex flex-col items-center gap-2 p-6 nb-input cursor-pointer hover:bg-bg-alt transition-colors text-center">
+            <label className="block text-sm font-semibold text-ink">Fichier *</label>
+            <label className="flex flex-col items-center gap-2 p-6 cv-input cursor-pointer hover:bg-bg-alt transition-colors text-center">
               <Upload className="w-6 h-6 text-ink-muted" /><input type="file" onChange={e => setFile(e.target.files[0])} className="hidden" required />
               <span className="text-sm text-ink-muted">{file ? file.name : 'Sélectionner...'}</span>
             </label>

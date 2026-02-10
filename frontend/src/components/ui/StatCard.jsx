@@ -1,9 +1,52 @@
 const colorMap = {
-  lime: { card: 'nb-card-lime', icon: 'bg-white border-2 border-ink' },
-  dark: { card: 'nb-card-dark', icon: 'bg-lime border-2 border-ink' },
-  orange: { card: 'nb-card', icon: 'bg-orange border-2 border-ink' },
-  violet: { card: 'nb-card', icon: 'bg-violet border-2 border-ink' },
-  default: { card: 'nb-card', icon: 'bg-bg-alt border-2 border-ink' },
+  accent: {
+    card: 'cv-card-accent',
+    icon: 'bg-white/20 border border-white/20',
+    iconColor: 'text-white',
+    textLabel: 'text-white/60',
+    textValue: 'text-white',
+    textTrend: 'text-white/50',
+  },
+  dark: {
+    card: 'cv-card-dark',
+    icon: 'bg-accent/15 border border-accent/25',
+    iconColor: 'text-accent',
+    textLabel: 'text-white/60',
+    textValue: 'text-white',
+    textTrend: 'text-white/50',
+  },
+  lime: {
+    card: 'cv-card',
+    icon: 'bg-lime/15 border border-lime/25',
+    iconColor: 'text-lime',
+    textLabel: 'text-ink-light',
+    textValue: 'text-ink',
+    textTrend: 'text-ink-muted',
+  },
+  orange: {
+    card: 'cv-card',
+    icon: 'bg-orange/15 border border-orange/25',
+    iconColor: 'text-orange',
+    textLabel: 'text-ink-light',
+    textValue: 'text-ink',
+    textTrend: 'text-ink-muted',
+  },
+  violet: {
+    card: 'cv-card',
+    icon: 'bg-violet/15 border border-violet/25',
+    iconColor: 'text-violet',
+    textLabel: 'text-ink-light',
+    textValue: 'text-ink',
+    textTrend: 'text-ink-muted',
+  },
+  default: {
+    card: 'cv-card',
+    icon: 'bg-bg-alt border border-ink/10',
+    iconColor: 'text-ink-light',
+    textLabel: 'text-ink-light',
+    textValue: 'text-ink',
+    textTrend: 'text-ink-muted',
+  },
 };
 
 export default function StatCard({ icon, label, value, trend, color = 'default' }) {
@@ -12,13 +55,13 @@ export default function StatCard({ icon, label, value, trend, color = 'default' 
 
   return (
     <div className={`${c.card} p-5 flex items-center gap-4`}>
-      <div className={`w-12 h-12 rounded-xl ${c.icon} flex items-center justify-center shadow-[2px_2px_0_#1a1a1a] shrink-0`}>
-        {IconComp && <IconComp className={`w-5 h-5 ${color === 'dark' ? 'text-ink' : color === 'lime' ? 'text-ink' : 'text-white'}`} strokeWidth={2.2} />}
+      <div className={`w-12 h-12 rounded-xl ${c.icon} flex items-center justify-center shrink-0`}>
+        {IconComp && <IconComp className={`w-5 h-5 ${c.iconColor}`} strokeWidth={2} />}
       </div>
       <div className="min-w-0">
-        <p className={`text-[11px] font-bold uppercase tracking-wider ${color === 'dark' ? 'text-white/60' : 'text-ink-light'}`}>{label}</p>
-        <p className={`text-xl font-black mt-0.5 truncate ${color === 'dark' ? 'text-white' : 'text-ink'}`}>{value}</p>
-        {trend && <p className={`text-[11px] mt-0.5 ${color === 'dark' ? 'text-white/50' : 'text-ink-muted'}`}>{trend}</p>}
+        <p className={`text-[11px] font-semibold uppercase tracking-wider ${c.textLabel}`}>{label}</p>
+        <p className={`text-xl font-bold mt-0.5 truncate font-display ${c.textValue}`}>{value}</p>
+        {trend && <p className={`text-[11px] mt-0.5 ${c.textTrend}`}>{trend}</p>}
       </div>
     </div>
   );

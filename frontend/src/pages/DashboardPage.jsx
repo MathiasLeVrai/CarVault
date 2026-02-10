@@ -18,9 +18,9 @@ import {
 const ChartTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-white border-2 border-ink rounded-xl px-4 py-3 shadow-[3px_3px_0_#1a1a1a]">
-      <p className="text-xs font-bold text-ink-light">{label}</p>
-      <p className="text-sm font-black text-ink">{formatCurrency(payload[0].value)}</p>
+    <div className="bg-bg-card border border-ink/10 rounded-xl px-4 py-3 shadow-[0_4px_16px_rgba(0,0,0,0.1)]">
+      <p className="text-xs font-semibold text-ink-light">{label}</p>
+      <p className="text-sm font-bold text-ink font-display">{formatCurrency(payload[0].value)}</p>
     </div>
   );
 };
@@ -36,7 +36,7 @@ export default function DashboardPage() {
   }, []);
 
   if (loading) {
-    return <div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-3 border-ink border-t-lime rounded-full animate-spin" /></div>;
+    return <div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" /></div>;
   }
 
   const nextDeadline = data?.upcomingDeadlines?.[0];
@@ -45,24 +45,25 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8">
       {/* Welcome Banner */}
-      <Card variant="dark" className="!p-8 animate-slide-up">
-        <div className="flex items-center justify-between">
+      <div className="cv-card-dark p-8 animate-slide-up relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-accent/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4" />
+        <div className="relative flex items-center justify-between">
           <div>
-            <p className="text-white/50 text-sm font-semibold mb-1">Bienvenue</p>
-            <h1 className="text-3xl font-black text-white">
-              {user?.firstName} {user?.lastName} <span className="text-lime">.</span>
+            <p className="text-white/40 text-sm font-medium mb-1">Bienvenue</p>
+            <h1 className="text-3xl font-bold text-white font-display">
+              {user?.firstName} {user?.lastName} <span className="text-accent">.</span>
             </h1>
-            <p className="text-white/40 mt-2">Vue d'ensemble de vos véhicules et dépenses</p>
+            <p className="text-white/35 mt-2">Vue d'ensemble de vos véhicules et dépenses</p>
           </div>
-          <div className="hidden md:block w-20 h-20 rounded-2xl bg-lime border-2 border-ink shadow-[4px_4px_0_rgba(255,255,255,0.2)] flex items-center justify-center">
-            <Car className="w-8 h-8 text-ink mx-auto mt-5" strokeWidth={2.2} />
+          <div className="hidden md:flex w-16 h-16 rounded-2xl bg-accent/15 border border-accent/25 items-center justify-center">
+            <Car className="w-7 h-7 text-accent" strokeWidth={2} />
           </div>
         </div>
-      </Card>
+      </div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5 stagger">
-        <StatCard icon={Car} label="Véhicules" value={data?.vehicleCount || 0} color="lime" />
+        <StatCard icon={Car} label="Véhicules" value={data?.vehicleCount || 0} color="accent" />
         <StatCard icon={Heart} label="Score santé"
           value={data?.avgHealthScore !== null ? `${data.avgHealthScore}/100` : '—'}
           color={data?.avgHealthScore >= 80 ? 'lime' : data?.avgHealthScore >= 60 ? 'default' : 'orange'} />
@@ -75,32 +76,30 @@ export default function DashboardPage() {
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        {/* Bar chart */}
         <Card className="lg:col-span-3 animate-slide-up">
           <div className="flex items-center justify-between mb-5">
-            <h3 className="text-base font-black text-ink">Dépenses mensuelles</h3>
-            <Badge variant="lime">{new Date().getFullYear()}</Badge>
+            <h3 className="text-base font-bold text-ink font-display">Dépenses mensuelles</h3>
+            <Badge variant="accent">{new Date().getFullYear()}</Badge>
           </div>
           <ResponsiveContainer width="100%" height={280}>
             <BarChart data={data?.monthlyExpenses || []}>
-              <CartesianGrid stroke="#e5e5e5" strokeDasharray="4 4" />
-              <XAxis dataKey="month" stroke="#999" fontSize={12} fontWeight={600} tickLine={false} axisLine={false} />
-              <YAxis stroke="#999" fontSize={12} fontWeight={600} tickLine={false} axisLine={false} tickFormatter={v => `${v}€`} />
+              <CartesianGrid stroke="rgba(0,0,0,0.06)" strokeDasharray="4 4" />
+              <XAxis dataKey="month" stroke="#999" fontSize={12} fontWeight={500} tickLine={false} axisLine={false} />
+              <YAxis stroke="#999" fontSize={12} fontWeight={500} tickLine={false} axisLine={false} tickFormatter={v => `${v}€`} />
               <Tooltip content={<ChartTooltip />} />
-              <Bar dataKey="total" fill="#1a1a1a" radius={[8, 8, 0, 0]} maxBarSize={36} />
+              <Bar dataKey="total" fill="#e63946" radius={[8, 8, 0, 0]} maxBarSize={36} />
             </BarChart>
           </ResponsiveContainer>
         </Card>
 
-        {/* Pie */}
         <Card className="lg:col-span-2 animate-slide-up" style={{ animationDelay: '100ms' }}>
-          <h3 className="text-base font-black text-ink mb-5">Répartition</h3>
+          <h3 className="text-base font-bold text-ink mb-5 font-display">Répartition</h3>
           {data?.expensesByCategory?.length > 0 ? (
             <>
               <ResponsiveContainer width="100%" height={180}>
                 <PieChart>
                   <Pie data={data.expensesByCategory} cx="50%" cy="50%" innerRadius={45} outerRadius={70}
-                    paddingAngle={2} dataKey="total" stroke="#1a1a1a" strokeWidth={2}>
+                    paddingAngle={2} dataKey="total" stroke="none">
                     {data.expensesByCategory.map((entry, i) => (
                       <Cell key={i} fill={expenseCategoryColors[entry.category] || '#6b7280'} />
                     ))}
@@ -111,11 +110,11 @@ export default function DashboardPage() {
                 {data.expensesByCategory.slice(0, 5).map(cat => (
                   <div key={cat.category} className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full border-2 border-ink"
+                      <div className="w-3 h-3 rounded-full"
                         style={{ backgroundColor: expenseCategoryColors[cat.category] }} />
-                      <span className="text-xs font-semibold text-ink-light">{expenseCategoryLabels[cat.category]}</span>
+                      <span className="text-xs font-medium text-ink-light">{expenseCategoryLabels[cat.category]}</span>
                     </div>
-                    <span className="text-xs font-black text-ink">{formatCurrency(cat.total)}</span>
+                    <span className="text-xs font-bold text-ink font-display">{formatCurrency(cat.total)}</span>
                   </div>
                 ))}
               </div>
@@ -129,9 +128,9 @@ export default function DashboardPage() {
         {/* Deadlines */}
         <Card className="animate-slide-up" style={{ animationDelay: '150ms' }}>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base font-black text-ink">Prochaines échéances</h3>
+            <h3 className="text-base font-bold text-ink font-display">Prochaines échéances</h3>
             <button onClick={() => navigate('/documents')}
-              className="text-xs font-bold text-ink-light hover:text-ink flex items-center gap-0.5 transition-colors">
+              className="text-xs font-semibold text-ink-light hover:text-accent flex items-center gap-0.5 transition-colors">
               Tout voir <ChevronRight className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -140,9 +139,9 @@ export default function DashboardPage() {
               {data.upcomingDeadlines.map(d => {
                 const days = daysUntil(d.expirationDate);
                 return (
-                  <div key={d.id} className="flex items-center justify-between p-3 rounded-xl border-2 border-ink/10 hover:border-ink/20 transition-colors">
+                  <div key={d.id} className="flex items-center justify-between p-3 rounded-xl border border-ink/8 hover:border-ink/15 transition-colors">
                     <div>
-                      <p className="text-sm font-bold text-ink">{d.name}</p>
+                      <p className="text-sm font-semibold text-ink">{d.name}</p>
                       <p className="text-xs text-ink-muted mt-0.5">{d.vehicle}</p>
                     </div>
                     <div className="flex gap-1.5">
@@ -159,21 +158,21 @@ export default function DashboardPage() {
         {/* Alerts */}
         <Card className="animate-slide-up" style={{ animationDelay: '200ms' }}>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base font-black text-ink">Alertes</h3>
+            <h3 className="text-base font-bold text-ink font-display">Alertes</h3>
             <button onClick={() => navigate('/alerts')}
-              className="text-xs font-bold text-ink-light hover:text-ink flex items-center gap-0.5 transition-colors">
+              className="text-xs font-semibold text-ink-light hover:text-accent flex items-center gap-0.5 transition-colors">
               Tout voir <ChevronRight className="w-3.5 h-3.5" />
             </button>
           </div>
           {data?.unreadAlerts?.length > 0 ? (
             <div className="space-y-2">
               {data.unreadAlerts.map(alert => (
-                <div key={alert.id} className="flex items-start gap-3 p-3 rounded-xl border-2 border-ink/10">
-                  <div className="w-9 h-9 rounded-xl bg-orange border-2 border-ink shadow-[2px_2px_0_#1a1a1a] flex items-center justify-center flex-shrink-0">
-                    <Bell className="w-4 h-4 text-white" strokeWidth={2.2} />
+                <div key={alert.id} className="flex items-start gap-3 p-3 rounded-xl border border-ink/8">
+                  <div className="w-9 h-9 rounded-xl bg-accent/15 border border-accent/20 flex items-center justify-center shrink-0">
+                    <Bell className="w-4 h-4 text-accent" strokeWidth={2} />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-bold text-ink">{alert.title}</p>
+                    <p className="text-sm font-semibold text-ink">{alert.title}</p>
                     <p className="text-xs text-ink-muted mt-0.5 line-clamp-1">{alert.message}</p>
                   </div>
                 </div>

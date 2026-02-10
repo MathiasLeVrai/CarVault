@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Car, Shield, Wallet } from 'lucide-react';
 import Button from '../components/ui/Button';
 
 export default function LoginPage() {
@@ -22,33 +22,36 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-bg flex">
       {/* Left — Visual */}
-      <div className="hidden lg:flex lg:w-1/2 bg-bg-dark border-r-2 border-ink relative overflow-hidden items-center justify-center p-16">
+      <div className="hidden lg:flex lg:w-1/2 bg-[#0c0c0e] relative overflow-hidden items-center justify-center p-16">
         {/* Decorative shapes */}
-        <div className="absolute top-10 left-10 w-32 h-32 rounded-3xl bg-lime border-2 border-ink shadow-[6px_6px_0_#b9ff66] rotate-12" />
-        <div className="absolute bottom-16 right-16 w-24 h-24 rounded-full bg-orange border-2 border-ink shadow-[4px_4px_0_#ff6b35] -rotate-12" />
-        <div className="absolute top-1/2 right-1/4 w-20 h-20 rounded-2xl bg-violet border-2 border-ink shadow-[4px_4px_0_#7c5cfc] rotate-6" />
+        <div className="absolute top-10 left-10 w-32 h-32 rounded-3xl bg-accent/20 blur-3xl" />
+        <div className="absolute bottom-16 right-16 w-40 h-40 rounded-full bg-accent-warm/15 blur-3xl" />
+        <div className="absolute top-1/2 right-1/4 w-24 h-24 rounded-full bg-accent/10 blur-2xl" />
 
         <div className="relative z-10 max-w-md">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-lime border-2 border-ink shadow-[3px_3px_0_#1a1a1a] mb-8">
-            <span className="text-sm font-black text-ink">CV</span>
-            <span className="text-sm font-bold text-ink">CarVault</span>
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-accent/15 border border-accent/25 mb-8">
+            <span className="text-sm font-black text-accent font-display">CV</span>
+            <span className="text-sm font-bold text-white/80">CarVault</span>
           </div>
 
-          <h2 className="text-5xl font-black text-white leading-[1.05] mb-6">
+          <h2 className="text-5xl font-black text-white leading-[1.05] mb-6 font-display">
             Votre garage,<br />
-            <span className="text-lime">simplifié.</span>
+            <span className="text-accent">simplifié.</span>
           </h2>
-          <p className="text-lg text-white/60 leading-relaxed">
+          <p className="text-lg text-white/50 leading-relaxed">
             Documents, dépenses, alertes — tout dans un seul endroit.
           </p>
 
           {/* Feature cards */}
           <div className="flex gap-3 mt-10">
-            {['Documents', 'Dépenses', 'Alertes'].map((f, i) => (
-              <div key={f} className={`px-4 py-2 rounded-xl border-2 border-ink font-bold text-sm shadow-[3px_3px_0_#1a1a1a] ${
-                i === 0 ? 'bg-lime text-ink' : i === 1 ? 'bg-orange text-white' : 'bg-violet text-white'
-              }`}>
-                {f}
+            {[
+              { icon: Car, label: 'Véhicules', bg: 'bg-accent/15 border-accent/25 text-accent' },
+              { icon: Wallet, label: 'Dépenses', bg: 'bg-accent-warm/15 border-accent-warm/25 text-accent-warm' },
+              { icon: Shield, label: 'Alertes', bg: 'bg-violet/15 border-violet/25 text-violet-light' },
+            ].map(({ icon: Icon, label, bg }) => (
+              <div key={label} className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border font-semibold text-sm ${bg}`}>
+                <Icon className="w-4 h-4" strokeWidth={2} />
+                {label}
               </div>
             ))}
           </div>
@@ -60,31 +63,31 @@ export default function LoginPage() {
         <div className="w-full max-w-[400px]">
           {/* Mobile brand */}
           <div className="lg:hidden mb-10">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-lime border-2 border-ink shadow-[3px_3px_0_#1a1a1a]">
-              <span className="text-sm font-black">CV</span>
-              <span className="text-sm font-bold">CarVault</span>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-accent/10 border border-accent/20">
+              <span className="text-sm font-black text-accent font-display">CV</span>
+              <span className="text-sm font-bold text-ink">CarVault</span>
             </div>
           </div>
 
-          <h2 className="text-3xl font-black text-ink mb-1">Connexion</h2>
+          <h2 className="text-3xl font-bold text-ink mb-1 font-display">Connexion</h2>
           <p className="text-ink-light mb-8">Accédez à votre espace</p>
 
           {error && (
-            <div className="nb-card-flat bg-rose/10 border-rose p-4 mb-6">
-              <p className="text-sm font-semibold text-rose">{error}</p>
+            <div className="cv-card-flat bg-accent/8 border-accent/20 p-4 mb-6 rounded-xl">
+              <p className="text-sm font-semibold text-accent">{error}</p>
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-1.5">
-              <label className="block text-sm font-bold text-ink">Email</label>
+              <label className="block text-sm font-semibold text-ink">Email</label>
               <input type="email" value={email} onChange={e => setEmail(e.target.value)}
-                placeholder="nom@exemple.com" className="nb-input w-full px-4 py-3 text-sm text-ink" required />
+                placeholder="nom@exemple.com" className="cv-input w-full px-4 py-3 text-sm text-ink" required />
             </div>
             <div className="space-y-1.5">
-              <label className="block text-sm font-bold text-ink">Mot de passe</label>
+              <label className="block text-sm font-semibold text-ink">Mot de passe</label>
               <input type="password" value={password} onChange={e => setPassword(e.target.value)}
-                placeholder="••••••••" className="nb-input w-full px-4 py-3 text-sm text-ink" required />
+                placeholder="••••••••" className="cv-input w-full px-4 py-3 text-sm text-ink" required />
             </div>
             <Button type="submit" loading={loading} className="w-full" size="lg">
               Se connecter <ArrowRight className="w-4 h-4" />
@@ -93,7 +96,7 @@ export default function LoginPage() {
 
           <p className="mt-8 text-center text-sm text-ink-light">
             Pas de compte ?{' '}
-            <Link to="/register" className="font-bold text-ink hover:text-violet transition-colors underline decoration-2 underline-offset-2">
+            <Link to="/register" className="font-bold text-accent hover:text-accent-light transition-colors underline decoration-1 underline-offset-2">
               Créer un compte
             </Link>
           </p>

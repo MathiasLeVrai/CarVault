@@ -1,11 +1,11 @@
 import { clsx } from 'clsx';
 
 const variants = {
-  primary: 'nb-btn-primary',
-  dark: 'nb-btn-dark',
-  outline: 'nb-btn-outline',
-  danger: 'nb-btn-danger',
-  ghost: 'nb-btn-ghost',
+  primary: 'cv-btn-primary',
+  dark: 'cv-btn-dark',
+  outline: 'cv-btn-outline',
+  danger: 'cv-btn-danger',
+  ghost: 'cv-btn-ghost',
 };
 
 const sizes = {
@@ -20,7 +20,7 @@ export default function Button({
   return (
     <button
       className={clsx(
-        'inline-flex items-center justify-center gap-2 cursor-pointer transition-all',
+        'inline-flex items-center justify-center gap-2 cursor-pointer transition-all font-semibold',
         variants[variant],
         sizes[size],
         disabled && 'opacity-40 cursor-not-allowed pointer-events-none',

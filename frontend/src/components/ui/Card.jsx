@@ -1,10 +1,10 @@
 import { clsx } from 'clsx';
 
 const styles = {
-  default: 'nb-card',
-  flat: 'nb-card-flat',
-  lime: 'nb-card-lime',
-  dark: 'nb-card-dark',
+  default: 'cv-card',
+  flat: 'cv-card-flat',
+  accent: 'cv-card-accent',
+  dark: 'cv-card-dark',
 };
 
 export default function Card({ children, variant = 'default', className, ...props }) {

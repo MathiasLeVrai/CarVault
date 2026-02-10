@@ -21,15 +21,12 @@ export default function Sidebar() {
 
   useEffect(() => {
     loadAlertCount();
-    // Refresh alert count toutes les 60s
     const interval = setInterval(loadAlertCount, 60_000);
     return () => clearInterval(interval);
   }, []);
 
-  // Refresh quand on quitte la page alertes
   useEffect(() => {
     if (!location.pathname.startsWith('/alerts')) return;
-    // Re-fetch quand on revient sur alertes (les alertes ont pu être marquées lues)
     return () => { loadAlertCount(); };
   }, [location.pathname]);
 
@@ -41,24 +38,34 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className="fixed left-0 top-[64px] bottom-0 w-[240px] bg-bg border-r-2 border-ink flex flex-col z-40 px-4 py-6">
-      <nav className="flex-1 space-y-1.5">
+    <aside className="fixed left-0 top-[64px] bottom-0 w-[240px] carbon-texture flex flex-col z-40 px-4 py-6 border-r border-white/5">
+      {/* Logo */}
+      <div className="flex items-center gap-3 px-4 mb-8">
+        <div className="w-9 h-9 rounded-xl bg-accent flex items-center justify-center shadow-[0_0_16px_rgba(230,57,70,0.3)]">
+          <span className="text-sm font-black text-white font-display">CV</span>
+        </div>
+        <span className="text-base font-bold tracking-tight text-white font-display">
+          CarVault
+        </span>
+      </div>
+
+      <nav className="flex-1 space-y-1">
         {navItems.map(({ to, icon: Icon, label, showBadge }) => {
           const active = location.pathname === to || location.pathname.startsWith(to + '/');
           return (
             <NavLink
               key={to}
               to={to}
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl text-[14px] font-semibold transition-all ${
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl text-[14px] font-medium transition-all ${
                 active
-                  ? 'nb-nav-active text-ink'
-                  : 'text-ink-light hover:bg-bg-alt hover:text-ink'
+                  ? 'cv-nav-active text-accent'
+                  : 'text-white/50 hover:text-white/80 hover:bg-white/5'
               }`}
             >
-              <Icon className="w-[18px] h-[18px]" strokeWidth={2.2} />
+              <Icon className="w-[18px] h-[18px]" strokeWidth={2} />
               <span className="flex-1">{label}</span>
               {showBadge && alertCount > 0 && (
-                <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-rose text-white text-[10px] font-black border-2 border-ink shadow-[1px_1px_0_#1a1a1a]">
+                <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-accent text-white text-[10px] font-bold shadow-[0_0_8px_rgba(230,57,70,0.3)]">
                   {alertCount > 99 ? '99+' : alertCount}
                 </span>
               )}
@@ -67,12 +74,15 @@ export default function Sidebar() {
         })}
       </nav>
 
+      {/* Divider */}
+      <div className="h-px bg-white/8 mx-4 my-3" />
+
       {/* Logout */}
       <button
         onClick={logout}
-        className="flex items-center gap-3 px-4 py-3 rounded-xl text-[14px] font-semibold text-ink-light hover:text-rose hover:bg-rose/10 transition-all w-full"
+        className="flex items-center gap-3 px-4 py-3 rounded-xl text-[14px] font-medium text-white/40 hover:text-accent hover:bg-accent/10 transition-all w-full"
       >
-        <LogOut className="w-[18px] h-[18px]" strokeWidth={2.2} />
+        <LogOut className="w-[18px] h-[18px]" strokeWidth={2} />
         Déconnexion
       </button>
     </aside>

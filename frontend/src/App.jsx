@@ -14,12 +14,12 @@ import AlertsPage from './pages/AlertsPage';
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: '#f5f0eb' }}>
+    <div className="min-h-screen flex items-center justify-center bg-bg">
       <div className="flex flex-col items-center gap-3">
-        <div style={{ width:40,height:40,borderRadius:12,background:'#b9ff66',border:'2px solid #1a1a1a',boxShadow:'3px 3px 0 #1a1a1a',display:'flex',alignItems:'center',justifyContent:'center' }}>
-          <span style={{ fontSize:14,fontWeight:900,color:'#1a1a1a' }}>CV</span>
+        <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center shadow-[0_0_20px_rgba(230,57,70,0.3)]">
+          <span className="text-sm font-black text-white font-display">CV</span>
         </div>
-        <span style={{ fontSize:12,fontWeight:700,color:'#6b6b6b' }}>Chargement...</span>
+        <span className="text-xs font-semibold text-ink-muted">Chargement...</span>
       </div>
     </div>
   );
@@ -30,9 +30,9 @@ function ProtectedRoute({ children }) {
 function PublicRoute({ children }) {
   const { user, loading } = useAuth();
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: '#f5f0eb' }}>
-      <div style={{ width:40,height:40,borderRadius:12,background:'#b9ff66',border:'2px solid #1a1a1a',boxShadow:'3px 3px 0 #1a1a1a',display:'flex',alignItems:'center',justifyContent:'center' }}>
-        <span style={{ fontSize:14,fontWeight:900,color:'#1a1a1a' }}>CV</span>
+    <div className="min-h-screen flex items-center justify-center bg-bg">
+      <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center shadow-[0_0_20px_rgba(230,57,70,0.3)]">
+        <span className="text-sm font-black text-white font-display">CV</span>
       </div>
     </div>
   );

@@ -18,7 +18,12 @@ const monthNames = ['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Août','Sep','
 
 const ChartTip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
-  return <div className="bg-white border-2 border-ink rounded-xl px-4 py-3 shadow-[3px_3px_0_#1a1a1a]"><p className="text-xs font-bold text-ink-light">{label}</p><p className="text-sm font-black text-ink">{formatCurrency(payload[0].value)}</p></div>;
+  return (
+    <div className="bg-bg-card border border-ink/10 rounded-xl px-4 py-3 shadow-[0_4px_16px_rgba(0,0,0,0.1)]">
+      <p className="text-xs font-semibold text-ink-light">{label}</p>
+      <p className="text-sm font-bold text-ink font-display">{formatCurrency(payload[0].value)}</p>
+    </div>
+  );
 };
 
 // Score gauge colors
@@ -26,7 +31,7 @@ const getScoreColor = (score) => {
   if (score >= 80) return '#22c55e';
   if (score >= 60) return '#eab308';
   if (score >= 40) return '#f97316';
-  return '#ef4444';
+  return '#e63946';
 };
 
 const getGradeLabel = (grade) => {
@@ -45,14 +50,15 @@ function ScoreGauge({ score, grade, size = 140 }) {
   return (
     <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="-rotate-90">
-        <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="#e5e5e5" strokeWidth={strokeWidth} />
+        <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth={strokeWidth} />
         <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke={color} strokeWidth={strokeWidth}
           strokeDasharray={circumference} strokeDashoffset={circumference - progress}
-          strokeLinecap="round" className="transition-all duration-1000 ease-out" />
+          strokeLinecap="round" className="transition-all duration-1000 ease-out"
+          style={{ filter: `drop-shadow(0 0 6px ${color}40)` }} />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-3xl font-black text-ink">{score}</span>
-        <span className="text-xs font-bold mt-0.5" style={{ color }}>{getGradeLabel(grade)}</span>
+        <span className="text-3xl font-bold text-ink font-display">{score}</span>
+        <span className="text-xs font-semibold mt-0.5" style={{ color }}>{getGradeLabel(grade)}</span>
       </div>
     </div>
   );
@@ -63,16 +69,18 @@ function SubScoreBar({ icon: Icon, label, score, max, color }) {
   const pct = max > 0 ? (score / max) * 100 : 0;
   return (
     <div className="flex items-center gap-3">
-      <div className="w-8 h-8 rounded-lg bg-bg-alt border border-ink/10 flex items-center justify-center flex-shrink-0">
+      <div className="w-8 h-8 rounded-lg bg-bg-alt border border-ink/8 flex items-center justify-center shrink-0">
         <Icon className="w-4 h-4 text-ink-light" strokeWidth={2} />
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between mb-1">
-          <span className="text-xs font-bold text-ink">{label}</span>
-          <span className="text-xs font-bold text-ink-muted">{score}/{max}</span>
+          <span className="text-xs font-semibold text-ink">{label}</span>
+          <span className="text-xs font-semibold text-ink-muted">{score}/{max}</span>
         </div>
-        <div className="h-2 rounded-full bg-ink/10 overflow-hidden">
-          <div className="h-full rounded-full transition-all duration-700 ease-out" style={{ width: `${pct}%`, backgroundColor: color || getScoreColor((score/max)*100) }} />
+        <div className="h-2 rounded-full bg-ink/6 overflow-hidden">
+          <div className="h-full rounded-full transition-all duration-700 ease-out"
+            style={{ width: `${pct}%`, backgroundColor: color || getScoreColor((score/max)*100),
+              boxShadow: `0 0 8px ${(color || getScoreColor((score/max)*100))}30` }} />
         </div>
       </div>
     </div>
@@ -96,7 +104,7 @@ export default function VehicleDetailPage() {
   const delVehicle = async () => { if(!confirm('Supprimer ce véhicule ?')) return; await vehicleApi.delete(id); navigate('/vehicles'); };
   const downloadPdf = async () => { setGeneratingPdf(true); try { await vehicleApi.downloadPdf(id); } catch (e) { console.error('PDF error:', e); } finally { setGeneratingPdf(false); } };
 
-  if (loading) return <div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-3 border-ink border-t-lime rounded-full animate-spin" /></div>;
+  if (loading) return <div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" /></div>;
   if (!v) return null;
 
   const chartData = monthNames.map((name, i) => ({ month: name, total: v.stats?.monthlyExpenses?.find(m => m.month === i+1)?.total || 0 }));
@@ -107,14 +115,14 @@ export default function VehicleDetailPage() {
       {/* Header */}
       <div className="flex items-center justify-between animate-slide-up">
         <div className="flex items-center gap-4">
-          <button onClick={() => navigate('/vehicles')} className="w-10 h-10 rounded-xl border-2 border-ink flex items-center justify-center hover:bg-bg-alt transition-colors">
-            <ArrowLeft className="w-5 h-5 text-ink" strokeWidth={2.2} />
+          <button onClick={() => navigate('/vehicles')} className="w-10 h-10 rounded-xl border border-ink/10 flex items-center justify-center hover:bg-bg-alt hover:border-accent/30 transition-colors">
+            <ArrowLeft className="w-5 h-5 text-ink" strokeWidth={2} />
           </button>
           <div>
-            <h1 className="text-2xl font-black text-ink">{v.brand} {v.model}</h1>
+            <h1 className="text-2xl font-bold text-ink font-display">{v.brand} {v.model}</h1>
             <div className="flex items-center gap-2 mt-0.5">
-              <span className="text-sm text-ink-light font-semibold">{v.year}</span>
-              {v.licensePlate && <span className="px-2 py-0.5 rounded-md bg-bg-alt border border-ink/20 text-[11px] font-mono font-bold text-ink-light">{v.licensePlate}</span>}
+              <span className="text-sm text-ink-light font-medium">{v.year}</span>
+              {v.licensePlate && <span className="px-2 py-0.5 rounded-md bg-bg-alt border border-ink/8 text-[11px] font-mono font-semibold text-ink-light">{v.licensePlate}</span>}
             </div>
           </div>
         </div>
@@ -128,7 +136,7 @@ export default function VehicleDetailPage() {
 
       {/* Stats */}
       <div className={`grid grid-cols-1 ${health?.estimatedValue ? 'md:grid-cols-4' : 'md:grid-cols-3'} gap-5 stagger`}>
-        <StatCard icon={Gauge} label="Kilométrage" value={`${v.mileage?.toLocaleString('fr-FR')} km`} color="lime" />
+        <StatCard icon={Gauge} label="Kilométrage" value={`${v.mileage?.toLocaleString('fr-FR')} km`} color="accent" />
         <StatCard icon={FileText} label="Documents" value={v._count?.documents || 0} color="violet" />
         <StatCard icon={Wallet} label={`Dépenses ${new Date().getFullYear()}`} value={formatCurrency(v.stats?.totalExpensesYear || 0)} color="dark" />
         {health?.estimatedValue && (
@@ -140,15 +148,13 @@ export default function VehicleDetailPage() {
       {health && (
         <Card className="animate-slide-up" style={{ animationDelay: '80ms' }}>
           <div className="flex items-start gap-8">
-            {/* Gauge */}
-            <div className="flex flex-col items-center gap-2 flex-shrink-0">
-              <h3 className="text-base font-black text-ink flex items-center gap-2">
-                <Heart className="w-4 h-4" strokeWidth={2.5} />Score Santé
+            <div className="flex flex-col items-center gap-2 shrink-0">
+              <h3 className="text-base font-bold text-ink flex items-center gap-2 font-display">
+                <Heart className="w-4 h-4 text-accent" strokeWidth={2.5} />Score Santé
               </h3>
               <ScoreGauge score={health.score} grade={health.grade} />
             </div>
 
-            {/* Sub-scores */}
             <div className="flex-1 space-y-4 pt-8">
               <SubScoreBar icon={Wrench} label="Entretien" score={health.breakdown.maintenance.score} max={health.breakdown.maintenance.max} />
               <SubScoreBar icon={FileCheck} label="Documents" score={health.breakdown.documents.score} max={health.breakdown.documents.max} />
@@ -157,13 +163,12 @@ export default function VehicleDetailPage() {
             </div>
           </div>
 
-          {/* Missing items */}
           {health.breakdown.completeness.missing?.length > 0 && (
-            <div className="mt-5 pt-4 border-t-2 border-ink/10">
-              <p className="text-xs font-bold text-ink-muted mb-2">Pour améliorer votre score :</p>
+            <div className="mt-5 pt-4 border-t border-ink/8">
+              <p className="text-xs font-semibold text-ink-muted mb-2">Pour améliorer votre score :</p>
               <div className="flex flex-wrap gap-2">
                 {health.breakdown.completeness.missing.map((item, i) => (
-                  <span key={i} className="px-2.5 py-1 rounded-lg bg-orange/10 border border-orange/30 text-xs font-semibold text-orange-700">
+                  <span key={i} className="px-2.5 py-1 rounded-lg bg-accent-warm/10 border border-accent-warm/20 text-xs font-semibold text-accent-warm">
                     {item}
                   </span>
                 ))}
@@ -175,14 +180,14 @@ export default function VehicleDetailPage() {
 
       {/* Chart */}
       <Card className="animate-slide-up" style={{ animationDelay: '100ms' }}>
-        <h3 className="text-base font-black text-ink mb-5">Dépenses mensuelles</h3>
+        <h3 className="text-base font-bold text-ink mb-5 font-display">Dépenses mensuelles</h3>
         <ResponsiveContainer width="100%" height={250}>
           <BarChart data={chartData}>
-            <CartesianGrid stroke="#e5e5e5" strokeDasharray="4 4" />
-            <XAxis dataKey="month" stroke="#999" fontSize={12} fontWeight={600} tickLine={false} axisLine={false} />
-            <YAxis stroke="#999" fontSize={12} fontWeight={600} tickLine={false} axisLine={false} tickFormatter={val => `${val}€`} />
+            <CartesianGrid stroke="rgba(0,0,0,0.06)" strokeDasharray="4 4" />
+            <XAxis dataKey="month" stroke="#999" fontSize={12} fontWeight={500} tickLine={false} axisLine={false} />
+            <YAxis stroke="#999" fontSize={12} fontWeight={500} tickLine={false} axisLine={false} tickFormatter={val => `${val}€`} />
             <Tooltip content={<ChartTip />} />
-            <Bar dataKey="total" fill="#b9ff66" stroke="#1a1a1a" strokeWidth={2} radius={[8,8,0,0]} maxBarSize={34} />
+            <Bar dataKey="total" fill="#e63946" radius={[8,8,0,0]} maxBarSize={34} />
           </BarChart>
         </ResponsiveContainer>
       </Card>
@@ -191,27 +196,27 @@ export default function VehicleDetailPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="animate-slide-up" style={{ animationDelay: '150ms' }}>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base font-black text-ink">Documents</h3>
+            <h3 className="text-base font-bold text-ink font-display">Documents</h3>
             <Button size="sm" onClick={() => setShowDoc(true)}><Plus className="w-3.5 h-3.5" strokeWidth={2.5} />Ajouter</Button>
           </div>
           {v.documents?.length > 0 ? (
             <div className="space-y-2">{v.documents.map(d => (
-              <div key={d.id} className="flex items-center justify-between p-3 rounded-xl border-2 border-ink/10 hover:border-ink/20 transition-colors group">
+              <div key={d.id} className="flex items-center justify-between p-3 rounded-xl border border-ink/8 hover:border-ink/15 transition-colors group">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-9 h-9 rounded-xl bg-bg-alt border-2 border-ink/20 flex items-center justify-center flex-shrink-0">
+                  <div className="w-9 h-9 rounded-xl bg-bg-alt border border-ink/8 flex items-center justify-center shrink-0">
                     <FileText className="w-4 h-4 text-ink-light" strokeWidth={2} />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-bold text-ink truncate">{d.name}</p>
+                    <p className="text-sm font-semibold text-ink truncate">{d.name}</p>
                     <div className="flex items-center gap-1.5 mt-0.5">
                       <Badge variant={documentTypeBadge[d.type]}>{documentTypeLabels[d.type]}</Badge>
-                      {d.expirationDate && <span className="text-[10px] font-semibold text-ink-muted">Exp: {formatDateShort(d.expirationDate)}</span>}
+                      {d.expirationDate && <span className="text-[10px] font-medium text-ink-muted">Exp: {formatDateShort(d.expirationDate)}</span>}
                     </div>
                   </div>
                 </div>
                 <button onClick={e => { e.stopPropagation(); delDoc(d.id); }}
-                  className="p-1.5 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-rose/10 text-ink-muted hover:text-rose transition-all">
-                  <Trash2 className="w-3.5 h-3.5" strokeWidth={2.2} />
+                  className="p-1.5 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-accent/10 text-ink-muted hover:text-accent transition-all">
+                  <Trash2 className="w-3.5 h-3.5" strokeWidth={2} />
                 </button>
               </div>
             ))}</div>
@@ -220,27 +225,27 @@ export default function VehicleDetailPage() {
 
         <Card className="animate-slide-up" style={{ animationDelay: '200ms' }}>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base font-black text-ink">Dernières dépenses</h3>
+            <h3 className="text-base font-bold text-ink font-display">Dernières dépenses</h3>
             <Button size="sm" onClick={() => setShowExp(true)}><Plus className="w-3.5 h-3.5" strokeWidth={2.5} />Ajouter</Button>
           </div>
           {v.expenses?.length > 0 ? (
             <div className="space-y-2">{v.expenses.map(exp => (
-              <div key={exp.id} className="flex items-center justify-between p-3 rounded-xl border-2 border-ink/10 hover:border-ink/20 transition-colors group">
+              <div key={exp.id} className="flex items-center justify-between p-3 rounded-xl border border-ink/8 hover:border-ink/15 transition-colors group">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-lime border-2 border-ink/20 flex items-center justify-center flex-shrink-0">
-                    <Wallet className="w-4 h-4 text-ink" strokeWidth={2} />
+                  <div className="w-9 h-9 rounded-xl bg-accent/10 border border-accent/15 flex items-center justify-center shrink-0">
+                    <Wallet className="w-4 h-4 text-accent" strokeWidth={2} />
                   </div>
                   <div>
-                    <p className="text-sm font-black text-ink">{formatCurrency(exp.amount)}</p>
+                    <p className="text-sm font-bold text-ink font-display">{formatCurrency(exp.amount)}</p>
                     <div className="flex gap-2 mt-0.5">
-                      <span className="text-[10px] font-semibold text-ink-light">{expenseCategoryLabels[exp.category]}</span>
+                      <span className="text-[10px] font-medium text-ink-light">{expenseCategoryLabels[exp.category]}</span>
                       <span className="text-[10px] text-ink-muted">{formatDateShort(exp.date)}</span>
                     </div>
                   </div>
                 </div>
                 <button onClick={e => { e.stopPropagation(); delExp(exp.id); }}
-                  className="p-1.5 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-rose/10 text-ink-muted hover:text-rose transition-all">
-                  <Trash2 className="w-3.5 h-3.5" strokeWidth={2.2} />
+                  className="p-1.5 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-accent/10 text-ink-muted hover:text-accent transition-all">
+                  <Trash2 className="w-3.5 h-3.5" strokeWidth={2} />
                 </button>
               </div>
             ))}</div>
@@ -255,8 +260,8 @@ export default function VehicleDetailPage() {
           <Select label="Type *" options={docTypeOpts} value={df.type} onChange={e => setDf(p => ({...p, type: e.target.value}))} />
           <Input label="Date d'expiration" type="date" value={df.expirationDate} onChange={e => setDf(p => ({...p, expirationDate: e.target.value}))} />
           <div className="space-y-1.5">
-            <label className="block text-sm font-bold text-ink">Fichier *</label>
-            <label className="flex flex-col items-center gap-2 p-6 nb-input cursor-pointer hover:bg-bg-alt transition-colors text-center">
+            <label className="block text-sm font-semibold text-ink">Fichier *</label>
+            <label className="flex flex-col items-center gap-2 p-6 cv-input cursor-pointer hover:bg-bg-alt transition-colors text-center">
               <Upload className="w-6 h-6 text-ink-muted" />
               <input type="file" onChange={e => setDocFile(e.target.files[0])} className="hidden" required />
               <span className="text-sm text-ink-muted">{docFile ? docFile.name : 'Sélectionner...'}</span>
