@@ -1,6 +1,24 @@
 const express = require('express');
 const router = express.Router();
 const carapiService = require('../services/carapi.service');
+const plateService = require('../services/plate.service');
+
+/**
+ * GET /api/brands/plate/:plate — Recherche véhicule par plaque d'immatriculation
+ */
+router.get('/plate/:plate', async (req, res) => {
+  try {
+    const plate = decodeURIComponent(req.params.plate);
+    const data = await plateService.lookup(plate);
+    if (!data) {
+      return res.status(404).json({ error: 'Véhicule non trouvé pour cette plaque' });
+    }
+    res.json(data);
+  } catch (err) {
+    console.error('Erreur plate lookup:', err.message);
+    res.status(500).json({ error: 'Erreur recherche par plaque' });
+  }
+});
 
 /**
  * GET /api/brands — Toutes les marques (via CarAPI avec fallback local)

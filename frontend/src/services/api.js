@@ -143,6 +143,7 @@ export const brandApi = {
   search: (q) => api.get(`/brands/search?q=${encodeURIComponent(q)}`),
   getTrims: (year, make, model) => api.get(`/brands/trims?year=${year}&make=${encodeURIComponent(make)}&model=${encodeURIComponent(model)}`),
   getTrimById: (id) => api.get(`/brands/trims/${id}`),
+  lookupPlate: (plate) => api.get(`/brands/plate/${encodeURIComponent(plate)}`),
 };
 
 export default api;
