@@ -111,7 +111,7 @@ export default function VehiclesPage() {
       if (photo) fd.append('photo', photo);
       await vehicleApi.create(fd);
       setShowModal(false); resetForm(); loadVehicles();
-    } catch {} finally { setSubmitting(false); }
+    } catch {console.error('erreur lors de la création du véhicule');} finally { setSubmitting(false); }
   };
 
   if (loading) return (
