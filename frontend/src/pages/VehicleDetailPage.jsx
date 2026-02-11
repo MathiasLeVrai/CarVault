@@ -128,7 +128,7 @@ export default function VehicleDetailPage() {
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={downloadPdf} loading={generatingPdf}>
-            <FileDown className="w-3.5 h-3.5" strokeWidth={2.5} />Dossier PDF
+            <FileDown className="w-3.5 h-3.5" strokeWidth={2.5} />Dossier pour revente (PDF)
           </Button>
           <Button variant="danger" size="sm" onClick={delVehicle}><Trash2 className="w-3.5 h-3.5" strokeWidth={2.5} />Supprimer</Button>
         </div>

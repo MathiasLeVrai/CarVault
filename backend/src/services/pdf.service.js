@@ -31,6 +31,22 @@ const COLORS = {
   red: '#ef4444',
 };
 
+// Résout le chemin physique d'une photo véhicule (stockée en DB comme /uploads/vehicles/xxx)
+function resolvePhotoPath(photoUrl) {
+  if (!photoUrl || typeof photoUrl !== 'string') return null;
+  const relative = photoUrl.replace(/^\//, '');
+  const candidates = [
+    path.join(__dirname, '..', '..', relative),
+    path.join(process.cwd(), relative),
+  ];
+  for (const p of candidates) {
+    try {
+      if (fs.existsSync(p)) return p;
+    } catch (_) {}
+  }
+  return null;
+}
+
 class PdfService {
   /**
    * Générer le dossier PDF complet d'un véhicule
@@ -38,14 +54,23 @@ class PdfService {
    * @returns {Promise<Buffer>}
    */
   async generateVehicleDossier(vehicle, documents, expenses, stats, health) {
+    if (!vehicle || typeof vehicle !== 'object') {
+      return Promise.reject(new Error('Véhicule invalide'));
+    }
+    const safe = {
+      documents: Array.isArray(documents) ? documents : [],
+      expenses: Array.isArray(expenses) ? expenses : [],
+      stats: stats && typeof stats === 'object' ? stats : {},
+    };
     return new Promise((resolve, reject) => {
       const doc = new PDFDocument({
         size: 'A4',
         margins: { top: 50, bottom: 50, left: 50, right: 50 },
+        bufferPages: true,
         info: {
-          Title: `CarVault — ${vehicle.brand} ${vehicle.model}`,
+          Title: `CarVault — Dossier revente — ${vehicle.brand || ''} ${vehicle.model || ''}`,
           Author: 'CarVault',
-          Subject: 'Dossier véhicule',
+          Subject: 'Dossier exportable pour revente',
           Creator: 'CarVault PDF Generator',
         },
       });
@@ -57,10 +82,11 @@ class PdfService {
 
       try {
         this._drawCover(doc, vehicle, health);
+        this._drawResaleSummary(doc, vehicle, safe.documents, safe.expenses);
         this._drawVehicleInfo(doc, vehicle, health);
-        this._drawExpenseHistory(doc, expenses, stats);
-        this._drawDocumentList(doc, documents);
-        this._drawFinancialSummary(doc, expenses, stats, health);
+        this._drawExpenseHistory(doc, safe.expenses, safe.stats);
+        this._drawDocumentList(doc, safe.documents);
+        this._drawFinancialSummary(doc, safe.expenses, safe.stats, health);
         this._drawFooter(doc);
         doc.end();
       } catch (err) {
@@ -77,7 +103,7 @@ class PdfService {
 
     // Logo texte
     doc.fontSize(14).fillColor(COLORS.lime).font('Helvetica-Bold').text('CARVAULT', 50, 50);
-    doc.fontSize(9).fillColor(COLORS.muted).font('Helvetica').text('Dossier véhicule', 50, 68);
+    doc.fontSize(9).fillColor(COLORS.muted).font('Helvetica').text('Dossier exportable pour revente', 50, 68);
 
     // Score santé en haut à droite de la couverture
     if (health) {
@@ -89,14 +115,12 @@ class PdfService {
 
     // Photo du véhicule si disponible
     let photoY = 180;
-    if (vehicle.photo) {
-      const photoPath = path.join(__dirname, '../../', vehicle.photo);
-      if (fs.existsSync(photoPath)) {
-        try {
-          doc.image(photoPath, 100, 140, { width: 400, height: 220, fit: [400, 220], align: 'center' });
-          photoY = 380;
-        } catch {}
-      }
+    const photoPath = resolvePhotoPath(vehicle.photo);
+    if (photoPath) {
+      try {
+        doc.image(photoPath, 100, 140, { width: 400, height: 220, fit: [400, 220], align: 'center' });
+        photoY = 380;
+      } catch {}
     }
 
     // Nom du véhicule
@@ -129,7 +153,42 @@ class PdfService {
     doc.addPage();
   }
 
-  // ===================== PAGE 2 : FICHE VÉHICULE =====================
+  // ===================== PAGE 2 : RÉSUMÉ REVENTE =====================
+
+  _drawResaleSummary(doc, vehicle, documents, expenses) {
+    this._drawHeader(doc, 'Contenu du dossier revente');
+
+    const hasPhoto = !!resolvePhotoPath(vehicle.photo);
+    const byType = (documents || []).reduce((acc, d) => { acc[d.type] = (acc[d.type] || 0) + 1; return acc; }, {});
+    const maintenanceCount = (expenses || []).filter(e => e.category === 'MAINTENANCE' || e.category === 'REPAIR').length;
+    const invoiceCount = byType.INVOICE || 0;
+    const ctCount = byType.TECHNICAL_INSPECTION || 0;
+    const carteGriseCount = byType.REGISTRATION || 0;
+
+    const items = [
+      { label: 'Kilométrage', value: `${vehicle.mileage?.toLocaleString('fr-FR') ?? '—'} km`, ok: true },
+      { label: 'Historique entretien', value: maintenanceCount ? `${maintenanceCount} entrée(s)` : 'Aucune', ok: true },
+      { label: 'Factures', value: invoiceCount ? `${invoiceCount} document(s)` : 'Aucune', ok: true },
+      { label: 'Contrôle technique (CT)', value: ctCount ? `${ctCount} document(s)` : 'Aucun', ok: true },
+      { label: 'Carte grise', value: carteGriseCount ? `${carteGriseCount} document(s)` : 'Aucune', ok: true },
+      { label: 'Photos', value: hasPhoto ? 'Incluse(s)' : 'Aucune', ok: hasPhoto },
+    ];
+
+    let y = 120;
+    items.forEach((item, i) => {
+      doc.rect(50, y, doc.page.width - 100, 36).fill(i % 2 === 0 ? '#f9f7f4' : COLORS.white);
+      doc.fontSize(11).fillColor(COLORS.dark).font('Helvetica-Bold').text(item.label, 60, y + 10);
+      doc.fontSize(10).fillColor(item.ok ? COLORS.muted : COLORS.orange).font('Helvetica')
+        .text(item.value, 60, y + 24, { width: doc.page.width - 180 });
+      doc.fontSize(14).fillColor(item.ok ? COLORS.green : COLORS.muted).font('Helvetica')
+        .text(item.ok ? '✓' : '—', doc.page.width - 80, y + 12);
+      y += 40;
+    });
+
+    doc.addPage();
+  }
+
+  // ===================== PAGE 3 : FICHE VÉHICULE =====================
 
   _drawVehicleInfo(doc, vehicle, health) {
     this._drawHeader(doc, 'Fiche véhicule');
@@ -225,12 +284,14 @@ class PdfService {
         y += 28;
       }
 
+      const amount = exp.amount != null ? Number(exp.amount) : 0;
+      const dateStr = exp.date ? new Date(exp.date).toLocaleDateString('fr-FR') : '—';
       this._drawTableRow(doc, y, [
-        new Date(exp.date).toLocaleDateString('fr-FR'),
-        EXP_CATS[exp.category] || exp.category,
+        dateStr,
+        EXP_CATS[exp.category] || exp.category || '—',
         (exp.description || '—').substring(0, 30),
-        exp.mileage ? `${exp.mileage.toLocaleString('fr-FR')}` : '—',
-        `${exp.amount.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €`,
+        exp.mileage != null ? `${Number(exp.mileage).toLocaleString('fr-FR')}` : '—',
+        `${amount.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €`,
       ], false);
       y += 24;
     }
@@ -258,8 +319,15 @@ class PdfService {
       grouped[typeName].push(d);
     }
 
+    // Ordre pour revente : Carte grise, CT, Factures, puis le reste
+    const typeOrder = [DOC_TYPES.REGISTRATION, DOC_TYPES.TECHNICAL_INSPECTION, DOC_TYPES.INVOICE];
+    const orderedEntries = [
+      ...typeOrder.filter(t => grouped[t]).map(t => [t, grouped[t]]),
+      ...Object.entries(grouped).filter(([t]) => !typeOrder.includes(t)),
+    ];
+
     let y = 120;
-    for (const [typeName, docs] of Object.entries(grouped)) {
+    for (const [typeName, docs] of orderedEntries) {
       if (y > doc.page.height - 120) {
         doc.addPage();
         this._drawHeader(doc, 'Documents (suite)');
@@ -289,8 +357,9 @@ class PdfService {
           .text(d.name, 60, y);
         doc.fontSize(9).fillColor(isExpired ? '#ef4444' : COLORS.muted).font('Helvetica')
           .text(expStr, 60, y + 14);
+        const createdStr = d.createdAt ? new Date(d.createdAt).toLocaleDateString('fr-FR') : '';
         doc.fontSize(9).fillColor(COLORS.muted).font('Helvetica')
-          .text(`Ajouté le ${new Date(d.createdAt).toLocaleDateString('fr-FR')}`, 350, y + 7);
+          .text(createdStr ? `Ajouté le ${createdStr}` : '', 350, y + 7);
 
         y += 36;
       }
@@ -310,10 +379,10 @@ class PdfService {
 
     // Totaux
     const currentYear = new Date().getFullYear();
-    const totalAll = expenses.reduce((sum, e) => sum + e.amount, 0);
-    const totalYear = expenses
-      .filter(e => new Date(e.date).getFullYear() === currentYear)
-      .reduce((sum, e) => sum + e.amount, 0);
+    const totalAll = (expenses || []).reduce((sum, e) => sum + (e.amount != null ? Number(e.amount) : 0), 0);
+    const totalYear = (expenses || [])
+      .filter(e => e.date && new Date(e.date).getFullYear() === currentYear)
+      .reduce((sum, e) => sum + (e.amount != null ? Number(e.amount) : 0), 0);
     const avgMonthly = totalYear / 12;
 
     const summaryItems = [
@@ -344,9 +413,10 @@ class PdfService {
     y += 25;
 
     const byCategory = {};
-    for (const e of expenses) {
-      const cat = EXP_CATS[e.category] || e.category;
-      byCategory[cat] = (byCategory[cat] || 0) + e.amount;
+    for (const e of expenses || []) {
+      const cat = EXP_CATS[e.category] || e.category || 'Autre';
+      const amt = e.amount != null ? Number(e.amount) : 0;
+      byCategory[cat] = (byCategory[cat] || 0) + amt;
     }
 
     const sortedCats = Object.entries(byCategory).sort(([, a], [, b]) => b - a);
@@ -404,11 +474,13 @@ class PdfService {
   }
 
   _drawFooter(doc) {
-    const pages = doc.bufferedPageRange();
-    for (let i = 0; i < pages.count; i++) {
-      doc.switchToPage(i);
+    const range = doc.bufferedPageRange();
+    const totalPages = range.start + range.count;
+    for (let i = 0; i < range.count; i++) {
+      const pageIndex = range.start + i;
+      doc.switchToPage(pageIndex);
       doc.fontSize(8).fillColor(COLORS.muted).font('Helvetica')
-        .text(`Page ${i + 1} / ${pages.count}`, 50, doc.page.height - 30, {
+        .text(`Page ${pageIndex + 1} / ${totalPages}`, 50, doc.page.height - 30, {
           width: doc.page.width - 100,
           align: 'center',
         });

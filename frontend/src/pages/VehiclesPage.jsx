@@ -90,7 +90,8 @@ export default function VehiclesPage() {
       }));
       setPlateFound(true);
     } catch (err) {
-      setPlateError('Plaque non trouvée. Vous pouvez saisir manuellement.');
+      console.error('Erreur plaque lookup:', err);
+      setPlateError(err.message || 'Plaque non trouvée. Vous pouvez saisir manuellement.');
     } finally {
       setPlateLoading(false);
     }

@@ -107,6 +107,7 @@ class VehicleController {
       res.setHeader('Content-Length', pdfBuffer.length);
       res.send(pdfBuffer);
     } catch (error) {
+      console.error('PDF generation failed:', error.message, error.stack);
       next(error);
     }
   }

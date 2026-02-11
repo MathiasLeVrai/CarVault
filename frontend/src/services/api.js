@@ -92,7 +92,15 @@ export const vehicleApi = {
     const response = await fetch(`/api/vehicles/${id}/pdf`, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    if (!response.ok) throw new Error('Erreur lors de la génération du PDF');
+    if (!response.ok) {
+      const text = await response.text();
+      let msg = 'Erreur lors de la génération du PDF';
+      try {
+        const json = JSON.parse(text);
+        if (json?.error) msg = json.error;
+      } catch (_) {}
+      throw new Error(msg);
+    }
     const blob = await response.blob();
     const url = window.URL.createObjectURL(blob);
     const filename = response.headers.get('Content-Disposition')?.match(/filename="(.+)"/)?.[1] || 'CarVault_Dossier.pdf';

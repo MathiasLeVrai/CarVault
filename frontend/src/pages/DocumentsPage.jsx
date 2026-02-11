@@ -10,7 +10,7 @@ import EmptyState from '../components/ui/EmptyState';
 import { FileText, Plus, Trash2, Upload, ExternalLink } from 'lucide-react';
 import { formatDateShort, daysUntil, documentTypeLabels, documentTypeBadge } from '../utils/helpers';
 
-const typeFilters = [{value:'',label:'Tous'},{value:'INSURANCE',label:'Assurance'},{value:'TECHNICAL_INSPECTION',label:'Contrôle tech.'},{value:'INVOICE',label:'Facture'},{value:'WARRANTY',label:'Garantie'},{value:'OTHER',label:'Autre'}];
+const typeFilters = [{value:'',label:'Tous'},{value:'INSURANCE',label:'Assurance'},{value:'TECHNICAL_INSPECTION',label:'Contrôle tech.'},{value:'INVOICE',label:'Facture'},{value:'WARRANTY',label:'Garantie'},{value:'REGISTRATION',label:'Carte grise'},{value:'OTHER',label:'Autre'}];
 const typeForm = typeFilters.filter(o => o.value);
 
 export default function DocumentsPage() {
@@ -22,7 +22,7 @@ export default function DocumentsPage() {
 
   useEffect(() => { load(); }, [filter]);
   const load = async () => { try { const [d,v] = await Promise.all([documentApi.getAll(filter||undefined), vehicleApi.getAll()]); setDocs(d); setVehicles(v); } catch{} finally { setLoading(false); } };
-  const submit = async (e) => { e.preventDefault(); setSub(true); try { const fd=new FormData(); fd.append('name',form.name); fd.append('type',form.type); fd.append('vehicleId',form.vehicleId); if(form.expirationDate) fd.append('expirationDate',form.expirationDate); if(form.notes) fd.append('notes',form.notes); if(file) fd.append('file',file); await documentApi.create(fd); setShowModal(false); setForm({name:'',type:'INSURANCE',vehicleId:'',expirationDate:'',notes:''}); setFile(null); load(); } catch{} finally { setSub(false); } };
+  const submit = async (e) => { e.preventDefault(); setSub(true); try { const fd=new FormData(); fd.append('name',form.name); fd.append('type',form.type); fd.append('vehicleId',form.vehicleId); if(form.expirationDate) fd.append('expirationDate',form.expirationDate); if(form.notes) fd.append('notes',form.notes); if(file) fd.append('file',file); await documentApi.create(fd); setShowModal(false); setForm({name:'',type:'INSURANCE',vehicleId:'',expirationDate:'',notes:''}); setFile(null); load(); } catch(err) { console.error('Erreur document:', err); } finally { setSub(false); } };
   const del = async (id) => { if(!confirm('Supprimer ?')) return; await documentApi.delete(id); load(); };
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" /></div>;
