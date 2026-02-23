@@ -22,7 +22,7 @@ createRoot(document.getElementById('root')).render(
 )
 
 // ===== Enregistrement du Service Worker (PWA) =====
-if ('serviceWorker' in navigator) {
+if (window.location.hostname === 'localhost' && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker
       .register('/sw.js')
