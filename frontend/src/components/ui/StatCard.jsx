@@ -54,14 +54,14 @@ export default function StatCard({ icon, label, value, trend, color = 'default' 
   const IconComp = icon;
 
   return (
-    <div className={`${c.card} p-5 flex items-center gap-4`}>
-      <div className={`w-12 h-12 rounded-xl ${c.icon} flex items-center justify-center shrink-0`}>
-        {IconComp && <IconComp className={`w-5 h-5 ${c.iconColor}`} strokeWidth={2} />}
+    <div className={`${c.card} p-3.5 md:p-5 flex items-center gap-3 md:gap-4`}>
+      <div className={`w-10 h-10 md:w-12 md:h-12 rounded-xl ${c.icon} flex items-center justify-center shrink-0`}>
+        {IconComp && <IconComp className={`w-4 h-4 md:w-5 md:h-5 ${c.iconColor}`} strokeWidth={2} />}
       </div>
       <div className="min-w-0">
-        <p className={`text-[11px] font-semibold uppercase tracking-wider ${c.textLabel}`}>{label}</p>
-        <p className={`text-xl font-bold mt-0.5 truncate font-display ${c.textValue}`}>{value}</p>
-        {trend && <p className={`text-[11px] mt-0.5 ${c.textTrend}`}>{trend}</p>}
+        <p className={`text-[10px] md:text-[11px] font-semibold uppercase tracking-wider ${c.textLabel}`}>{label}</p>
+        <p className={`text-base md:text-xl font-bold mt-0.5 truncate font-display ${c.textValue}`}>{value}</p>
+        {trend && <p className={`text-[10px] md:text-[11px] mt-0.5 truncate ${c.textTrend}`}>{trend}</p>}
       </div>
     </div>
   );

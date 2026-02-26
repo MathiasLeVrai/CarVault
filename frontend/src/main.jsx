@@ -21,15 +21,14 @@ createRoot(document.getElementById('root')).render(
   </StrictMode>,
 )
 
-// ===== Enregistrement du Service Worker (PWA) =====
-if (window.location.hostname === 'localhost' && 'serviceWorker' in navigator) {
+// ===== Enregistrement du Service Worker (PWA — prod uniquement) =====
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker
       .register('/sw.js')
       .then((reg) => {
         console.log('[PWA] Service Worker enregistré:', reg.scope);
-        // Vérifier les mises à jour périodiquement
-        setInterval(() => reg.update(), 60 * 60 * 1000); // 1h
+        setInterval(() => reg.update(), 60 * 60 * 1000);
       })
       .catch((err) => {
         console.log('[PWA] Erreur enregistrement SW:', err);

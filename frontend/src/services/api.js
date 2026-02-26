@@ -140,8 +140,16 @@ export const alertApi = {
   countUnread: () => api.get('/alerts/count'),
   markAsRead: (id) => api.put(`/alerts/${id}/read`),
   markAllAsRead: () => api.put('/alerts/read-all'),
+  snooze: (id, days) => api.put(`/alerts/${id}/snooze`, { days }),
   checkExpiring: () => api.post('/alerts/check'),
   delete: (id) => api.delete(`/alerts/${id}`),
+};
+
+// ===== Mileage =====
+export const mileageApi = {
+  getAll: (vehicleId) => api.get(`/vehicles/${vehicleId}/mileage`),
+  create: (vehicleId, data) => api.post(`/vehicles/${vehicleId}/mileage`, data),
+  delete: (vehicleId, id) => api.delete(`/vehicles/${vehicleId}/mileage/${id}`),
 };
 
 // ===== Brands (marques & modèles via CarAPI) =====

@@ -6,10 +6,11 @@ class AlertService {
    * Récupérer les alertes d'un utilisateur
    */
   async getAll(userId, onlyUnread = false) {
+    const now = new Date();
     const where = { userId };
-    if (onlyUnread) {
-      where.isRead = false;
-    }
+    if (onlyUnread) where.isRead = false;
+    // Exclure les alertes snoozées encore actives
+    where.OR = [{ snoozedUntil: null }, { snoozedUntil: { lte: now } }];
 
     return prisma.alert.findMany({
       where,
@@ -18,12 +19,27 @@ class AlertService {
   }
 
   /**
-   * Compter les alertes non lues
+   * Compter les alertes non lues (hors snoozées)
    */
   async countUnread(userId) {
+    const now = new Date();
     return prisma.alert.count({
-      where: { userId, isRead: false },
+      where: {
+        userId, isRead: false,
+        OR: [{ snoozedUntil: null }, { snoozedUntil: { lte: now } }],
+      },
     });
+  }
+
+  /**
+   * Snooze une alerte (la masquer jusqu'à une date)
+   */
+  async snooze(id, userId, days) {
+    const alert = await prisma.alert.findFirst({ where: { id, userId } });
+    if (!alert) throw new AppError('Alerte non trouvée', 404);
+    const snoozedUntil = new Date();
+    snoozedUntil.setDate(snoozedUntil.getDate() + parseInt(days));
+    return prisma.alert.update({ where: { id }, data: { snoozedUntil, isRead: true } });
   }
 
   /**

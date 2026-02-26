@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { vehicleApi, documentApi, expenseApi } from '../services/api';
+import { vehicleApi, documentApi, expenseApi, mileageApi } from '../services/api';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Badge from '../components/ui/Badge';
@@ -8,7 +8,7 @@ import Modal from '../components/ui/Modal';
 import Input from '../components/ui/Input';
 import Select from '../components/ui/Select';
 import StatCard from '../components/ui/StatCard';
-import { ArrowLeft, FileText, Wallet, Plus, Trash2, Gauge, Upload, FileDown, Heart, TrendingDown, ShieldCheck, Wrench, FileCheck, PiggyBank, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, FileText, Wallet, Plus, Trash2, Gauge, Upload, FileDown, Heart, TrendingDown, ShieldCheck, Wrench, FileCheck, PiggyBank, CheckCircle2, Route } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { formatCurrency, formatDateShort, documentTypeLabels, documentTypeBadge, expenseCategoryLabels } from '../utils/helpers';
 
@@ -94,15 +94,26 @@ export default function VehicleDetailPage() {
   const [generatingPdf, setGeneratingPdf] = useState(false);
   const [df, setDf] = useState({ name:'', type:'INSURANCE', expirationDate:'', notes:'' }); const [docFile, setDocFile] = useState(null);
   const [ef, setEf] = useState({ amount:'', category:'MAINTENANCE', date:'', description:'', mileage:'' });
+  const [mileageEntries, setMileageEntries] = useState([]);
+  const [showMileage, setShowMileage] = useState(false);
+  const [mf, setMf] = useState({ mileage:'', date: new Date().toISOString().split('T')[0], notes:'' });
 
   useEffect(() => { load(); }, [id]);
-  const load = async () => { try { setV(await vehicleApi.getById(id)); } catch { navigate('/vehicles'); } finally { setLoading(false); } };
+  const load = async () => {
+    try {
+      const [vehicle, entries] = await Promise.all([vehicleApi.getById(id), mileageApi.getAll(id)]);
+      setV(vehicle);
+      setMileageEntries(entries);
+    } catch { navigate('/vehicles'); } finally { setLoading(false); }
+  };
   const addDoc = async (e) => { e.preventDefault(); setSub(true); try { const fd=new FormData(); fd.append('vehicleId',id); fd.append('name',df.name); fd.append('type',df.type); if(df.expirationDate) fd.append('expirationDate',df.expirationDate); if(df.notes) fd.append('notes',df.notes); if(docFile) fd.append('file',docFile); await documentApi.create(fd); setShowDoc(false); setDf({name:'',type:'INSURANCE',expirationDate:'',notes:''}); setDocFile(null); load(); } catch{} finally{setSub(false);} };
   const addExp = async (e) => { e.preventDefault(); setSub(true); try { await expenseApi.create({...ef,amount:parseFloat(ef.amount),vehicleId:id}); setShowExp(false); setEf({amount:'',category:'MAINTENANCE',date:'',description:'',mileage:''}); load(); } catch{console.error('erreur lors de l/ajout de la depense')} finally{setSub(false);} };
   const delDoc = async (did) => { if(!confirm('Supprimer ?')) return; await documentApi.delete(did); load(); };
   const delExp = async (eid) => { if(!confirm('Supprimer ?')) return; await expenseApi.delete(eid); load(); };
   const delVehicle = async () => { if(!confirm('Supprimer ce véhicule ?')) return; await vehicleApi.delete(id); navigate('/vehicles'); };
   const downloadPdf = async () => { setGeneratingPdf(true); try { await vehicleApi.downloadPdf(id); } catch (e) { console.error('PDF error:', e); } finally { setGeneratingPdf(false); } };
+  const addMileage = async (e) => { e.preventDefault(); setSub(true); try { await mileageApi.create(id, { mileage: parseInt(mf.mileage), date: mf.date, notes: mf.notes }); setShowMileage(false); setMf({ mileage:'', date: new Date().toISOString().split('T')[0], notes:'' }); load(); } catch {} finally { setSub(false); } };
+  const delMileage = async (mid) => { if(!confirm('Supprimer ?')) return; await mileageApi.delete(id, mid); load(); };
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" /></div>;
   if (!v) return null;
@@ -111,31 +122,42 @@ export default function VehicleDetailPage() {
   const health = v.health;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-5 md:space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between animate-slide-up">
-        <div className="flex items-center gap-4">
-          <button onClick={() => navigate('/vehicles')} className="w-10 h-10 rounded-xl border border-ink/10 flex items-center justify-center hover:bg-bg-alt hover:border-accent/30 transition-colors">
-            <ArrowLeft className="w-5 h-5 text-ink" strokeWidth={2} />
-          </button>
-          <div>
-            <h1 className="text-2xl font-bold text-ink font-display">{v.brand} {v.model}</h1>
-            <div className="flex items-center gap-2 mt-0.5">
-              <span className="text-sm text-ink-light font-medium">{v.year}</span>
-              {v.licensePlate && <span className="px-2 py-0.5 rounded-md bg-bg-alt border border-ink/8 text-[11px] font-mono font-semibold text-ink-light">{v.licensePlate}</span>}
+      <div className="space-y-3 md:space-y-0 animate-slide-up">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3 md:gap-4 min-w-0">
+            <button onClick={() => navigate('/vehicles')} className="w-9 h-9 md:w-10 md:h-10 rounded-xl border border-ink/10 flex items-center justify-center hover:bg-bg-alt hover:border-accent/30 transition-colors shrink-0">
+              <ArrowLeft className="w-4 h-4 md:w-5 md:h-5 text-ink" strokeWidth={2} />
+            </button>
+            <div className="min-w-0">
+              <h1 className="text-lg md:text-2xl font-bold text-ink font-display truncate">{v.brand} {v.model}</h1>
+              <div className="flex items-center gap-2 mt-0.5">
+                <span className="text-xs md:text-sm text-ink-light font-medium">{v.year}</span>
+                {v.licensePlate && <span className="px-2 py-0.5 rounded-md bg-bg-alt border border-ink/8 text-[10px] md:text-[11px] font-mono font-semibold text-ink-light">{v.licensePlate}</span>}
+              </div>
             </div>
           </div>
+          <div className="hidden md:flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={downloadPdf} loading={generatingPdf}>
+              <FileDown className="w-3.5 h-3.5" strokeWidth={2.5} />Dossier pour revente (PDF)
+            </Button>
+            <Button variant="danger" size="sm" onClick={delVehicle}><Trash2 className="w-3.5 h-3.5" strokeWidth={2.5} />Supprimer</Button>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={downloadPdf} loading={generatingPdf}>
-            <FileDown className="w-3.5 h-3.5" strokeWidth={2.5} />Dossier pour revente (PDF)
+        {/* Mobile action buttons */}
+        <div className="flex md:hidden gap-2">
+          <Button variant="outline" size="sm" onClick={downloadPdf} loading={generatingPdf} className="flex-1 text-xs">
+            <FileDown className="w-3.5 h-3.5" strokeWidth={2.5} />PDF revente
           </Button>
-          <Button variant="danger" size="sm" onClick={delVehicle}><Trash2 className="w-3.5 h-3.5" strokeWidth={2.5} />Supprimer</Button>
+          <Button variant="danger" size="sm" onClick={delVehicle} className="text-xs">
+            <Trash2 className="w-3.5 h-3.5" strokeWidth={2.5} />
+          </Button>
         </div>
       </div>
 
       {/* Stats */}
-      <div className={`grid grid-cols-1 ${health?.estimatedValue ? 'md:grid-cols-4' : 'md:grid-cols-3'} gap-5 stagger`}>
+      <div className={`grid grid-cols-2 ${health?.estimatedValue ? 'md:grid-cols-4' : 'md:grid-cols-3'} gap-3 md:gap-5 stagger`}>
         <StatCard icon={Gauge} label="Kilométrage" value={`${v.mileage?.toLocaleString('fr-FR')} km`} color="accent" />
         <StatCard icon={FileText} label="Documents" value={v._count?.documents || 0} color="violet" />
         <StatCard icon={Wallet} label={`Dépenses ${new Date().getFullYear()}`} value={formatCurrency(v.stats?.totalExpensesYear || 0)} color="dark" />
@@ -147,15 +169,15 @@ export default function VehicleDetailPage() {
       {/* Health Score */}
       {health && (
         <Card className="animate-slide-up" style={{ animationDelay: '80ms' }}>
-          <div className="flex items-start gap-8">
+          <div className="flex flex-col md:flex-row items-center md:items-start gap-5 md:gap-8">
             <div className="flex flex-col items-center gap-2 shrink-0">
               <h3 className="text-base font-bold text-ink flex items-center gap-2 font-display">
                 <Heart className="w-4 h-4 text-accent" strokeWidth={2.5} />Score Santé
               </h3>
-              <ScoreGauge score={health.score} grade={health.grade} />
+              <ScoreGauge score={health.score} grade={health.grade} size={120} />
             </div>
 
-            <div className="flex-1 space-y-4 pt-8">
+            <div className="flex-1 w-full space-y-4 md:pt-8">
               <SubScoreBar icon={Wrench} label="Entretien" score={health.breakdown.maintenance.score} max={health.breakdown.maintenance.max} />
               <SubScoreBar icon={FileCheck} label="Documents" score={health.breakdown.documents.score} max={health.breakdown.documents.max} />
               <SubScoreBar icon={PiggyBank} label="Coût maîtrisé" score={health.breakdown.cost.score} max={health.breakdown.cost.max} />
@@ -181,7 +203,7 @@ export default function VehicleDetailPage() {
       {/* Chart */}
       <Card className="animate-slide-up" style={{ animationDelay: '100ms' }}>
         <h3 className="text-base font-bold text-ink mb-5 font-display">Dépenses mensuelles</h3>
-        <ResponsiveContainer width="100%" height={250}>
+        <ResponsiveContainer width="100%" height={200}>
           <BarChart data={chartData}>
             <CartesianGrid stroke="rgba(0,0,0,0.06)" strokeDasharray="4 4" />
             <XAxis dataKey="month" stroke="#999" fontSize={12} fontWeight={500} tickLine={false} axisLine={false} />
@@ -215,7 +237,7 @@ export default function VehicleDetailPage() {
                   </div>
                 </div>
                 <button onClick={e => { e.stopPropagation(); delDoc(d.id); }}
-                  className="p-1.5 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-accent/10 text-ink-muted hover:text-accent transition-all">
+                  className="p-1.5 rounded-lg md:opacity-0 md:group-hover:opacity-100 hover:bg-accent/10 text-ink-muted hover:text-accent transition-all">
                   <Trash2 className="w-3.5 h-3.5" strokeWidth={2} />
                 </button>
               </div>
@@ -244,7 +266,7 @@ export default function VehicleDetailPage() {
                   </div>
                 </div>
                 <button onClick={e => { e.stopPropagation(); delExp(exp.id); }}
-                  className="p-1.5 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-accent/10 text-ink-muted hover:text-accent transition-all">
+                  className="p-1.5 rounded-lg md:opacity-0 md:group-hover:opacity-100 hover:bg-accent/10 text-ink-muted hover:text-accent transition-all">
                   <Trash2 className="w-3.5 h-3.5" strokeWidth={2} />
                 </button>
               </div>
@@ -252,6 +274,44 @@ export default function VehicleDetailPage() {
           ) : <p className="text-sm text-ink-muted text-center py-8">Aucune dépense</p>}
         </Card>
       </div>
+
+      {/* Mileage History */}
+      <Card className="animate-slide-up" style={{ animationDelay: '220ms' }}>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-base font-bold text-ink font-display flex items-center gap-2">
+            <Route className="w-4 h-4 text-accent" strokeWidth={2.5} />Historique kilométrage
+          </h3>
+          <Button size="sm" onClick={() => setShowMileage(true)}><Plus className="w-3.5 h-3.5" strokeWidth={2.5} />Ajouter</Button>
+        </div>
+        {mileageEntries.length > 0 ? (
+          <div className="space-y-2">
+            {mileageEntries.slice(0, 8).map((entry, i) => {
+              const prev = mileageEntries[i + 1];
+              const diff = prev ? entry.mileage - prev.mileage : null;
+              return (
+                <div key={entry.id} className="flex items-center justify-between p-3 rounded-xl border border-ink/8 group hover:border-ink/15 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 rounded-full bg-accent shrink-0" />
+                    <div>
+                      <p className="text-sm font-bold text-ink">{entry.mileage.toLocaleString('fr-FR')} km</p>
+                      {entry.notes && <p className="text-[11px] text-ink-muted">{entry.notes}</p>}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="text-right">
+                      <p className="text-[11px] font-medium text-ink-muted">{new Date(entry.date).toLocaleDateString('fr-FR')}</p>
+                      {diff !== null && <p className="text-[10px] text-lime font-semibold">+{diff.toLocaleString('fr-FR')} km</p>}
+                    </div>
+                    <button onClick={() => delMileage(entry.id)} className="p-1.5 rounded-lg md:opacity-0 md:group-hover:opacity-100 hover:bg-accent/10 text-ink-muted hover:text-accent transition-all">
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : <p className="text-sm text-ink-muted text-center py-6">Aucune entrée</p>}
+      </Card>
 
       {/* Doc Modal */}
       <Modal isOpen={showDoc} onClose={() => setShowDoc(false)} title="Ajouter un document">
@@ -283,6 +343,19 @@ export default function VehicleDetailPage() {
           <Input label="Description" placeholder="Description..." value={ef.description} onChange={e => setEf(p => ({...p, description: e.target.value}))} />
           <Input label="Kilométrage" type="number" placeholder="48500" value={ef.mileage} onChange={e => setEf(p => ({...p, mileage: e.target.value}))} />
           <div className="flex justify-end gap-3 pt-2"><Button variant="outline" type="button" onClick={() => setShowExp(false)}>Annuler</Button><Button type="submit" loading={sub}>Ajouter</Button></div>
+        </form>
+      </Modal>
+
+      {/* Mileage Modal */}
+      <Modal isOpen={showMileage} onClose={() => setShowMileage(false)} title="Ajouter un kilométrage">
+        <form onSubmit={addMileage} className="space-y-4">
+          <Input label="Kilométrage *" type="number" placeholder="48500" value={mf.mileage} onChange={e => setMf(p => ({...p, mileage: e.target.value}))} required />
+          <Input label="Date *" type="date" value={mf.date} onChange={e => setMf(p => ({...p, date: e.target.value}))} required />
+          <Input label="Notes" placeholder="Révision, voyage..." value={mf.notes} onChange={e => setMf(p => ({...p, notes: e.target.value}))} />
+          <div className="flex justify-end gap-3 pt-2">
+            <Button variant="outline" type="button" onClick={() => setShowMileage(false)}>Annuler</Button>
+            <Button type="submit" loading={sub}>Ajouter</Button>
+          </div>
         </form>
       </Modal>
     </div>

@@ -43,17 +43,17 @@ export default function DashboardPage() {
   const nextDays = nextDeadline ? daysUntil(nextDeadline.expirationDate) : null;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-5 md:space-y-8">
       {/* Welcome Banner */}
-      <div className="cv-card-dark p-8 animate-slide-up relative overflow-hidden">
+      <div className="cv-card-dark p-5 md:p-8 animate-slide-up relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-accent/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4" />
         <div className="relative flex items-center justify-between">
           <div>
-            <p className="text-white/40 text-sm font-medium mb-1">Bienvenue</p>
-            <h1 className="text-3xl font-bold text-white font-display">
+            <p className="text-white/40 text-xs md:text-sm font-medium mb-1">Bienvenue</p>
+            <h1 className="text-xl md:text-3xl font-bold text-white font-display">
               {user?.firstName} {user?.lastName} <span className="text-accent">.</span>
             </h1>
-            <p className="text-white/35 mt-2">Vue d'ensemble de vos véhicules et dépenses</p>
+            <p className="text-white/35 mt-1 md:mt-2 text-sm md:text-base">Vue d'ensemble de vos véhicules et dépenses</p>
           </div>
           <div className="hidden md:flex w-16 h-16 rounded-2xl bg-accent/15 border border-accent/25 items-center justify-center">
             <Car className="w-7 h-7 text-accent" strokeWidth={2} />
@@ -62,7 +62,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5 stagger">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-5 stagger">
         <StatCard icon={Car} label="Véhicules" value={data?.vehicleCount || 0} color="accent" />
         <StatCard icon={Heart} label="Score santé"
           value={data?.avgHealthScore !== null ? `${data.avgHealthScore}/100` : '—'}

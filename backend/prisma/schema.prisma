@@ -46,8 +46,9 @@ model Vehicle {
   userId        String
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  documents     Document[]
-  expenses      Expense[]
+  documents      Document[]
+  expenses       Expense[]
+  mileageEntries MileageEntry[]
 
   @@map("vehicles")
 }
@@ -86,18 +87,33 @@ model Expense {
 }
 
 model Alert {
-  id          String    @id @default(uuid())
-  title       String
-  message     String
-  type        AlertType
-  isRead      Boolean   @default(false)
-  dueDate     DateTime?
-  createdAt   DateTime  @default(now())
+  id           String    @id @default(uuid())
+  title        String
+  message      String
+  type         AlertType
+  isRead       Boolean   @default(false)
+  dueDate      DateTime?
+  snoozedUntil DateTime?
+  emailSent    Boolean   @default(false)
+  createdAt    DateTime  @default(now())
 
-  userId      String
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("alerts")
+}
+
+model MileageEntry {
+  id        String   @id @default(uuid())
+  mileage   Int
+  date      DateTime
+  notes     String?
+  createdAt DateTime @default(now())
+
+  vehicleId String
+  vehicle   Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@map("mileage_entries")
 }
 
 enum DocumentType {

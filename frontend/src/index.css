@@ -319,3 +319,48 @@ body {
   border-color: var(--color-accent);
   color: var(--color-accent);
 }
+
+/* =========== MOBILE BOTTOM TAB BAR =========== */
+
+.cv-bottom-bar {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-top: 0.5px solid rgba(0, 0, 0, 0.08);
+}
+.dark .cv-bottom-bar {
+  background: rgba(28, 28, 32, 0.88);
+  border-top-color: rgba(255, 255, 255, 0.06);
+}
+
+.cv-header-glass {
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.08);
+}
+.dark .cv-header-glass {
+  background: rgba(18, 18, 22, 0.82);
+  border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+
+.cv-sidebar-glass {
+  background: #0f0f11;
+  border-right: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+/* Safe area padding for iOS notch / home indicator */
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* =========== TOUCH TARGETS =========== */
+
+@media (max-width: 767px) {
+  .cv-card, .cv-card-flat {
+    border-radius: 12px;
+  }
+  .cv-input {
+    font-size: 16px; /* prevents iOS zoom on focus */
+  }
+}

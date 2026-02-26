@@ -31,8 +31,8 @@ export default function DocumentsPage() {
     <div className="space-y-8">
       <div className="flex items-center justify-between animate-slide-up">
         <div>
-          <h1 className="text-2xl font-bold text-ink font-display">Documents</h1>
-          <p className="text-sm text-ink-light mt-1">{docs.length} document{docs.length !== 1 ? 's' : ''}</p>
+          <h1 className="text-xl md:text-2xl font-bold text-ink font-display">Documents</h1>
+          <p className="text-xs md:text-sm text-ink-light mt-0.5 md:mt-1">{docs.length} document{docs.length !== 1 ? 's' : ''}</p>
         </div>
         <Button onClick={() => { if(vehicles.length) { setForm(p => ({...p, vehicleId: vehicles[0].id})); setShowModal(true); } }}><Plus className="w-4 h-4" strokeWidth={2.5} />Ajouter</Button>
       </div>
@@ -74,7 +74,7 @@ export default function DocumentsPage() {
                     className="p-1.5 rounded-lg hover:bg-accent/10 text-ink-muted hover:text-accent transition-all">
                     <ExternalLink className="w-4 h-4" />
                   </a>
-                  <button onClick={() => del(doc.id)} className="p-1.5 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-accent/10 text-ink-muted hover:text-accent transition-all">
+                  <button onClick={() => del(doc.id)} className="p-1.5 rounded-lg md:opacity-0 md:group-hover:opacity-100 hover:bg-accent/10 text-ink-muted hover:text-accent transition-all">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>

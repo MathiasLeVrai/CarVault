@@ -38,53 +38,72 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className="fixed left-0 top-[64px] bottom-0 w-[240px] carbon-texture flex flex-col z-40 px-4 py-6 border-r border-white/5">
-      {/* Logo */}
-      <div className="flex items-center gap-3 px-4 mb-8">
-        <div className="w-9 h-9 rounded-xl bg-accent flex items-center justify-center shadow-[0_0_16px_rgba(230,57,70,0.3)]">
-          <span className="text-sm font-black text-white font-display">CV</span>
+    <>
+      {/* Desktop Sidebar */}
+      <aside className="hidden md:flex fixed left-0 top-[64px] bottom-0 w-[240px] cv-sidebar-glass flex-col z-40 px-4 py-6">
+        <div className="flex items-center gap-3 px-4 mb-8">
+          <div className="w-9 h-9 rounded-xl bg-accent flex items-center justify-center shadow-[0_0_16px_rgba(230,57,70,0.3)]">
+            <span className="text-sm font-black text-white font-display">CV</span>
+          </div>
+          <span className="text-base font-bold tracking-tight text-white font-display">
+            CarVault
+          </span>
         </div>
-        <span className="text-base font-bold tracking-tight text-white font-display">
-          CarVault
-        </span>
-      </div>
 
-      <nav className="flex-1 space-y-1">
-        {navItems.map(({ to, icon: Icon, label, showBadge }) => {
-          const active = location.pathname === to || location.pathname.startsWith(to + '/');
-          return (
-            <NavLink
-              key={to}
-              to={to}
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl text-[14px] font-medium transition-all ${
-                active
-                  ? 'cv-nav-active text-accent'
-                  : 'text-white/50 hover:text-white/80 hover:bg-white/5'
-              }`}
-            >
-              <Icon className="w-[18px] h-[18px]" strokeWidth={2} />
-              <span className="flex-1">{label}</span>
-              {showBadge && alertCount > 0 && (
-                <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-accent text-white text-[10px] font-bold shadow-[0_0_8px_rgba(230,57,70,0.3)]">
-                  {alertCount > 99 ? '99+' : alertCount}
-                </span>
-              )}
-            </NavLink>
-          );
-        })}
+        <nav className="flex-1 space-y-1">
+          {navItems.map(({ to, icon: Icon, label, showBadge }) => {
+            const active = location.pathname === to || location.pathname.startsWith(to + '/');
+            return (
+              <NavLink key={to} to={to}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-[14px] font-medium transition-all ${
+                  active ? 'cv-nav-active text-accent' : 'text-white/50 hover:text-white/80 hover:bg-white/5'
+                }`}>
+                <Icon className="w-[18px] h-[18px]" strokeWidth={2} />
+                <span className="flex-1">{label}</span>
+                {showBadge && alertCount > 0 && (
+                  <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-accent text-white text-[10px] font-bold shadow-[0_0_8px_rgba(230,57,70,0.3)]">
+                    {alertCount > 99 ? '99+' : alertCount}
+                  </span>
+                )}
+              </NavLink>
+            );
+          })}
+        </nav>
+
+        <div className="h-px bg-white/8 mx-4 my-3" />
+
+        <button onClick={logout}
+          className="flex items-center gap-3 px-4 py-3 rounded-xl text-[14px] font-medium text-white/40 hover:text-accent hover:bg-accent/10 transition-all w-full">
+          <LogOut className="w-[18px] h-[18px]" strokeWidth={2} />
+          Déconnexion
+        </button>
+      </aside>
+
+      {/* Mobile Bottom Tab Bar */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 cv-bottom-bar safe-bottom">
+        <div className="flex items-center justify-around h-16">
+          {navItems.map(({ to, icon: Icon, label, showBadge }) => {
+            const active = location.pathname === to || location.pathname.startsWith(to + '/');
+            return (
+              <NavLink key={to} to={to}
+                className={`flex flex-col items-center justify-center gap-0.5 py-1.5 px-3 rounded-xl transition-all relative ${
+                  active ? 'text-accent' : 'text-ink-muted'
+                }`}>
+                <div className="relative">
+                  <Icon className="w-5 h-5" strokeWidth={active ? 2.5 : 1.8} />
+                  {showBadge && alertCount > 0 && (
+                    <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 px-1 rounded-full bg-accent text-white text-[9px] font-bold flex items-center justify-center">
+                      {alertCount > 9 ? '9+' : alertCount}
+                    </span>
+                  )}
+                </div>
+                <span className="text-[10px] font-semibold">{label}</span>
+                {active && <div className="absolute -bottom-1 w-5 h-0.5 rounded-full bg-accent" />}
+              </NavLink>
+            );
+          })}
+        </div>
       </nav>
-
-      {/* Divider */}
-      <div className="h-px bg-white/8 mx-4 my-3" />
-
-      {/* Logout */}
-      <button
-        onClick={logout}
-        className="flex items-center gap-3 px-4 py-3 rounded-xl text-[14px] font-medium text-white/40 hover:text-accent hover:bg-accent/10 transition-all w-full"
-      >
-        <LogOut className="w-[18px] h-[18px]" strokeWidth={2} />
-        Déconnexion
-      </button>
-    </aside>
+    </>
   );
 }

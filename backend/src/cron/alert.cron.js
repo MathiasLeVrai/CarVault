@@ -1,6 +1,7 @@
 const cron = require('node-cron');
 const prisma = require('../lib/prisma');
 const { getMaintenanceIntervals } = require('../data/vehicles');
+const emailService = require('../services/email.service');
 
 /**
  * Système d'alertes intelligentes CarVault
@@ -38,23 +39,47 @@ async function checkDocumentExpiry() {
   in30Days.setDate(in30Days.getDate() + 30);
   let created = 0;
 
-  // Documents expirant dans les 30 prochains jours
+  // Documents expirant aux paliers J-30, J-7, J-1
   const expiringDocs = await prisma.document.findMany({
     where: { expirationDate: { gte: now, lte: in30Days } },
-    include: { vehicle: { select: { id: true, brand: true, model: true, userId: true } } },
+    include: {
+      vehicle: {
+        include: { user: { select: { email: true, firstName: true } } },
+      },
+    },
   });
 
   for (const doc of expiringDocs) {
     if (await alertExists(doc.vehicle.userId, 'DOCUMENT_EXPIRY', doc.name, { dueDate: doc.expirationDate })) continue;
     const daysLeft = Math.ceil((doc.expirationDate - now) / (1000 * 60 * 60 * 24));
-    await createAlert({
-      title: `Expiration dans ${daysLeft}j : ${doc.name}`,
-      message: `Le document "${doc.name}" de votre ${doc.vehicle.brand} ${doc.vehicle.model} expire le ${doc.expirationDate.toLocaleDateString('fr-FR')}.`,
+
+    // Uniquement créer une alerte aux paliers : J-30, J-7, J-1
+    if (![30, 7, 1].some(p => daysLeft <= p && daysLeft > (p === 30 ? 7 : p === 7 ? 1 : 0))) continue;
+
+    const title = `Expiration dans ${daysLeft}j : ${doc.name}`;
+    const message = `Le document "${doc.name}" de votre ${doc.vehicle.brand} ${doc.vehicle.model} expire le ${doc.expirationDate.toLocaleDateString('fr-FR')}.`;
+
+    const alert = await createAlert({
+      title,
+      message,
       type: 'DOCUMENT_EXPIRY',
       dueDate: doc.expirationDate,
       userId: doc.vehicle.userId,
+      emailSent: false,
     });
     created++;
+
+    // Envoi email si configuré
+    if (emailService.isConfigured() && doc.vehicle.user?.email) {
+      const sent = await emailService.sendAlertEmail(
+        doc.vehicle.user.email,
+        doc.vehicle.user.firstName,
+        title,
+        message,
+        doc.expirationDate,
+      );
+      if (sent) await prisma.alert.update({ where: { id: alert.id }, data: { emailSent: true } });
+    }
   }
 
   // Documents déjà expirés

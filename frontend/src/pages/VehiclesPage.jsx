@@ -182,8 +182,8 @@ export default function VehiclesPage() {
     <div className="space-y-8">
       <div className="flex items-center justify-between animate-slide-up">
         <div>
-          <h1 className="text-2xl font-bold text-ink font-display">Mes Véhicules</h1>
-          <p className="text-sm text-ink-light mt-1">{vehicles.length} véhicule{vehicles.length !== 1 ? 's' : ''}</p>
+          <h1 className="text-xl md:text-2xl font-bold text-ink font-display">Mes Véhicules</h1>
+          <p className="text-xs md:text-sm text-ink-light mt-0.5 md:mt-1">{vehicles.length} véhicule{vehicles.length !== 1 ? 's' : ''}</p>
         </div>
         <Button onClick={() => setShowModal(true)}><Plus className="w-4 h-4" strokeWidth={2.5} />Ajouter</Button>
       </div>
@@ -297,7 +297,7 @@ export default function VehiclesPage() {
           {/* ===== Vehicle details (shown after plate lookup or in manual mode) ===== */}
           {(plateFound || manualMode) && (
             <>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <Select label="Année *" options={yearOpts} value={form.year}
                   onChange={e => handleYearChange(e.target.value)} required />
                 <Autocomplete label="Marque *" value={form.brand} options={brands}

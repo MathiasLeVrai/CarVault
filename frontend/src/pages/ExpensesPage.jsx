@@ -46,13 +46,13 @@ export default function ExpensesPage() {
     <div className="space-y-8">
       <div className="flex items-center justify-between animate-slide-up">
         <div>
-          <h1 className="text-2xl font-bold text-ink font-display">Dépenses</h1>
-          <p className="text-sm text-ink-light mt-1">Suivi complet</p>
+          <h1 className="text-xl md:text-2xl font-bold text-ink font-display">Dépenses</h1>
+          <p className="text-xs md:text-sm text-ink-light mt-0.5 md:mt-1">Suivi complet</p>
         </div>
         <Button onClick={() => { if(vehicles.length) { setForm(p=>({...p,vehicleId:vehicles[0].id})); setShowModal(true); } }}><Plus className="w-4 h-4" strokeWidth={2.5} />Ajouter</Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 stagger">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-5 stagger">
         <StatCard icon={TrendingUp} label={`Total ${new Date().getFullYear()}`} value={formatCurrency(stats?.totalYear||0)} color="dark" />
         <StatCard icon={Calculator} label="Moyenne mensuelle" value={formatCurrency(avg)} color="accent" />
         <StatCard icon={Receipt} label="Transactions" value={stats?.expenseCount||0} color="orange" />
@@ -123,7 +123,7 @@ export default function ExpensesPage() {
             </div>
             <div className="flex items-center gap-2 shrink-0 ml-3">
               <span className="text-[10px] font-medium text-ink-muted">{formatDateShort(exp.date)}</span>
-              <button onClick={() => del(exp.id)} className="p-1.5 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-accent/10 text-ink-muted hover:text-accent transition-all">
+              <button onClick={() => del(exp.id)} className="p-1.5 rounded-lg md:opacity-0 md:group-hover:opacity-100 hover:bg-accent/10 text-ink-muted hover:text-accent transition-all">
                 <Trash2 className="w-4 h-4" /></button>
             </div>
           </div>

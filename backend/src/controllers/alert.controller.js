@@ -47,6 +47,14 @@ class AlertController {
     }
   }
 
+  async snooze(req, res, next) {
+    try {
+      const days = parseInt(req.body.days) || 7;
+      const alert = await alertService.snooze(req.params.id, req.userId, days);
+      res.json(alert);
+    } catch (error) { next(error); }
+  }
+
   async delete(req, res, next) {
     try {
       await alertService.delete(req.params.id, req.userId);
