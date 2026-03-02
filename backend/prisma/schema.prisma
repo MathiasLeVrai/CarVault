@@ -16,8 +16,13 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  vehicles  Vehicle[]
-  alerts    Alert[]
+  notifEmail  Boolean @default(true)
+  notifPush   Boolean @default(false)
+  notifWeekly Boolean @default(true)
+
+  vehicles   Vehicle[]
+  alerts     Alert[]
+  shareLinks ShareLink[]
 
   @@map("users")
 }
@@ -49,23 +54,25 @@ model Vehicle {
   documents      Document[]
   expenses       Expense[]
   mileageEntries MileageEntry[]
+  shareLinks     ShareLink[]
 
   @@map("vehicles")
 }
 
 model Document {
-  id           String       @id @default(uuid())
-  name         String
-  type         DocumentType
-  filePath     String
-  fileName     String
+  id             String       @id @default(uuid())
+  name           String
+  type           DocumentType
+  filePath       String
+  fileName       String
   expirationDate DateTime?
-  notes        String?
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  notes          String?
+  reminderDays   Int[]        @default([30, 7])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
 
-  vehicleId    String
-  vehicle      Vehicle      @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  vehicleId      String
+  vehicle        Vehicle      @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
 
   @@map("documents")
 }
@@ -154,4 +161,19 @@ enum FuelType {
   ELECTRIC
   LPG
   OTHER
+}
+
+model ShareLink {
+  id        String    @id @default(uuid())
+  token     String    @unique @default(uuid())
+  expiresAt DateTime?
+  createdAt DateTime  @default(now())
+
+  vehicleId String
+  vehicle   Vehicle   @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("share_links")
 }

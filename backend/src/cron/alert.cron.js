@@ -35,16 +35,15 @@ async function createAlert(data) {
 
 async function checkDocumentExpiry() {
   const now = new Date();
-  const in30Days = new Date();
-  in30Days.setDate(in30Days.getDate() + 30);
+  const in90Days = new Date();
+  in90Days.setDate(in90Days.getDate() + 90);
   let created = 0;
 
-  // Documents expirant aux paliers J-30, J-7, J-1
   const expiringDocs = await prisma.document.findMany({
-    where: { expirationDate: { gte: now, lte: in30Days } },
+    where: { expirationDate: { gte: now, lte: in90Days } },
     include: {
       vehicle: {
-        include: { user: { select: { email: true, firstName: true } } },
+        include: { user: { select: { email: true, firstName: true, notifEmail: true } } },
       },
     },
   });
@@ -53,8 +52,13 @@ async function checkDocumentExpiry() {
     if (await alertExists(doc.vehicle.userId, 'DOCUMENT_EXPIRY', doc.name, { dueDate: doc.expirationDate })) continue;
     const daysLeft = Math.ceil((doc.expirationDate - now) / (1000 * 60 * 60 * 24));
 
-    // Uniquement créer une alerte aux paliers : J-30, J-7, J-1
-    if (![30, 7, 1].some(p => daysLeft <= p && daysLeft > (p === 30 ? 7 : p === 7 ? 1 : 0))) continue;
+    // Use per-document reminder days, fallback to [30, 7, 1]
+    const thresholds = (doc.reminderDays?.length > 0 ? doc.reminderDays : [30, 7, 1]).sort((a, b) => b - a);
+    const matchesThreshold = thresholds.some((p, i) => {
+      const nextThreshold = thresholds[i + 1] || 0;
+      return daysLeft <= p && daysLeft > nextThreshold;
+    });
+    if (!matchesThreshold) continue;
 
     const title = `Expiration dans ${daysLeft}j : ${doc.name}`;
     const message = `Le document "${doc.name}" de votre ${doc.vehicle.brand} ${doc.vehicle.model} expire le ${doc.expirationDate.toLocaleDateString('fr-FR')}.`;
@@ -69,11 +73,12 @@ async function checkDocumentExpiry() {
     });
     created++;
 
-    // Envoi email si configuré
-    if (emailService.isConfigured() && doc.vehicle.user?.email) {
+    // Send email only if user has email notifications enabled
+    const user = doc.vehicle.user;
+    if (emailService.isConfigured() && user?.email && user?.notifEmail !== false) {
       const sent = await emailService.sendAlertEmail(
-        doc.vehicle.user.email,
-        doc.vehicle.user.firstName,
+        user.email,
+        user.firstName,
         title,
         message,
         doc.expirationDate,

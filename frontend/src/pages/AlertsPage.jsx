@@ -5,6 +5,7 @@ import Badge from '../components/ui/Badge';
 import EmptyState from '../components/ui/EmptyState';
 import { Bell, BellOff, Check, CheckCheck, Trash2, Clock, AlertTriangle, Shield, FileText, Wrench, Droplets, CircleDot, Gauge, Timer } from 'lucide-react';
 import { formatDate, alertTypeLabels, daysUntil } from '../utils/helpers';
+import { motion } from 'framer-motion';
 
 const icons = {
   DOCUMENT_EXPIRY: FileText,
@@ -16,15 +17,16 @@ const icons = {
   MILEAGE_SERVICE: Gauge,
   OTHER: Bell,
 };
+
 const colors = {
-  DOCUMENT_EXPIRY: 'bg-accent-warm/15 text-accent-warm',
-  MAINTENANCE_DUE: 'bg-sky/15 text-sky',
-  INSPECTION_DUE: 'bg-accent/15 text-accent',
-  INSURANCE_RENEWAL: 'bg-violet/15 text-violet',
-  OIL_CHANGE: 'bg-accent-warm/15 text-accent-warm',
-  TIRE_SEASON: 'bg-lime/15 text-lime',
-  MILEAGE_SERVICE: 'bg-info/15 text-info',
-  OTHER: 'bg-bg-alt text-ink-light',
+  DOCUMENT_EXPIRY: 'bg-orange/20 text-orange border-orange/20',
+  MAINTENANCE_DUE: 'bg-sky/20 text-sky border-sky/20',
+  INSPECTION_DUE: 'bg-accent/20 text-accent border-accent/20',
+  INSURANCE_RENEWAL: 'bg-violet/20 text-violet border-violet/20',
+  OIL_CHANGE: 'bg-orange/20 text-orange border-orange/20',
+  TIRE_SEASON: 'bg-lime/20 text-lime border-lime/20',
+  MILEAGE_SERVICE: 'bg-info/20 text-info border-info/20',
+  OTHER: 'bg-white/10 text-white border-white/20',
 };
 
 const SNOOZE_OPTIONS = [
@@ -32,6 +34,16 @@ const SNOOZE_OPTIONS = [
   { label: '7 jours', days: 7 },
   { label: '30 jours', days: 30 },
 ];
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { staggerChildren: 0.05 } }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 10 },
+  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } }
+};
 
 export default function AlertsPage() {
   const [alerts, setAlerts] = useState([]);
@@ -50,95 +62,98 @@ export default function AlertsPage() {
     load();
   };
 
-  if (loading) return <div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" /></div>;
+  if (loading) return <div className="flex items-center justify-center h-64"><div className="relative w-12 h-12"><div className="absolute inset-0 rounded-full border-2 border-white/10 border-t-accent animate-spin" /></div></div>;
   const unread = alerts.filter(a => !a.isRead).length;
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between animate-slide-up">
+    <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-6 md:space-y-8">
+      <motion.div variants={itemVariants} className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold text-ink font-display">Alertes</h1>
-          <p className="text-xs md:text-sm text-ink-light mt-0.5 md:mt-1">{unread > 0 ? `${unread} non lue${unread > 1 ? 's' : ''}` : 'Tout est à jour'}</p>
+          <h1 className="text-2xl md:text-4xl font-black text-white font-display tracking-tight">Alertes</h1>
+          <p className="text-sm text-ink-muted mt-1">{unread > 0 ? `${unread} non lue${unread > 1 ? 's' : ''}` : 'Tout est à jour'}</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => setShowAll(!showAll)}>
-            {showAll ? <BellOff className="w-3.5 h-3.5" /> : <Bell className="w-3.5 h-3.5" />}
+          <Button variant="dark" size="sm" onClick={() => setShowAll(!showAll)}>
+            {showAll ? <BellOff className="w-4 h-4" /> : <Bell className="w-4 h-4" />}
             {showAll ? 'Non lues' : 'Toutes'}
           </Button>
-          {unread > 0 && <Button size="sm" onClick={markAll}><CheckCheck className="w-3.5 h-3.5" />Tout lire</Button>}
+          {unread > 0 && <Button variant="accent" size="sm" onClick={markAll}><CheckCheck className="w-4 h-4" />Tout lire</Button>}
         </div>
-      </div>
+      </motion.div>
 
       {alerts.length > 0 ? (
-        <div className="space-y-3 stagger">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {alerts.map(alert => {
             const Icon = icons[alert.type] || Bell;
             const iconStyle = colors[alert.type] || colors.OTHER;
             const days = alert.dueDate ? daysUntil(alert.dueDate) : null;
             const isSnoozed = alert.snoozedUntil && new Date(alert.snoozedUntil) > new Date();
             return (
-              <div key={alert.id} className={`cv-card-flat p-4 group relative ${alert.isRead ? 'opacity-50' : ''} hover:bg-bg-alt/50 transition-colors`}>
-                <div className="flex items-start gap-4">
-                  <div className={`w-10 h-10 rounded-xl ${iconStyle} flex items-center justify-center shrink-0`}>
-                    <Icon className="w-4 h-4" strokeWidth={2} />
+              <motion.div variants={itemVariants} key={alert.id} className={`bento-card p-5 flex flex-col justify-between group ${alert.isRead ? 'opacity-50 grayscale-[50%]' : ''}`}>
+                <div className="flex items-start gap-4 mb-4">
+                  <div className={`w-12 h-12 rounded-2xl border ${iconStyle} flex items-center justify-center shrink-0 shadow-lg`}>
+                    <Icon className="w-5 h-5" strokeWidth={2} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <p className="text-sm font-semibold text-ink">{alert.title}</p>
-                        <p className="text-xs text-ink-muted mt-0.5 line-clamp-2">{alert.message}</p>
-                      </div>
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        {days !== null && <Badge variant={days < 0 ? 'danger' : days <= 7 ? 'warning' : 'success'}>{days < 0 ? 'Expiré' : `${days}j`}</Badge>}
-
-                        {/* Snooze */}
-                        <div className="relative">
-                          <button
-                            onClick={() => setSnoozeOpen(snoozeOpen === alert.id ? null : alert.id)}
-                            className="p-1.5 rounded-lg hover:bg-accent/10 text-ink-muted hover:text-accent transition-all"
-                            title="Reporter"
-                          >
-                            <Timer className="w-4 h-4" strokeWidth={2} />
-                          </button>
-                          {snoozeOpen === alert.id && (
-                            <div className="absolute right-0 top-8 z-50 bg-bg-card border border-ink/10 rounded-xl shadow-lg py-1 min-w-[120px] animate-pop">
-                              {SNOOZE_OPTIONS.map(opt => (
-                                <button key={opt.days} onClick={() => snooze(alert.id, opt.days)}
-                                  className="block w-full text-left px-4 py-2 text-xs font-semibold text-ink hover:bg-bg-alt transition-colors">
-                                  {opt.label}
-                                </button>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-
-                        {!alert.isRead && (
-                          <button onClick={() => markRead(alert.id)} className="p-1.5 rounded-lg hover:bg-accent/10 text-ink-muted hover:text-accent transition-all" title="Lu">
-                            <Check className="w-4 h-4" strokeWidth={2.5} />
-                          </button>
-                        )}
-                        <button onClick={() => del(alert.id)} className="p-1.5 rounded-lg md:opacity-0 md:group-hover:opacity-100 hover:bg-accent/10 text-ink-muted hover:text-accent transition-all">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 mt-2">
-                      <Badge variant="dark">{alertTypeLabels[alert.type]}</Badge>
-                      {isSnoozed && <Badge variant="warning">Reporté jusqu'au {new Date(alert.snoozedUntil).toLocaleDateString('fr-FR')}</Badge>}
-                      <span className="text-[10px] font-medium text-ink-muted flex items-center gap-1">
-                        <Clock className="w-3 h-3" />{formatDate(alert.createdAt)}
-                      </span>
-                    </div>
+                    <p className="text-base font-bold text-white font-display leading-tight">{alert.title}</p>
+                    <p className="text-xs text-white/60 mt-1 line-clamp-2 leading-relaxed">{alert.message}</p>
                   </div>
                 </div>
-              </div>
+
+                <div className="flex items-center justify-between pt-4 border-t border-white/5">
+                  <div className="flex flex-col gap-1.5">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="dark">{alertTypeLabels[alert.type]}</Badge>
+                      {days !== null && <Badge variant={days < 0 ? 'danger' : days <= 7 ? 'warning' : 'success'}>{days < 0 ? 'Expiré' : `${days}j`}</Badge>}
+                    </div>
+                    {isSnoozed && <span className="text-[9px] font-bold text-warning uppercase tracking-widest">Reporté au {new Date(alert.snoozedUntil).toLocaleDateString('fr-FR')}</span>}
+                    <span className="text-[9px] font-bold text-white/30 uppercase tracking-widest flex items-center gap-1">
+                      <Clock className="w-3 h-3" />{formatDate(alert.createdAt)}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-1 shrink-0">
+                    {/* Snooze */}
+                    <div className="relative">
+                      <button
+                        onClick={() => setSnoozeOpen(snoozeOpen === alert.id ? null : alert.id)}
+                        className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition-all"
+                        title="Reporter"
+                      >
+                        <Timer className="w-4 h-4" strokeWidth={2} />
+                      </button>
+                      {snoozeOpen === alert.id && (
+                        <div className="absolute right-0 bottom-full mb-2 z-50 bg-[#121214] border border-white/10 rounded-xl shadow-2xl py-1 min-w-[120px] animate-pop backdrop-blur-xl">
+                          {SNOOZE_OPTIONS.map(opt => (
+                            <button key={opt.days} onClick={() => snooze(alert.id, opt.days)}
+                              className="block w-full text-left px-4 py-2 text-xs font-bold text-white/80 hover:bg-white/5 hover:text-white transition-colors">
+                              {opt.label}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {!alert.isRead && (
+                      <button onClick={() => markRead(alert.id)} className="p-2 rounded-xl bg-white/5 hover:bg-lime/20 text-white/60 hover:text-lime transition-all" title="Lu">
+                        <Check className="w-4 h-4" strokeWidth={2.5} />
+                      </button>
+                    )}
+                    <button onClick={() => del(alert.id)} className="p-2 rounded-xl bg-white/5 hover:bg-accent/20 text-white/60 hover:text-accent transition-all">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
             );
           })}
         </div>
       ) : (
-        <EmptyState icon={Bell} title={showAll ? 'Aucune alerte' : 'Tout est en ordre'}
-          description={showAll ? 'Les alertes apparaîtront quand vos documents expireront.' : 'Aucune alerte en attente.'} />
+        <motion.div variants={itemVariants}>
+          <EmptyState icon={Bell} title={showAll ? 'Aucune alerte' : 'Tout est en ordre'}
+            description={showAll ? 'Les alertes apparaîtront quand vos documents expireront.' : 'Aucune alerte en attente.'} />
+        </motion.div>
       )}
-    </div>
+    </motion.div>
   );
 }

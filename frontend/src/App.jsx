@@ -10,6 +10,8 @@ import VehicleDetailPage from './pages/VehicleDetailPage';
 import DocumentsPage from './pages/DocumentsPage';
 import ExpensesPage from './pages/ExpensesPage';
 import AlertsPage from './pages/AlertsPage';
+import SettingsPage from './pages/SettingsPage';
+import SharePage from './pages/SharePage';
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
@@ -56,6 +58,7 @@ export default function App() {
       <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
       <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
       <Route path="/logout" element={<LogoutRoute />} />
+      <Route path="/share/:token" element={<SharePage />} />
       <Route path="/" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="dashboard" element={<DashboardPage />} />
@@ -64,6 +67,7 @@ export default function App() {
         <Route path="documents" element={<DocumentsPage />} />
         <Route path="expenses" element={<ExpensesPage />} />
         <Route path="alerts" element={<AlertsPage />} />
+        <Route path="settings" element={<SettingsPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

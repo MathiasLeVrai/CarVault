@@ -1,7 +1,7 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import {
-  LayoutDashboard, Car, FileText, Wallet, Bell, LogOut,
+  LayoutDashboard, Car, FileText, Wallet, Bell, LogOut, Settings,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { alertApi } from '../services/api';
@@ -12,6 +12,7 @@ const navItems = [
   { to: '/documents', icon: FileText, label: 'Documents' },
   { to: '/expenses', icon: Wallet, label: 'Dépenses' },
   { to: '/alerts', icon: Bell, label: 'Alertes', showBadge: true },
+  { to: '/settings', icon: Settings, label: 'Paramètres' },
 ];
 
 export default function Sidebar() {
@@ -40,28 +41,39 @@ export default function Sidebar() {
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex fixed left-0 top-[64px] bottom-0 w-[240px] cv-sidebar-glass flex-col z-40 px-4 py-6">
+      <aside className="hidden md:flex fixed left-6 top-24 bottom-6 w-[260px] glass-panel rounded-2xl flex-col z-40 px-4 py-6">
         <div className="flex items-center gap-3 px-4 mb-8">
-          <div className="w-9 h-9 rounded-xl bg-accent flex items-center justify-center shadow-[0_0_16px_rgba(230,57,70,0.3)]">
+          <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center shadow-[0_0_20px_rgba(255,42,63,0.3)]">
             <span className="text-sm font-black text-white font-display">CV</span>
           </div>
-          <span className="text-base font-bold tracking-tight text-white font-display">
+          <span className="text-xl font-bold tracking-tight text-white font-display">
             CarVault
           </span>
         </div>
 
-        <nav className="flex-1 space-y-1">
+        <nav className="flex-1 space-y-1.5 mt-4">
           {navItems.map(({ to, icon: Icon, label, showBadge }) => {
             const active = location.pathname === to || location.pathname.startsWith(to + '/');
             return (
-              <NavLink key={to} to={to}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-[14px] font-medium transition-all ${
-                  active ? 'cv-nav-active text-accent' : 'text-white/50 hover:text-white/80 hover:bg-white/5'
-                }`}>
-                <Icon className="w-[18px] h-[18px]" strokeWidth={2} />
+              <NavLink
+                key={to}
+                to={to}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-[14px] font-semibold transition-all duration-200 relative ${
+                  active
+                    ? 'bg-white/8 text-white'
+                    : 'text-white/45 hover:text-white hover:bg-white/4'
+                }`}
+              >
+                {active && (
+                  <div className="absolute left-0 top-2 bottom-2 w-[3px] rounded-full bg-accent" />
+                )}
+                <Icon
+                  className={`w-[18px] h-[18px] transition-colors ${active ? 'text-accent' : 'text-current'}`}
+                  strokeWidth={active ? 2.5 : 2}
+                />
                 <span className="flex-1">{label}</span>
                 {showBadge && alertCount > 0 && (
-                  <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-accent text-white text-[10px] font-bold shadow-[0_0_8px_rgba(230,57,70,0.3)]">
+                  <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-accent text-white text-[10px] font-bold shadow-[0_0_10px_rgba(255,42,63,0.35)]">
                     {alertCount > 99 ? '99+' : alertCount}
                   </span>
                 )}
@@ -70,35 +82,39 @@ export default function Sidebar() {
           })}
         </nav>
 
-        <div className="h-px bg-white/8 mx-4 my-3" />
+        <div className="cv-divider mx-4 my-4" />
 
-        <button onClick={logout}
-          className="flex items-center gap-3 px-4 py-3 rounded-xl text-[14px] font-medium text-white/40 hover:text-accent hover:bg-accent/10 transition-all w-full">
+        <button
+          onClick={logout}
+          className="flex items-center gap-3 px-4 py-3 rounded-xl text-[14px] font-semibold text-white/35 hover:text-accent hover:bg-white/4 transition-all w-full"
+        >
           <LogOut className="w-[18px] h-[18px]" strokeWidth={2} />
           Déconnexion
         </button>
       </aside>
 
       {/* Mobile Bottom Tab Bar */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 cv-bottom-bar safe-bottom">
-        <div className="flex items-center justify-around h-16">
+      <nav className="md:hidden fixed bottom-6 left-4 right-4 z-50 cv-bottom-bar rounded-2xl p-1 safe-bottom shadow-2xl">
+        <div className="flex items-center justify-between">
           {navItems.map(({ to, icon: Icon, label, showBadge }) => {
             const active = location.pathname === to || location.pathname.startsWith(to + '/');
             return (
-              <NavLink key={to} to={to}
-                className={`flex flex-col items-center justify-center gap-0.5 py-1.5 px-3 rounded-xl transition-all relative ${
-                  active ? 'text-accent' : 'text-ink-muted'
-                }`}>
+              <NavLink
+                key={to}
+                to={to}
+                className={`flex flex-col items-center justify-center flex-1 py-3 rounded-xl transition-all relative ${
+                  active ? 'bg-white/8 text-white' : 'text-ink-muted hover:text-white'
+                }`}
+              >
                 <div className="relative">
-                  <Icon className="w-5 h-5" strokeWidth={active ? 2.5 : 1.8} />
+                  <Icon className="w-5 h-5" strokeWidth={active ? 2.5 : 2} color={active ? '#ff2a3f' : 'currentColor'} />
                   {showBadge && alertCount > 0 && (
-                    <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 px-1 rounded-full bg-accent text-white text-[9px] font-bold flex items-center justify-center">
+                    <span className="absolute -top-1 -right-1.5 min-w-[16px] h-4 px-1 rounded-full bg-accent text-white text-[9px] font-bold flex items-center justify-center shadow-[0_0_8px_rgba(255,42,63,0.4)]">
                       {alertCount > 9 ? '9+' : alertCount}
                     </span>
                   )}
                 </div>
-                <span className="text-[10px] font-semibold">{label}</span>
-                {active && <div className="absolute -bottom-1 w-5 h-0.5 rounded-full bg-accent" />}
+                {active && <span className="text-[10px] font-semibold mt-1 animate-pop">{label}</span>}
               </NavLink>
             );
           })}

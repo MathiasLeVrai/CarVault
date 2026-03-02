@@ -11,6 +11,8 @@ const alertRoutes = require('./routes/alert.routes');
 const dashboardRoutes = require('./routes/dashboard.routes');
 const brandRoutes = require('./routes/brand.routes');
 const mileageRoutes = require('./routes/mileage.routes');
+const shareRoutes = require('./routes/share.routes');
+const notificationRoutes = require('./routes/notification.routes');
 const { errorHandler } = require('./middleware/error.middleware');
 const { startAlertCron } = require('./cron/alert.cron');
 
@@ -46,6 +48,8 @@ app.use('/api/alerts', alertRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/brands', brandRoutes);
 app.use('/api/vehicles/:vehicleId/mileage', mileageRoutes);
+app.use('/api/share', shareRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

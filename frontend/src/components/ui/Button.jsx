@@ -1,7 +1,9 @@
 import { clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
 const variants = {
   primary: 'cv-btn-primary',
+  accent: 'cv-btn-accent', // added accent variant
   dark: 'cv-btn-dark',
   outline: 'cv-btn-outline',
   danger: 'cv-btn-danger',
@@ -19,13 +21,13 @@ export default function Button({
 }) {
   return (
     <button
-      className={clsx(
-        'inline-flex items-center justify-center gap-2 cursor-pointer transition-all font-semibold',
+      className={twMerge(clsx(
+        'inline-flex items-center justify-center gap-2 cursor-pointer transition-all font-semibold outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2 focus-visible:ring-offset-bg',
         variants[variant],
         sizes[size],
         disabled && 'opacity-40 cursor-not-allowed pointer-events-none',
         className
-      )}
+      ))}
       disabled={disabled || loading}
       {...props}
     >

@@ -7,6 +7,7 @@ const { uploadDocument } = require('../middleware/upload.middleware');
 router.use(authenticate);
 
 router.get('/', documentController.getAll);
+router.get('/detect-type', documentController.detectType);
 router.get('/vehicle/:vehicleId', documentController.getByVehicle);
 router.post('/', uploadDocument.single('file'), documentController.create);
 router.delete('/:id', documentController.delete);

@@ -46,12 +46,12 @@ export const documentTypeLabels = {
  * Variantes de badge pour les types de documents
  */
 export const documentTypeBadge = {
-  INSURANCE: 'info',
-  TECHNICAL_INSPECTION: 'warning',
-  INVOICE: 'cyan',
-  WARRANTY: 'success',
+  INSURANCE: 'sky',
+  TECHNICAL_INSPECTION: 'orange',
+  INVOICE: 'default',
+  WARRANTY: 'lime',
   REGISTRATION: 'violet',
-  OTHER: 'default',
+  OTHER: 'dark',
 };
 
 /**
@@ -72,14 +72,14 @@ export const expenseCategoryLabels = {
  * Couleurs pour les catégories de dépenses (Recharts)
  */
 export const expenseCategoryColors = {
-  MAINTENANCE: '#06b6d4',
-  TIRES: '#8b5cf6',
-  FUEL: '#f59e0b',
-  INSURANCE: '#3b82f6',
-  REPAIR: '#f87171',
-  PARKING: '#34d399',
-  TOLL: '#ec4899',
-  OTHER: '#6b7280',
+  MAINTENANCE: '#38bdf8', // sky
+  TIRES: '#7c5cfc', // violet
+  FUEL: '#ff6b00', // orange
+  INSURANCE: '#a28dff', // violet-light
+  REPAIR: '#ff2a3f', // accent (rose)
+  PARKING: '#22c55e', // lime
+  TOLL: '#ff6b7a', // accent-light
+  OTHER: '#71717a', // ink-muted
 };
 
 /**

@@ -1,29 +1,15 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect } from 'react';
 
 const ThemeContext = createContext();
 
-const STORAGE_KEY = 'carvault_theme';
-
 export function ThemeProvider({ children }) {
-  const [theme, setTheme] = useState(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return stored === 'dark' ? 'dark' : 'light';
-  });
-
   useEffect(() => {
-    const root = document.documentElement;
-    if (theme === 'dark') {
-      root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
-    }
-    localStorage.setItem(STORAGE_KEY, theme);
-  }, [theme]);
-
-  const toggleTheme = () => setTheme(prev => (prev === 'dark' ? 'light' : 'dark'));
+    // God-Tier is dark mode only
+    document.documentElement.classList.add('dark');
+  }, []);
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+    <ThemeContext.Provider value={{ theme: 'dark', toggleTheme: () => {} }}>
       {children}
     </ThemeContext.Provider>
   );

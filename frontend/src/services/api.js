@@ -120,6 +120,7 @@ export const documentApi = {
   getByVehicle: (vehicleId, type) => api.get(`/documents/vehicle/${vehicleId}${type ? `?type=${type}` : ''}`),
   create: (formData) => api.post('/documents', formData, true),
   delete: (id) => api.delete(`/documents/${id}`),
+  detectType: (filename) => api.get(`/documents/detect-type?filename=${encodeURIComponent(filename)}`),
 };
 
 // ===== Expenses =====
@@ -143,6 +144,20 @@ export const alertApi = {
   snooze: (id, days) => api.put(`/alerts/${id}/snooze`, { days }),
   checkExpiring: () => api.post('/alerts/check'),
   delete: (id) => api.delete(`/alerts/${id}`),
+};
+
+// ===== Share Links =====
+export const shareApi = {
+  create: (vehicleId, expiresInDays) => api.post('/share', { vehicleId, expiresInDays }),
+  getLinks: (vehicleId) => api.get(`/share/vehicle/${vehicleId}`),
+  revoke: (id) => api.delete(`/share/link/${id}`),
+  getPublic: (token) => api.get(`/share/${token}`),
+};
+
+// ===== Notification Preferences =====
+export const notificationApi = {
+  getPreferences: () => api.get('/notifications/preferences'),
+  updatePreferences: (prefs) => api.put('/notifications/preferences', prefs),
 };
 
 // ===== Mileage =====

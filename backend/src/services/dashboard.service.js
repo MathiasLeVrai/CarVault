@@ -2,28 +2,18 @@ const prisma = require('../lib/prisma');
 const healthService = require('./health.service');
 
 class DashboardService {
-  /**
-   * Récupérer les données du dashboard
-   */
   async getData(userId) {
     const currentYear = new Date().getFullYear();
     const yearStart = new Date(currentYear, 0, 1);
+    const now = new Date();
 
-    // Nombre de véhicules
-    const vehicleCount = await prisma.vehicle.count({
-      where: { userId },
-    });
+    const vehicleCount = await prisma.vehicle.count({ where: { userId } });
 
-    // Total dépenses année en cours
     const yearExpenses = await prisma.expense.aggregate({
-      where: {
-        vehicle: { userId },
-        date: { gte: yearStart },
-      },
+      where: { vehicle: { userId }, date: { gte: yearStart } },
       _sum: { amount: true },
     });
 
-    // Dépenses mensuelles
     const monthlyExpenses = await prisma.$queryRaw`
       SELECT 
         EXTRACT(MONTH FROM e.date) as month,
@@ -36,20 +26,13 @@ class DashboardService {
       ORDER BY month
     `;
 
-    // Prochaines échéances (documents qui expirent bientôt)
     const upcomingDeadlines = await prisma.document.findMany({
-      where: {
-        vehicle: { userId },
-        expirationDate: { gte: new Date() },
-      },
-      include: {
-        vehicle: { select: { brand: true, model: true } },
-      },
+      where: { vehicle: { userId }, expirationDate: { gte: now } },
+      include: { vehicle: { select: { id: true, brand: true, model: true } } },
       orderBy: { expirationDate: 'asc' },
       take: 5,
     });
 
-    // Alertes non lues
     const unreadAlerts = await prisma.alert.findMany({
       where: { userId, isRead: false },
       orderBy: { createdAt: 'desc' },
@@ -60,17 +43,13 @@ class DashboardService {
       where: { userId, isRead: false },
     });
 
-    // Dernières dépenses
     const recentExpenses = await prisma.expense.findMany({
       where: { vehicle: { userId } },
-      include: {
-        vehicle: { select: { brand: true, model: true } },
-      },
+      include: { vehicle: { select: { brand: true, model: true } } },
       orderBy: { date: 'desc' },
       take: 5,
     });
 
-    // Dépenses par catégorie
     const expensesByCategory = await prisma.$queryRaw`
       SELECT 
         e.category,
@@ -83,21 +62,16 @@ class DashboardService {
       ORDER BY total DESC
     `;
 
-    // Formater les mois
     const monthNames = [
       'Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin',
-      'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'
+      'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc',
     ];
 
     const formattedMonthly = Array.from({ length: 12 }, (_, i) => {
       const found = monthlyExpenses.find(m => Number(m.month) === i + 1);
-      return {
-        month: monthNames[i],
-        total: found ? Number(found.total) : 0,
-      };
+      return { month: monthNames[i], total: found ? Number(found.total) : 0 };
     });
 
-    // Score santé moyen
     let avgHealthScore = null;
     try {
       const vehicles = await prisma.vehicle.findMany({
@@ -119,6 +93,9 @@ class DashboardService {
       console.error('Erreur calcul score moyen:', err.message);
     }
 
+    // --- Feature 1 & 4: Action cards ("À faire bientôt") ---
+    const actionCards = await this._buildActionCards(userId, now);
+
     return {
       vehicleCount,
       totalExpensesYear: yearExpenses._sum.amount || 0,
@@ -129,7 +106,7 @@ class DashboardService {
         name: d.name,
         type: d.type,
         expirationDate: d.expirationDate,
-        vehicle: `${d.vehicle.brand} ${d.vehicle.model}`,
+        vehicle: { id: d.vehicle.id, brand: d.vehicle.brand, model: d.vehicle.model },
       })),
       unreadAlerts,
       alertCount,
@@ -138,7 +115,121 @@ class DashboardService {
         category: c.category,
         total: Number(c.total),
       })),
+      actionCards,
     };
+  }
+
+  async _buildActionCards(userId, now) {
+    const cards = [];
+    const in90Days = new Date(now);
+    in90Days.setDate(in90Days.getDate() + 90);
+
+    // 1. Next technical inspection
+    const nextCT = await prisma.document.findFirst({
+      where: {
+        vehicle: { userId },
+        type: 'TECHNICAL_INSPECTION',
+        expirationDate: { gte: now, lte: in90Days },
+      },
+      include: { vehicle: { select: { id: true, brand: true, model: true } } },
+      orderBy: { expirationDate: 'asc' },
+    });
+    if (nextCT) {
+      const days = Math.ceil((nextCT.expirationDate - now) / 864e5);
+      cards.push({
+        id: 'next-ct',
+        type: 'INSPECTION',
+        title: 'Prochain contrôle technique',
+        subtitle: `${nextCT.vehicle.brand} ${nextCT.vehicle.model}`,
+        daysLeft: days,
+        dueDate: nextCT.expirationDate,
+        vehicleId: nextCT.vehicle.id,
+        urgency: days <= 7 ? 'critical' : days <= 30 ? 'warning' : 'info',
+        cta: 'Voir le véhicule',
+      });
+    }
+
+    // 2. Next insurance expiry
+    const nextInsurance = await prisma.document.findFirst({
+      where: {
+        vehicle: { userId },
+        type: 'INSURANCE',
+        expirationDate: { gte: now, lte: in90Days },
+      },
+      include: { vehicle: { select: { id: true, brand: true, model: true } } },
+      orderBy: { expirationDate: 'asc' },
+    });
+    if (nextInsurance) {
+      const days = Math.ceil((nextInsurance.expirationDate - now) / 864e5);
+      cards.push({
+        id: 'insurance-expiry',
+        type: 'INSURANCE',
+        title: 'Assurance expire bientôt',
+        subtitle: `${nextInsurance.vehicle.brand} ${nextInsurance.vehicle.model}`,
+        daysLeft: days,
+        dueDate: nextInsurance.expirationDate,
+        vehicleId: nextInsurance.vehicle.id,
+        urgency: days <= 7 ? 'critical' : days <= 30 ? 'warning' : 'info',
+        cta: 'Voir le véhicule',
+      });
+    }
+
+    // 3. Maintenance due (no maintenance in last 6 months)
+    const sixMonthsAgo = new Date(now);
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+    const vehiclesNeedingMaint = await prisma.vehicle.findMany({
+      where: { userId },
+      include: {
+        expenses: {
+          where: { category: 'MAINTENANCE', date: { gte: sixMonthsAgo } },
+          take: 1,
+        },
+      },
+    });
+    const needsMaint = vehiclesNeedingMaint.find(v => v.expenses.length === 0);
+    if (needsMaint) {
+      cards.push({
+        id: 'maintenance-due',
+        type: 'MAINTENANCE',
+        title: 'Entretien à prévoir',
+        subtitle: `${needsMaint.brand} ${needsMaint.model}`,
+        daysLeft: null,
+        dueDate: null,
+        vehicleId: needsMaint.id,
+        urgency: 'warning',
+        cta: 'Planifier',
+      });
+    }
+
+    // 4. Expired documents (already past due)
+    const expiredDoc = await prisma.document.findFirst({
+      where: {
+        vehicle: { userId },
+        expirationDate: { lt: now },
+      },
+      include: { vehicle: { select: { id: true, brand: true, model: true } } },
+      orderBy: { expirationDate: 'desc' },
+    });
+    if (expiredDoc) {
+      const daysPast = Math.ceil((now - expiredDoc.expirationDate) / 864e5);
+      cards.push({
+        id: 'expired-doc',
+        type: 'EXPIRED',
+        title: `Document expiré`,
+        subtitle: `${expiredDoc.name} — ${expiredDoc.vehicle.brand} ${expiredDoc.vehicle.model}`,
+        daysLeft: -daysPast,
+        dueDate: expiredDoc.expirationDate,
+        vehicleId: expiredDoc.vehicle.id,
+        urgency: 'critical',
+        cta: 'Renouveler',
+      });
+    }
+
+    // Sort by urgency: critical first, then warning, then info — max 3
+    const urgencyOrder = { critical: 0, warning: 1, info: 2 };
+    cards.sort((a, b) => (urgencyOrder[a.urgency] ?? 9) - (urgencyOrder[b.urgency] ?? 9));
+
+    return cards.slice(0, 3);
   }
 }
 
