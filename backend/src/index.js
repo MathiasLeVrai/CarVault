@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const rateLimit = require('express-rate-limit');
 
 const authRoutes = require('./routes/auth.routes');
 const vehicleRoutes = require('./routes/vehicle.routes');
@@ -18,6 +19,31 @@ const { startAlertCron } = require('./cron/alert.cron');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+// Rate limiters
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: { error: 'Trop de tentatives de connexion. Réessayez dans 15 minutes.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const registerLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  message: { error: 'Trop de comptes créés depuis cette adresse. Réessayez dans 1 heure.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const publicLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
+  message: { error: 'Trop de requêtes. Réessayez dans une minute.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 // CORS — allow configured origin or localhost in dev
 const allowedOrigins = process.env.CORS_ORIGIN
@@ -40,6 +66,10 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // API Routes
+app.use('/api/auth/login', loginLimiter);
+app.use('/api/auth/register', registerLimiter);
+app.use('/api/share', publicLimiter);
+app.use('/api/brands/plate', publicLimiter);
 app.use('/api/auth', authRoutes);
 app.use('/api/vehicles', vehicleRoutes);
 app.use('/api/documents', documentRoutes);
@@ -71,6 +101,16 @@ app.get('*', (req, res) => {
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚗 CarVault API running on port ${PORT}`);
   startAlertCron();
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.error('[FATAL] Unhandled promise rejection:', reason);
+  process.exit(1);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('[FATAL] Uncaught exception:', err);
+  process.exit(1);
 });
 
 module.exports = app;

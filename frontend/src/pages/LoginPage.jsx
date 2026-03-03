@@ -15,21 +15,36 @@ export default function LoginPage() {
     e.preventDefault();
     setError(''); setLoading(true);
     try { await login(email, password); }
-    catch (err) { setError(err.message); }
+    catch (err) { setError('Email ou mot de passe incorrect.'); }
     finally { setLoading(false); }
   };
 
   return (
     <div className="min-h-screen bg-bg flex">
       {/* Left — Visual */}
-      <div className="hidden lg:flex lg:w-1/2 bg-[#09090b] relative overflow-hidden items-center justify-center p-16 border-r border-white/5">
-        {/* Decorative shapes */}
-        <div className="absolute top-10 left-10 w-32 h-32 rounded-3xl bg-accent/20 blur-[80px]" />
-        <div className="absolute bottom-16 right-16 w-40 h-40 rounded-full bg-violet/15 blur-[80px]" />
-        <div className="absolute top-1/2 right-1/4 w-24 h-24 rounded-full bg-accent/10 blur-[60px]" />
+      <div className="hidden lg:flex lg:w-1/2 bg-[#07070a] relative overflow-hidden items-center justify-center p-16 border-r border-white/5">
+        {/* Grid */}
+        <div className="absolute inset-0 cv-grid-bg opacity-100" />
+
+        {/* Animated aurora orbs */}
+        <div
+          className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full aurora-1"
+          style={{ background: 'radial-gradient(circle at center, rgba(255,42,63,0.18) 0%, transparent 65%)', filter: 'blur(70px)' }}
+        />
+        <div
+          className="absolute bottom-[-15%] right-[-5%] w-[55%] h-[55%] rounded-full aurora-2"
+          style={{ background: 'radial-gradient(circle at center, rgba(124,92,252,0.14) 0%, transparent 65%)', filter: 'blur(80px)' }}
+        />
+        <div
+          className="absolute top-[40%] right-[20%] w-[35%] h-[35%] rounded-full aurora-3"
+          style={{ background: 'radial-gradient(circle at center, rgba(255,107,0,0.1) 0%, transparent 70%)', filter: 'blur(60px)' }}
+        />
+
+        {/* Vignette */}
+        <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-[#07070a]/60" />
 
         <div className="relative z-10 max-w-md">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.03] border border-white/10 mb-8 backdrop-blur-md">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.04] border border-white/10 mb-8 backdrop-blur-md">
             <span className="text-sm font-black text-accent font-display">CV</span>
             <span className="text-sm font-bold text-white/80">CarVault</span>
           </div>
@@ -42,14 +57,13 @@ export default function LoginPage() {
             Documents, dépenses, alertes — tout dans un seul endroit.
           </p>
 
-          {/* Feature cards */}
           <div className="flex gap-3 mt-10">
             {[
-              { icon: Car, label: 'Véhicules', bg: 'bg-white/[0.03] border-white/10 text-white/80' },
-              { icon: Wallet, label: 'Dépenses', bg: 'bg-white/[0.03] border-white/10 text-white/80' },
-              { icon: Shield, label: 'Alertes', bg: 'bg-white/[0.03] border-white/10 text-white/80' },
-            ].map(({ icon: Icon, label, bg }) => (
-              <div key={label} className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border font-semibold text-sm ${bg} backdrop-blur-md`}>
+              { icon: Car, label: 'Véhicules' },
+              { icon: Wallet, label: 'Dépenses' },
+              { icon: Shield, label: 'Alertes' },
+            ].map(({ icon: Icon, label }) => (
+              <div key={label} className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-white/10 bg-white/[0.04] font-semibold text-sm text-white/80 backdrop-blur-md">
                 <Icon className="w-4 h-4 text-accent" strokeWidth={2} />
                 {label}
               </div>
@@ -60,7 +74,13 @@ export default function LoginPage() {
 
       {/* Right — Form */}
       <div className="flex-1 flex items-center justify-center p-8 relative">
-        <div className="absolute inset-0 mesh-accent opacity-20 pointer-events-none" />
+        <div className="absolute inset-0 pointer-events-none">
+          <div
+            className="absolute top-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full aurora-2"
+            style={{ background: 'radial-gradient(circle at center, rgba(255,42,63,0.06) 0%, transparent 70%)', filter: 'blur(80px)' }}
+          />
+        </div>
+
         <div className="w-full max-w-[400px] relative z-10">
           {/* Mobile brand */}
           <div className="lg:hidden mb-10">

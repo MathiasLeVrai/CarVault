@@ -25,10 +25,26 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen bg-bg flex">
       {/* Left */}
-      <div className="hidden lg:flex lg:w-1/2 bg-[#09090b] relative overflow-hidden items-center justify-center p-16 border-r border-white/5">
-        <div className="absolute top-16 right-12 w-36 h-36 rounded-full bg-accent-warm/15 blur-[80px]" />
-        <div className="absolute bottom-20 left-16 w-40 h-40 rounded-full bg-accent/15 blur-[80px]" />
-        <div className="absolute top-1/3 left-1/3 w-20 h-20 rounded-full bg-violet/15 blur-[60px]" />
+      <div className="hidden lg:flex lg:w-1/2 bg-[#07070a] relative overflow-hidden items-center justify-center p-16 border-r border-white/5">
+        {/* Grid */}
+        <div className="absolute inset-0 cv-grid-bg opacity-100" />
+
+        {/* Animated aurora orbs */}
+        <div
+          className="absolute top-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full aurora-1"
+          style={{ background: 'radial-gradient(circle at center, rgba(255,107,0,0.16) 0%, transparent 65%)', filter: 'blur(70px)' }}
+        />
+        <div
+          className="absolute bottom-[-15%] left-[-5%] w-[55%] h-[55%] rounded-full aurora-2"
+          style={{ background: 'radial-gradient(circle at center, rgba(255,42,63,0.14) 0%, transparent 65%)', filter: 'blur(80px)' }}
+        />
+        <div
+          className="absolute top-[35%] left-[25%] w-[30%] h-[30%] rounded-full aurora-3"
+          style={{ background: 'radial-gradient(circle at center, rgba(124,92,252,0.1) 0%, transparent 70%)', filter: 'blur(60px)' }}
+        />
+
+        {/* Vignette */}
+        <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-[#07070a]/60" />
 
         <div className="relative z-10 max-w-md">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.03] border border-white/10 mb-8 backdrop-blur-md">

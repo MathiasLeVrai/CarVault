@@ -76,9 +76,34 @@ body {
   transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .cv-card:hover, .bento-card:hover {
-  border-color: rgba(255,255,255,0.14);
+  border-color: rgba(255,255,255,0.13);
   background: rgba(255, 255, 255, 0.06);
-  box-shadow: 0 8px 28px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06);
+  box-shadow:
+    0 8px 28px rgba(0,0,0,0.35),
+    0 0 0 1px rgba(255,42,63,0.06),
+    inset 0 1px 0 rgba(255,255,255,0.07);
+}
+
+/* Spotlight: radial glow that follows cursor, driven by JS custom props */
+.cv-card.cv-spotlight {
+  background:
+    radial-gradient(circle 380px at var(--sx, -9999px) var(--sy, -9999px), rgba(255,255,255,0.042) 0%, transparent 75%),
+    var(--color-bg-card);
+}
+.cv-card.cv-spotlight:hover {
+  background:
+    radial-gradient(circle 380px at var(--sx, -9999px) var(--sy, -9999px), rgba(255,255,255,0.05) 0%, transparent 75%),
+    rgba(255,255,255,0.06);
+}
+.bento-card.cv-spotlight {
+  background:
+    radial-gradient(circle 380px at var(--sx, -9999px) var(--sy, -9999px), rgba(255,255,255,0.042) 0%, transparent 75%),
+    var(--color-bg-card);
+}
+.bento-card.cv-spotlight:hover {
+  background:
+    radial-gradient(circle 380px at var(--sx, -9999px) var(--sy, -9999px), rgba(255,255,255,0.05) 0%, transparent 75%),
+    rgba(255,255,255,0.06);
 }
 
 .cv-card-flat {
@@ -139,8 +164,24 @@ body {
   border: none;
   border-radius: 12px;
   font-weight: 700;
+  position: relative;
+  overflow: hidden;
   box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
   transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.cv-btn-primary::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -80%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transform: skewX(-15deg);
+  transition: left 0.55s ease;
+}
+.cv-btn-primary:hover::after {
+  left: 140%;
 }
 .cv-btn-primary:hover {
   background: white;
@@ -152,18 +193,34 @@ body {
 }
 
 .cv-btn-accent {
-  background: var(--color-accent);
+  background: linear-gradient(135deg, #ff2a3f 0%, #ff4556 100%);
   color: white;
   border: none;
   border-radius: 12px;
   font-weight: 700;
-  box-shadow: 0 0 20px rgba(255, 42, 63, 0.3), inset 0 1px 0 rgba(255,255,255,0.2);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 24px rgba(255, 42, 63, 0.35), inset 0 1px 0 rgba(255,255,255,0.2);
   text-shadow: 0 1px 2px rgba(0,0,0,0.2);
   transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
+.cv-btn-accent::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -80%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.22), transparent);
+  transform: skewX(-15deg);
+  transition: left 0.55s ease;
+}
+.cv-btn-accent:hover::after {
+  left: 140%;
+}
 .cv-btn-accent:hover {
-  background: #ff4556;
-  box-shadow: 0 0 30px rgba(255, 42, 63, 0.4), inset 0 1px 0 rgba(255,255,255,0.3);
+  background: linear-gradient(135deg, #ff3d50 0%, #ff5a6a 100%);
+  box-shadow: 0 0 36px rgba(255, 42, 63, 0.5), inset 0 1px 0 rgba(255,255,255,0.3);
   transform: translateY(-1px);
 }
 .cv-btn-accent:active {
@@ -277,6 +334,35 @@ body {
 .safe-bottom {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
+
+/* =========== GRID BACKGROUND =========== */
+
+.cv-grid-bg {
+  background-image:
+    linear-gradient(rgba(255,255,255,0.022) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.022) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+
+/* =========== AURORA ANIMATIONS =========== */
+
+@keyframes aurora-drift {
+  0%, 100% { transform: translate(0%, 0%) scale(1); }
+  33% { transform: translate(4%, 6%) scale(1.08); }
+  66% { transform: translate(-4%, 3%) scale(0.96); }
+}
+@keyframes aurora-drift-2 {
+  0%, 100% { transform: translate(0%, 0%) scale(1); }
+  33% { transform: translate(-5%, 4%) scale(1.1); }
+  66% { transform: translate(5%, -5%) scale(0.93); }
+}
+@keyframes aurora-drift-3 {
+  0%, 100% { transform: translate(0%, 0%) scale(1); }
+  50% { transform: translate(-4%, -4%) scale(1.12); }
+}
+.aurora-1 { animation: aurora-drift 16s ease-in-out infinite; }
+.aurora-2 { animation: aurora-drift-2 20s ease-in-out infinite; }
+.aurora-3 { animation: aurora-drift-3 12s ease-in-out infinite; }
 
 /* =========== ANIMATIONS =========== */
 
