@@ -3,9 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Car, FileText, CalendarClock, Bell, ArrowRight, X, Check } from 'lucide-react';
 import Button from './ui/Button';
 import { vehicleApi, documentApi, alertApi } from '../services/api';
-
-const STORAGE_KEY = 'carvault_onboarding_done';
-const PROGRESS_KEY = 'carvault_onboarding_progress';
+import { useAuth } from '../context/AuthContext';
 
 const steps = [
   {
@@ -50,19 +48,23 @@ const steps = [
   },
 ];
 
-function getStoredProgress() {
-  try {
-    return JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{}');
-  } catch { return {}; }
-}
-
 export default function Onboarding() {
+  const { user } = useAuth();
+  const storageKey = user ? `carvault_onboarding_done_${user.id}` : null;
+  const progressKey = user ? `carvault_onboarding_progress_${user.id}` : null;
+
+  const getStoredProgress = useCallback(() => {
+    if (!progressKey) return {};
+    try { return JSON.parse(localStorage.getItem(progressKey) || '{}'); } catch { return {}; }
+  }, [progressKey]);
+
   const [visible, setVisible] = useState(false);
   const [progress, setProgress] = useState({});
   const [checking, setChecking] = useState(true);
   const navigate = useNavigate();
 
   const checkProgress = useCallback(async () => {
+    if (!progressKey) return {};
     try {
       const stored = getStoredProgress();
       const newProgress = { ...stored };
@@ -78,29 +80,30 @@ export default function Onboarding() {
       if (docs.some(d => d.expirationDate)) newProgress.expiration = true;
       if (docs.some(d => d.expirationDate) || alertsData.count > 0) newProgress.reminder = true;
 
-      localStorage.setItem(PROGRESS_KEY, JSON.stringify(newProgress));
+      localStorage.setItem(progressKey, JSON.stringify(newProgress));
       setProgress(newProgress);
       return newProgress;
     } catch {
       return getStoredProgress();
     }
-  }, []);
+  }, [progressKey, getStoredProgress]);
 
   useEffect(() => {
-    if (localStorage.getItem(STORAGE_KEY)) {
+    if (!storageKey) return;
+    if (localStorage.getItem(storageKey)) {
       setChecking(false);
       return;
     }
     checkProgress().then(p => {
       const allDone = steps.every(s => p[s.id]);
       if (allDone) {
-        localStorage.setItem(STORAGE_KEY, '1');
+        localStorage.setItem(storageKey, '1');
       } else {
         setVisible(true);
       }
       setChecking(false);
     });
-  }, [checkProgress]);
+  }, [storageKey, checkProgress]);
 
   useEffect(() => {
     if (!visible) return;
@@ -116,7 +119,7 @@ export default function Onboarding() {
   }, [visible, checkProgress]);
 
   const close = () => {
-    localStorage.setItem(STORAGE_KEY, '1');
+    if (storageKey) localStorage.setItem(storageKey, '1');
     setVisible(false);
   };
 
