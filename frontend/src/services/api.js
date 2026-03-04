@@ -167,6 +167,13 @@ export const mileageApi = {
   delete: (vehicleId, id) => api.delete(`/vehicles/${vehicleId}/mileage/${id}`),
 };
 
+// ===== Fuel Tracker =====
+export const fuelApi = {
+  getAll: (vehicleId) => api.get(`/vehicles/${vehicleId}/fuel`),
+  create: (vehicleId, data) => api.post(`/vehicles/${vehicleId}/fuel`, data),
+  delete: (vehicleId, id) => api.delete(`/vehicles/${vehicleId}/fuel/${id}`),
+};
+
 // ===== Brands (marques & modèles via CarAPI) =====
 export const brandApi = {
   getAll: () => api.get('/brands'),

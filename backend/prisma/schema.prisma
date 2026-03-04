@@ -54,6 +54,7 @@ model Vehicle {
   documents      Document[]
   expenses       Expense[]
   mileageEntries MileageEntry[]
+  fuelEntries    FuelEntry[]
   shareLinks     ShareLink[]
 
   @@map("vehicles")
@@ -161,6 +162,24 @@ enum FuelType {
   ELECTRIC
   LPG
   OTHER
+}
+
+model FuelEntry {
+  id            String   @id @default(uuid())
+  date          DateTime
+  mileage       Int
+  liters        Float
+  pricePerLiter Float
+  totalCost     Float
+  isFull        Boolean  @default(true)
+  notes         String?
+  createdAt     DateTime @default(now())
+
+  vehicleId     String
+  vehicle       Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@index([vehicleId, date])
+  @@map("fuel_entries")
 }
 
 model ShareLink {

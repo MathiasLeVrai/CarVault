@@ -1,16 +1,26 @@
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import {
-  LayoutDashboard, Car, FileText, Wallet, Bell, LogOut, Settings,
+  LayoutDashboard, Car, Wallet, Bell, LogOut, Settings, Plus, MapPin,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { alertApi } from '../services/api';
 
+// Bottom nav: 4 main items + 1 central FAB
 const navItems = [
+  { to: '/dashboard', icon: LayoutDashboard, label: 'Accueil' },
+  { to: '/vehicles', icon: Car, label: 'Véhicules' },
+  // [FAB placeholder]
+  { to: '/map', icon: MapPin, label: 'Carte' },
+  { to: '/settings', icon: Settings, label: 'Compte' },
+];
+
+// Desktop sidebar keeps all items
+const sidebarItems = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/vehicles', icon: Car, label: 'Véhicules' },
-  { to: '/documents', icon: FileText, label: 'Documents' },
   { to: '/expenses', icon: Wallet, label: 'Dépenses' },
+  { to: '/map', icon: MapPin, label: 'Carte' },
   { to: '/alerts', icon: Bell, label: 'Alertes', showBadge: true },
   { to: '/settings', icon: Settings, label: 'Paramètres' },
 ];
@@ -18,6 +28,7 @@ const navItems = [
 export default function Sidebar() {
   const { logout } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const [alertCount, setAlertCount] = useState(0);
 
   useEffect(() => {
@@ -52,7 +63,7 @@ export default function Sidebar() {
         </div>
 
         <nav className="flex-1 space-y-1.5 mt-4">
-          {navItems.map(({ to, icon: Icon, label, showBadge }) => {
+          {sidebarItems.map(({ to, icon: Icon, label, showBadge }) => {
             const active = location.pathname === to || location.pathname.startsWith(to + '/');
             return (
               <NavLink
@@ -94,30 +105,68 @@ export default function Sidebar() {
       </aside>
 
       {/* Mobile Bottom Tab Bar */}
-      <nav className="md:hidden fixed bottom-6 left-4 right-4 z-50 cv-bottom-bar rounded-2xl p-1 safe-bottom shadow-2xl">
-        <div className="flex items-center justify-between">
-          {navItems.map(({ to, icon: Icon, label, showBadge }) => {
-            const active = location.pathname === to || location.pathname.startsWith(to + '/');
-            return (
-              <NavLink
-                key={to}
-                to={to}
-                className={`flex flex-col items-center justify-center flex-1 py-3 rounded-xl transition-all relative ${
-                  active ? 'bg-white/8 text-white' : 'text-ink-muted hover:text-white'
-                }`}
+      <nav className="md:hidden fixed bottom-4 left-4 right-4 z-50 safe-bottom">
+        <div className="cv-bottom-bar rounded-2xl shadow-2xl">
+          <div className="flex items-center">
+            {/* Left 2 items */}
+            {navItems.slice(0, 2).map(({ to, icon: Icon, label, showBadge }) => {
+              const active = location.pathname === to || location.pathname.startsWith(to + '/');
+              return (
+                <NavLink
+                  key={to}
+                  to={to}
+                  className={`flex flex-col items-center justify-center flex-1 py-3 rounded-xl transition-all relative ${
+                    active ? 'text-white' : 'text-ink-muted hover:text-white'
+                  }`}
+                >
+                  <div className="relative">
+                    <Icon className="w-5 h-5" strokeWidth={active ? 2.5 : 2} color={active ? '#ff2a3f' : 'currentColor'} />
+                    {showBadge && alertCount > 0 && (
+                      <span className="absolute -top-1 -right-1.5 min-w-[16px] h-4 px-1 rounded-full bg-accent text-white text-[9px] font-bold flex items-center justify-center shadow-[0_0_8px_rgba(255,42,63,0.4)]">
+                        {alertCount > 9 ? '9+' : alertCount}
+                      </span>
+                    )}
+                  </div>
+                  {active && <span className="text-[10px] font-semibold mt-1 animate-pop">{label}</span>}
+                </NavLink>
+              );
+            })}
+
+            {/* FAB — center action button */}
+            <div className="flex-1 flex items-center justify-center py-2">
+              <button
+                onClick={() => navigate('/vehicles')}
+                className="w-12 h-12 rounded-2xl bg-accent shadow-[0_0_24px_rgba(255,42,63,0.45)] flex items-center justify-center active:scale-95 transition-transform"
+                aria-label="Ajouter un véhicule"
               >
-                <div className="relative">
-                  <Icon className="w-5 h-5" strokeWidth={active ? 2.5 : 2} color={active ? '#ff2a3f' : 'currentColor'} />
-                  {showBadge && alertCount > 0 && (
-                    <span className="absolute -top-1 -right-1.5 min-w-[16px] h-4 px-1 rounded-full bg-accent text-white text-[9px] font-bold flex items-center justify-center shadow-[0_0_8px_rgba(255,42,63,0.4)]">
-                      {alertCount > 9 ? '9+' : alertCount}
-                    </span>
-                  )}
-                </div>
-                {active && <span className="text-[10px] font-semibold mt-1 animate-pop">{label}</span>}
-              </NavLink>
-            );
-          })}
+                <Plus className="w-5 h-5 text-white" strokeWidth={2.5} />
+              </button>
+            </div>
+
+            {/* Right 2 items */}
+            {navItems.slice(2).map(({ to, icon: Icon, label, showBadge }) => {
+              const active = location.pathname === to || location.pathname.startsWith(to + '/');
+              return (
+                <NavLink
+                  key={to}
+                  to={to}
+                  className={`flex flex-col items-center justify-center flex-1 py-3 rounded-xl transition-all relative ${
+                    active ? 'text-white' : 'text-ink-muted hover:text-white'
+                  }`}
+                >
+                  <div className="relative">
+                    <Icon className="w-5 h-5" strokeWidth={active ? 2.5 : 2} color={active ? '#ff2a3f' : 'currentColor'} />
+                    {showBadge && alertCount > 0 && (
+                      <span className="absolute -top-1 -right-1.5 min-w-[16px] h-4 px-1 rounded-full bg-accent text-white text-[9px] font-bold flex items-center justify-center shadow-[0_0_8px_rgba(255,42,63,0.4)]">
+                        {alertCount > 9 ? '9+' : alertCount}
+                      </span>
+                    )}
+                  </div>
+                  {active && <span className="text-[10px] font-semibold mt-1 animate-pop">{label}</span>}
+                </NavLink>
+              );
+            })}
+          </div>
         </div>
       </nav>
     </>

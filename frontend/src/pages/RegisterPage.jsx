@@ -1,8 +1,18 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { ArrowRight } from 'lucide-react';
 import Button from '../components/ui/Button';
+import { SplitText, CyclingWord, StatChip } from '../components/ui/AnimatedHero';
+
+const CYCLING_WORDS = ['digitalisé.', 'sécurisé.', 'sans oublis.', 'simplifié.', 'enfin libre.'];
+
+const STATS = [
+  { value: '100%', label: 'gratuit' },
+  { value: '< 2 min', label: 'pour démarrer' },
+  { value: '0 oubli', label: "d'échéance" },
+];
 
 export default function RegisterPage() {
   const { register } = useAuth();
@@ -24,7 +34,7 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen bg-bg flex">
-      {/* Left */}
+      {/* Left — Visual */}
       <div className="hidden lg:flex lg:w-1/2 bg-[#07070a] relative overflow-hidden items-center justify-center p-16 border-r border-white/5">
         {/* Grid */}
         <div className="absolute inset-0 cv-grid-bg opacity-100" />
@@ -42,42 +52,52 @@ export default function RegisterPage() {
           className="absolute top-[35%] left-[25%] w-[30%] h-[30%] rounded-full aurora-3"
           style={{ background: 'radial-gradient(circle at center, rgba(124,92,252,0.1) 0%, transparent 70%)', filter: 'blur(60px)' }}
         />
-
-        {/* Vignette */}
         <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-[#07070a]/60" />
 
-        <div className="relative z-10 max-w-md">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.03] border border-white/10 mb-8 backdrop-blur-md">
+        <div className="relative z-10 max-w-md w-full">
+          {/* Brand pill */}
+          <motion.div
+            initial={{ opacity: 0, y: -12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.04] border border-white/10 mb-10 backdrop-blur-md"
+          >
             <span className="text-sm font-black text-accent font-display">CV</span>
-            <span className="text-sm font-bold text-white/80">CarVault</span>
-          </div>
+            <span className="text-sm font-bold text-white/70">CarVault</span>
+          </motion.div>
 
-          <h2 className="text-5xl font-black text-white leading-[1.05] mb-6 font-display tracking-tight">
-            Commencez<br />
-            <span className="text-accent-warm">maintenant.</span>
+          {/* Headline with split + cycling animation */}
+          <h2 className="text-5xl font-black text-white leading-[1.15] mb-10 font-display tracking-tight">
+            <div>
+              <SplitText text="Votre garage," delay={0.15} />
+            </div>
+            <div>
+              <CyclingWord words={CYCLING_WORDS} className="text-accent-warm" />
+            </div>
           </h2>
 
-          <div className="space-y-4 mt-10">
-            {[
-              { n: '01', t: 'Créez votre compte', color: 'bg-white/[0.03] border-white/10 text-white' },
-              { n: '02', t: 'Ajoutez vos véhicules', color: 'bg-white/[0.03] border-white/10 text-white' },
-              { n: '03', t: 'Importez tout', color: 'bg-white/[0.03] border-white/10 text-white' },
-            ].map(s => (
-              <div key={s.n} className="flex items-center gap-4">
-                <div className={`w-10 h-10 rounded-xl ${s.color} border flex items-center justify-center text-xs font-black font-display backdrop-blur-md`}>
-                  {s.n}
-                </div>
-                <span className="text-base font-semibold text-white/80">{s.t}</span>
-              </div>
+          {/* Divider */}
+          <motion.div
+            className="cv-divider mb-10"
+            initial={{ scaleX: 0, originX: 0 }}
+            animate={{ scaleX: 1 }}
+            transition={{ delay: 1.2, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          />
+
+          {/* Stats */}
+          <div className="flex gap-10">
+            {STATS.map((s, i) => (
+              <StatChip key={s.label} value={s.value} label={s.label} delay={1.3 + i * 0.1} />
             ))}
           </div>
         </div>
       </div>
 
-      {/* Right */}
+      {/* Right — Form */}
       <div className="flex-1 flex items-center justify-center p-8 relative">
         <div className="absolute inset-0 mesh-accent opacity-20 pointer-events-none" />
         <div className="w-full max-w-[420px] relative z-10">
+          {/* Mobile brand */}
           <div className="lg:hidden mb-10">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.03] border border-white/10 backdrop-blur-md">
               <span className="text-sm font-black text-accent font-display">CV</span>

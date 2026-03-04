@@ -1,8 +1,18 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
-import { ArrowRight, Car, Shield, Wallet } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import Button from '../components/ui/Button';
+import { SplitText, CyclingWord, StatChip } from '../components/ui/AnimatedHero';
+
+const CYCLING_WORDS = ['simplifié.', 'sécurisé.', 'sous contrôle.', 'en ordre.', 'toujours prêt.'];
+
+const STATS = [
+  { value: '2 400+', label: 'utilisateurs' },
+  { value: '4.8★', label: 'satisfaction' },
+  { value: '100%', label: 'sécurisé' },
+];
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -39,34 +49,38 @@ export default function LoginPage() {
           className="absolute top-[40%] right-[20%] w-[35%] h-[35%] rounded-full aurora-3"
           style={{ background: 'radial-gradient(circle at center, rgba(255,107,0,0.1) 0%, transparent 70%)', filter: 'blur(60px)' }}
         />
-
-        {/* Vignette */}
         <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-[#07070a]/60" />
 
-        <div className="relative z-10 max-w-md">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.04] border border-white/10 mb-8 backdrop-blur-md">
+        <div className="relative z-10 max-w-md w-full">
+          {/* Brand pill */}
+          <motion.div
+            initial={{ opacity: 0, y: -12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.04] border border-white/10 mb-10 backdrop-blur-md"
+          >
             <span className="text-sm font-black text-accent font-display">CV</span>
-            <span className="text-sm font-bold text-white/80">CarVault</span>
-          </div>
+            <span className="text-sm font-bold text-white/70">CarVault</span>
+          </motion.div>
 
-          <h2 className="text-5xl font-black text-white leading-[1.05] mb-6 font-display tracking-tight">
-            Votre garage,<br />
-            <span className="text-accent">simplifié.</span>
+          {/* Headline */}
+          <h2 className="text-5xl font-black text-white leading-[1.15] mb-10 font-display tracking-tight">
+            <div><SplitText text="Votre garage," delay={0.15} /></div>
+            <div><CyclingWord words={CYCLING_WORDS} className="text-accent" /></div>
           </h2>
-          <p className="text-lg text-white/50 leading-relaxed">
-            Documents, dépenses, alertes — tout dans un seul endroit.
-          </p>
 
-          <div className="flex gap-3 mt-10">
-            {[
-              { icon: Car, label: 'Véhicules' },
-              { icon: Wallet, label: 'Dépenses' },
-              { icon: Shield, label: 'Alertes' },
-            ].map(({ icon: Icon, label }) => (
-              <div key={label} className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-white/10 bg-white/[0.04] font-semibold text-sm text-white/80 backdrop-blur-md">
-                <Icon className="w-4 h-4 text-accent" strokeWidth={2} />
-                {label}
-              </div>
+          {/* Divider */}
+          <motion.div
+            className="cv-divider mb-10"
+            initial={{ scaleX: 0, originX: 0 }}
+            animate={{ scaleX: 1 }}
+            transition={{ delay: 1.2, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          />
+
+          {/* Stats */}
+          <div className="flex gap-10">
+            {STATS.map((s, i) => (
+              <StatChip key={s.label} value={s.value} label={s.label} delay={1.3 + i * 0.1} />
             ))}
           </div>
         </div>
@@ -74,13 +88,7 @@ export default function LoginPage() {
 
       {/* Right — Form */}
       <div className="flex-1 flex items-center justify-center p-8 relative">
-        <div className="absolute inset-0 pointer-events-none">
-          <div
-            className="absolute top-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full aurora-2"
-            style={{ background: 'radial-gradient(circle at center, rgba(255,42,63,0.06) 0%, transparent 70%)', filter: 'blur(80px)' }}
-          />
-        </div>
-
+        <div className="absolute inset-0 mesh-accent opacity-20 pointer-events-none" />
         <div className="w-full max-w-[400px] relative z-10">
           {/* Mobile brand */}
           <div className="lg:hidden mb-10">

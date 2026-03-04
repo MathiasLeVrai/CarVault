@@ -18,16 +18,14 @@ class HealthService {
 
     const maintenance = this._scoreMaintenance(vehicle);
     const documents = this._scoreDocuments(vehicle);
-    const cost = this._scoreCost(vehicle);
-    const completeness = this._scoreCompleteness(vehicle);
 
-    const score = maintenance.score + documents.score + cost.score + completeness.score;
+    const score = maintenance.score + documents.score;
     const grade = score >= 80 ? 'A' : score >= 60 ? 'B' : score >= 40 ? 'C' : 'D';
 
     return {
       score,
       grade,
-      breakdown: { maintenance, documents, cost, completeness },
+      breakdown: { maintenance, documents },
       estimatedValue: this._estimateValue(vehicle),
     };
   }
@@ -89,8 +87,8 @@ class HealthService {
       details.push({ label: 'Révision générale', ok, kmSince, interval: intervals.generalService });
     }
 
-    const score = checks > 0 ? Math.round((earned / checks) * 40) : 20;
-    return { score, max: 40, details };
+    const score = checks > 0 ? Math.round((earned / checks) * 57) : 28;
+    return { score, max: 57, details };
   }
 
   // ============================================================
@@ -102,7 +100,7 @@ class HealthService {
     const details = [];
 
     if (docs.length === 0) {
-      return { score: 15, max: 30, details: [{ label: 'Aucun document', ok: null }] };
+      return { score: 21, max: 43, details: [{ label: 'Aucun document', ok: null }] };
     }
 
     const withExpiry = docs.filter(d => d.expirationDate);
@@ -123,54 +121,9 @@ class HealthService {
 
     const total = withExpiry.length;
     const ratio = total > 0 ? valid / total : 1;
-    const score = Math.round(ratio * 30);
+    const score = Math.round(ratio * 43);
 
-    return { score, max: 30, details };
-  }
-
-  // ============================================================
-  // Cout maitrise (15 pts max)
-  // ============================================================
-
-  _scoreCost(vehicle) {
-    const expenses = vehicle.expenses || [];
-    if (expenses.length === 0) {
-      return { score: 8, max: 15 };
-    }
-
-    // Cout mensuel moyen sur les 12 derniers mois
-    const oneYearAgo = new Date();
-    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-    const recentExpenses = expenses.filter(e => new Date(e.date) >= oneYearAgo);
-    const totalYear = recentExpenses.reduce((sum, e) => sum + e.amount, 0);
-    const monthlyAvg = totalYear / 12;
-
-    // Scoring : < 100e/mois = 15pts, 100-200 = 12, 200-400 = 9, 400-600 = 6, >600 = 3
-    let score;
-    if (monthlyAvg < 100) score = 15;
-    else if (monthlyAvg < 200) score = 12;
-    else if (monthlyAvg < 400) score = 9;
-    else if (monthlyAvg < 600) score = 6;
-    else score = 3;
-
-    return { score, max: 15, monthlyAvg: Math.round(monthlyAvg) };
-  }
-
-  // ============================================================
-  // Completude profil (15 pts max)
-  // ============================================================
-
-  _scoreCompleteness(vehicle) {
-    const missing = [];
-    let earned = 0;
-
-    if (vehicle.photo) { earned += 3; } else { missing.push('Photo du véhicule'); }
-    if (vehicle.licensePlate) { earned += 3; } else { missing.push('Plaque d\'immatriculation'); }
-    if (vehicle.purchasePrice || vehicle.msrp) { earned += 3; } else { missing.push('Prix d\'achat'); }
-    if ((vehicle.documents || []).length > 0) { earned += 3; } else { missing.push('Au moins 1 document'); }
-    if ((vehicle.expenses || []).length > 0) { earned += 3; } else { missing.push('Au moins 1 dépense'); }
-
-    return { score: earned, max: 15, missing };
+    return { score, max: 43, details };
   }
 
   // ============================================================

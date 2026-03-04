@@ -8,7 +8,8 @@ import Modal from '../components/ui/Modal';
 import Input from '../components/ui/Input';
 import Select from '../components/ui/Select';
 import StatCard from '../components/ui/StatCard';
-import { ArrowLeft, FileText, Wallet, Plus, Trash2, Gauge, Upload, FileDown, Heart, TrendingDown, ShieldCheck, Wrench, FileCheck, PiggyBank, CheckCircle2, Route, Settings, Share2, Link2, Copy, Check, ExternalLink } from 'lucide-react';
+import { ArrowLeft, FileText, Wallet, Plus, Trash2, Gauge, Upload, FileDown, Heart, TrendingDown, ShieldCheck, Wrench, FileCheck, Route, Settings, Share2, Link2, Copy, Check, ExternalLink } from 'lucide-react';
+import FuelTracker from '../components/FuelTracker';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { formatCurrency, formatDateShort, documentTypeLabels, documentTypeBadge, expenseCategoryLabels } from '../utils/helpers';
 import { motion } from 'framer-motion';
@@ -213,21 +214,7 @@ export default function VehicleDetailPage() {
             <div className="w-full space-y-5 mt-10">
               <SubScoreBar icon={Wrench} label="Entretien" score={health.breakdown.maintenance.score} max={health.breakdown.maintenance.max} />
               <SubScoreBar icon={FileCheck} label="Documents" score={health.breakdown.documents.score} max={health.breakdown.documents.max} />
-              <SubScoreBar icon={PiggyBank} label="Coût" score={health.breakdown.cost.score} max={health.breakdown.cost.max} />
-              <SubScoreBar icon={CheckCircle2} label="Complétude" score={health.breakdown.completeness.score} max={health.breakdown.completeness.max} />
             </div>
-            {health.breakdown.completeness.missing?.length > 0 && (
-              <div className="mt-8 pt-6 border-t border-white/10 w-full text-left">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-white/50 mb-3">À compléter :</p>
-                <div className="flex flex-wrap gap-2">
-                  {health.breakdown.completeness.missing.map((item, i) => (
-                    <span key={i} className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-[10px] font-bold text-white/80">
-                      {item}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
           </motion.div>
         )}
 
@@ -345,6 +332,11 @@ export default function VehicleDetailPage() {
             })}
           </div>
         ) : <p className="text-sm text-ink-muted text-center py-6">Aucune entrée</p>}
+      </motion.div>
+
+      {/* Fuel Tracker */}
+      <motion.div variants={itemVariants} className="bento-card p-6 md:p-8">
+        <FuelTracker vehicleId={id} />
       </motion.div>
 
       {/* Modals */}
