@@ -9,7 +9,8 @@ import Autocomplete from '../components/ui/Autocomplete';
 import EmptyState from '../components/ui/EmptyState';
 import PlateScanModal from '../components/PlateScanModal';
 import { Car, Plus, FileText, ArrowUpRight, Gauge, Zap, Search, CheckCircle2, ScanLine } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import PremiumModal from '../components/PremiumModal';
 
 const fuelOpts = [
   { value: 'GASOLINE', label: 'Essence' },
@@ -56,6 +57,7 @@ export default function VehiclesPage() {
   const [plateError, setPlateError] = useState('');
   const [manualMode, setManualMode] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
+  const [showPremium, setShowPremium] = useState(false);
 
   const [form, setForm] = useState({
     brand: '', model: '', year: '', mileage: '', licensePlate: '', color: '',
@@ -180,7 +182,12 @@ export default function VehiclesPage() {
       if (photo) fd.append('photo', photo);
       await vehicleApi.create(fd);
       setShowModal(false); resetForm(); loadVehicles();
-    } catch {} finally { setSubmitting(false); }
+    } catch (err) {
+      if (err.code === 'PREMIUM_REQUIRED') {
+        setShowModal(false);
+        setShowPremium(true);
+      }
+    } finally { setSubmitting(false); }
   };
 
   if (loading) return (
@@ -393,6 +400,10 @@ export default function VehiclesPage() {
           )}
         </form>
       </Modal>
+
+      <AnimatePresence>
+        {showPremium && <PremiumModal onClose={() => setShowPremium(false)} />}
+      </AnimatePresence>
     </motion.div>
   );
 }

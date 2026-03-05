@@ -42,6 +42,7 @@ class ApiClient {
     if (!response.ok) {
       const error = new Error(data.error || 'Une erreur est survenue');
       error.status = response.status;
+      error.code = data.code;
       throw error;
     }
 
@@ -182,6 +183,25 @@ export const brandApi = {
   getTrims: (year, make, model) => api.get(`/brands/trims?year=${year}&make=${encodeURIComponent(make)}&model=${encodeURIComponent(model)}`),
   getTrimById: (id) => api.get(`/brands/trims/${id}`),
   lookupPlate: (plate) => api.get(`/brands/plate/${encodeURIComponent(plate)}`),
+};
+
+export const bankApi = {
+  getStatus: () => api.get('/bank/status'),
+  listInstitutions: () => api.get('/bank/institutions'),
+  connect: (institutionId, institutionName) => api.post('/bank/connect', { institutionId, institutionName }),
+  callback: () => api.post('/bank/callback'),
+  disconnect: () => api.request('/bank/disconnect', { method: 'DELETE' }),
+  detectFuel: () => api.get('/bank/fuel-transactions'),
+};
+
+export const badgeApi = {
+  getAll: () => api.get('/badges'),
+};
+
+export const subscriptionApi = {
+  getStatus: () => api.get('/subscription/status'),
+  createCheckout: () => api.post('/subscription/checkout'),
+  createPortal: () => api.post('/subscription/portal'),
 };
 
 export default api;

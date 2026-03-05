@@ -68,6 +68,7 @@ class AuthService {
         firstName: true,
         lastName: true,
         createdAt: true,
+        isPremium: true,
         _count: {
           select: { vehicles: true },
         },

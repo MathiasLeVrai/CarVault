@@ -4,6 +4,14 @@ const cors = require('cors');
 const path = require('path');
 const rateLimit = require('express-rate-limit');
 
+// Validate required env vars at startup
+const REQUIRED_ENV = ['JWT_SECRET', 'DATABASE_URL'];
+const missing = REQUIRED_ENV.filter(k => !process.env[k]);
+if (missing.length) {
+  console.error(`[FATAL] Missing required environment variables: ${missing.join(', ')}`);
+  process.exit(1);
+}
+
 const authRoutes = require('./routes/auth.routes');
 const vehicleRoutes = require('./routes/vehicle.routes');
 const documentRoutes = require('./routes/document.routes');
@@ -15,6 +23,9 @@ const mileageRoutes = require('./routes/mileage.routes');
 const fuelRoutes = require('./routes/fuel.routes');
 const shareRoutes = require('./routes/share.routes');
 const notificationRoutes = require('./routes/notification.routes');
+const subscriptionRoutes = require('./routes/subscription.routes');
+const badgeRoutes = require('./routes/badge.routes');
+const bankRoutes = require('./routes/bank.routes');
 const { errorHandler } = require('./middleware/error.middleware');
 const { startAlertCron } = require('./cron/alert.cron');
 
@@ -46,6 +57,14 @@ const publicLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+const apiLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 60,
+  message: { error: 'Trop de requêtes. Réessayez dans une minute.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // CORS — allow configured origin or localhost in dev
 const allowedOrigins = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(',')
@@ -60,8 +79,11 @@ app.use(cors({
   credentials: true,
 }));
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Stripe webhook needs raw body — must be registered BEFORE express.json()
+app.use('/api/subscription/webhook', express.raw({ type: 'application/json' }));
+
+app.use(express.json({ limit: '10kb' }));
+app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
 // Serve uploaded files
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
@@ -82,6 +104,9 @@ app.use('/api/vehicles/:vehicleId/mileage', mileageRoutes);
 app.use('/api/vehicles/:vehicleId/fuel', fuelRoutes);
 app.use('/api/share', shareRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/subscription', subscriptionRoutes);
+app.use('/api/badges', apiLimiter, badgeRoutes);
+app.use('/api/bank', apiLimiter, bankRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

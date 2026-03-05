@@ -1,4 +1,5 @@
 const documentService = require('../services/document.service');
+const storageService = require('../services/storage.service');
 
 const EXPIRATION_DEFAULTS = {
   INSURANCE: 365,
@@ -60,10 +61,12 @@ class DocumentController {
         } catch {}
       }
 
+      const filePath = await storageService.upload(req.file.buffer, req.file.originalname, 'documents');
+
       const data = {
         name,
         type,
-        filePath: `/uploads/documents/${req.file.filename}`,
+        filePath,
         fileName: req.file.originalname,
         expirationDate: expirationDate ? new Date(expirationDate) : null,
         notes: notes || null,

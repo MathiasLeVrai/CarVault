@@ -1,7 +1,7 @@
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import {
-  LayoutDashboard, Car, Wallet, Bell, LogOut, Settings, Plus, MapPin,
+  LayoutDashboard, Car, Wallet, Bell, LogOut, Settings, Plus, MapPin, Building2,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { alertApi } from '../services/api';
@@ -21,11 +21,12 @@ const sidebarItems = [
   { to: '/vehicles', icon: Car, label: 'Véhicules' },
   { to: '/expenses', icon: Wallet, label: 'Dépenses' },
   { to: '/map', icon: MapPin, label: 'Carte' },
+  { to: '/bank', icon: Building2, label: 'Banque' },
   { to: '/alerts', icon: Bell, label: 'Alertes', showBadge: true },
   { to: '/settings', icon: Settings, label: 'Paramètres' },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ onFabPress }) {
   const { logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -132,12 +133,12 @@ export default function Sidebar() {
               );
             })}
 
-            {/* FAB — center action button */}
+            {/* FAB — quick action */}
             <div className="flex-1 flex items-center justify-center py-2">
               <button
-                onClick={() => navigate('/vehicles')}
+                onClick={onFabPress}
                 className="w-12 h-12 rounded-2xl bg-accent shadow-[0_0_24px_rgba(255,42,63,0.45)] flex items-center justify-center active:scale-95 transition-transform"
-                aria-label="Ajouter un véhicule"
+                aria-label="Saisie rapide"
               >
                 <Plus className="w-5 h-5 text-white" strokeWidth={2.5} />
               </button>

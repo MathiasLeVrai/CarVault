@@ -20,9 +20,15 @@ model User {
   notifPush   Boolean @default(false)
   notifWeekly Boolean @default(true)
 
-  vehicles   Vehicle[]
-  alerts     Alert[]
-  shareLinks ShareLink[]
+  isPremium            Boolean  @default(false)
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
+  premiumExpiresAt     DateTime?
+
+  vehicles       Vehicle[]
+  alerts         Alert[]
+  shareLinks     ShareLink[]
+  bankConnection BankConnection?
 
   @@map("users")
 }
@@ -180,6 +186,22 @@ model FuelEntry {
 
   @@index([vehicleId, date])
   @@map("fuel_entries")
+}
+
+model BankConnection {
+  id            String   @id @default(uuid())
+  userId        String   @unique
+  institutionId String
+  institutionName String
+  requisitionId String   @unique
+  accountId     String?
+  status        String   @default("pending") // pending | linked | error
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("bank_connections")
 }
 
 model ShareLink {
