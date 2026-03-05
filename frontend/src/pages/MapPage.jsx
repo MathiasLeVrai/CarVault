@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import { motion } from 'framer-motion';
+import { motion as Motion } from 'framer-motion';
 import { MapPin, Navigation, Wrench, ShieldCheck, Droplets, Fuel, Search, ExternalLink, Loader2 } from 'lucide-react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -384,7 +384,7 @@ export default function MapPage() {
             const dist = userPos ? distance(userPos[0], userPos[1], poi.lat, poi.lon) : null;
             const isSelected = selected?.id === poi.id;
             return (
-              <motion.button
+              <Motion.button
                 key={poi.id}
                 layout
                 initial={{ opacity: 0, x: 12 }}
@@ -441,7 +441,7 @@ export default function MapPage() {
                 >
                   <Navigation className="w-3 h-3" /> Itinéraire Google Maps
                 </button>
-              </motion.button>
+              </Motion.button>
             );
           })}
         </div>

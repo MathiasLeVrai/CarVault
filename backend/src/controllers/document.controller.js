@@ -58,7 +58,7 @@ class DocumentController {
       if (reminderDays) {
         try {
           parsedReminders = JSON.parse(reminderDays).map(Number).filter(n => n > 0);
-        } catch {}
+        } catch { /* ignore */ }
       }
 
       const filePath = await storageService.upload(req.file.buffer, req.file.originalname, 'documents');

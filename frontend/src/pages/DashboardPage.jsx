@@ -18,7 +18,7 @@ import {
   formatCurrency, daysUntil, expenseCategoryLabels, expenseCategoryColors,
   documentTypeLabels,
 } from '../utils/helpers';
-import { motion } from 'framer-motion';
+import { motion as Motion } from 'framer-motion';
 import BadgesWidget from '../components/BadgesWidget';
 
 const ChartTooltip = ({ active, payload, label }) => {
@@ -80,7 +80,7 @@ function ActionCard({ card, onClick }) {
       : `Dans ${card.daysLeft}j`;
 
   return (
-    <motion.button
+    <Motion.button
       variants={itemVariants}
       onClick={onClick}
       className={`bento-card p-5 text-left w-full border ${config.borderColor} bg-gradient-to-br ${config.gradient} hover:scale-[1.02] active:scale-[0.98] transition-all group`}
@@ -96,7 +96,7 @@ function ActionCard({ card, onClick }) {
       <div className="flex items-center gap-1 mt-3 text-xs font-bold text-accent group-hover:text-white transition-colors">
         {card.cta} <ArrowRight className="w-3.5 h-3.5" />
       </div>
-    </motion.button>
+    </Motion.button>
   );
 }
 
@@ -126,14 +126,14 @@ export default function DashboardPage() {
   const actionCards = data?.actionCards || [];
 
   return (
-    <motion.div
+    <Motion.div
       variants={containerVariants}
       initial="hidden"
       animate="show"
       className="space-y-8 md:space-y-10"
     >
       {/* ─── Welcome ─── */}
-      <motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+      <Motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
           <p className="text-[11px] font-bold text-accent uppercase tracking-[0.15em] mb-2">Dashboard</p>
           <h1 className="text-3xl md:text-4xl font-black text-white font-display tracking-tight">
@@ -146,7 +146,7 @@ export default function DashboardPage() {
         <Button variant="accent" size="md" onClick={() => navigate('/vehicles')}>
           <Plus className="w-4 h-4" /> Ajouter un véhicule
         </Button>
-      </motion.div>
+      </Motion.div>
 
       {/* ─── Ce mois-ci ─── */}
       {(() => {
@@ -161,7 +161,7 @@ export default function DashboardPage() {
         const diff = prev?.total ? Math.round(((current.total - prev.total) / prev.total) * 100) : null;
         const up = diff !== null && diff > 0;
         return (
-          <motion.div variants={itemVariants}>
+          <Motion.div variants={itemVariants}>
             <div className="flex items-center justify-between px-5 py-3.5 rounded-2xl bg-white/[0.03] border border-white/[0.06]">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-xl bg-orange/10 flex items-center justify-center">
@@ -179,13 +179,13 @@ export default function DashboardPage() {
                 </div>
               )}
             </div>
-          </motion.div>
+          </Motion.div>
         );
       })()}
 
       {/* ─── Action Cards ("À faire bientôt") ─── */}
       {actionCards.length > 0 && (
-        <motion.div variants={itemVariants}>
+        <Motion.div variants={itemVariants}>
           <SectionHeader
             icon={Clock}
             title="À faire bientôt"
@@ -211,11 +211,11 @@ export default function DashboardPage() {
               />
             ))}
           </div>
-        </motion.div>
+        </Motion.div>
       )}
 
       {/* ─── Stats Row ─── */}
-      <motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+      <Motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         <StatCard icon={Car} label="Véhicules" value={data?.vehicleCount || 0} color="sky" />
         <StatCard
           icon={Wallet}
@@ -236,12 +236,12 @@ export default function DashboardPage() {
           value={data?.alertCount || 0}
           color={data?.alertCount > 0 ? 'accent' : 'lime'}
         />
-      </motion.div>
+      </Motion.div>
 
       {/* ─── Charts ─── */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 md:gap-6">
         {/* Bar Chart */}
-        <motion.div variants={itemVariants} className="lg:col-span-3 bento-card p-5 md:p-6">
+        <Motion.div variants={itemVariants} className="lg:col-span-3 bento-card p-5 md:p-6">
           <SectionHeader
             icon={TrendingDown}
             title={`Dépenses ${new Date().getFullYear()}`}
@@ -271,10 +271,10 @@ export default function DashboardPage() {
               </BarChart>
             </ResponsiveContainer>
           </div>
-        </motion.div>
+        </Motion.div>
 
         {/* Pie Chart + Legend */}
-        <motion.div variants={itemVariants} className="lg:col-span-2 bento-card p-5 md:p-6 flex flex-col">
+        <Motion.div variants={itemVariants} className="lg:col-span-2 bento-card p-5 md:p-6 flex flex-col">
           <SectionHeader icon={null} title="Répartition par catégorie" />
 
           {data?.expensesByCategory?.length > 0 ? (
@@ -326,13 +326,13 @@ export default function DashboardPage() {
               <p className="text-sm text-ink-muted">Aucune donnée</p>
             </div>
           )}
-        </motion.div>
+        </Motion.div>
       </div>
 
       {/* ─── Bottom Row: Deadlines + Health Score ─── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
         {/* Upcoming Deadlines */}
-        <motion.div variants={itemVariants} className="bento-card p-5 md:p-6">
+        <Motion.div variants={itemVariants} className="bento-card p-5 md:p-6">
           <SectionHeader
             icon={FileText}
             title="Prochaines échéances"
@@ -374,10 +374,10 @@ export default function DashboardPage() {
           ) : (
             <p className="text-sm text-ink-muted py-8 text-center">Aucune échéance à venir</p>
           )}
-        </motion.div>
+        </Motion.div>
 
         {/* Health Score */}
-        <motion.div variants={itemVariants} className="cv-card-dark p-5 md:p-6 relative overflow-hidden">
+        <Motion.div variants={itemVariants} className="cv-card-dark p-5 md:p-6 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-[300px] h-[300px] mesh-accent opacity-30 pointer-events-none" />
           <div className="relative z-10">
             <SectionHeader icon={Activity} title="Score Santé Global" />
@@ -422,13 +422,13 @@ export default function DashboardPage() {
               </button>
             </div>
           </div>
-        </motion.div>
+        </Motion.div>
       </div>
 
       {/* ─── Badges ─── */}
-      <motion.div variants={itemVariants}>
+      <Motion.div variants={itemVariants}>
         <BadgesWidget />
-      </motion.div>
-    </motion.div>
+      </Motion.div>
+    </Motion.div>
   );
 }

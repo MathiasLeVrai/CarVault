@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { Car, FileText, Bell, BarChart2, MapPin, ArrowRight, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -84,7 +84,7 @@ export default function OnboardingTour({ onDone }) {
       {/* Slide */}
       <div className="w-full max-w-sm flex flex-col items-center text-center overflow-hidden">
         <AnimatePresence mode="wait" custom={direction}>
-          <motion.div
+          <Motion.div
             key={slide}
             custom={direction}
             variants={variants}
@@ -95,7 +95,7 @@ export default function OnboardingTour({ onDone }) {
             className="flex flex-col items-center w-full"
           >
             {/* Icon */}
-            <motion.div
+            <Motion.div
               initial={{ scale: 0.5, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.1, type: 'spring', stiffness: 300 }}
@@ -103,7 +103,7 @@ export default function OnboardingTour({ onDone }) {
               style={{ background: current.bg, boxShadow: `0 0 60px ${current.color}30` }}
             >
               <Icon className="w-14 h-14" style={{ color: current.color }} strokeWidth={1.5} />
-            </motion.div>
+            </Motion.div>
 
             <h2 className="text-2xl font-black font-display text-white tracking-tight mb-3">
               {current.title}
@@ -111,7 +111,7 @@ export default function OnboardingTour({ onDone }) {
             <p className="text-sm text-white/55 font-medium leading-relaxed max-w-xs">
               {current.subtitle}
             </p>
-          </motion.div>
+          </Motion.div>
         </AnimatePresence>
       </div>
 

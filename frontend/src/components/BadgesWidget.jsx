@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { Car, FileText, ShieldCheck, Fuel, Zap, Wallet, BarChart2, Gauge, Trophy, X } from 'lucide-react';
 import { badgeApi } from '../services/api';
 
@@ -29,14 +29,14 @@ function BadgeIcon({ name, color, unlocked, size = 20 }) {
 function BadgeDetail({ badge, onClose }) {
   return (
     <>
-      <motion.div
+      <Motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm"
         onClick={onClose}
       />
-      <motion.div
+      <Motion.div
         initial={{ scale: 0.85, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.85, opacity: 0 }}
@@ -60,7 +60,7 @@ function BadgeDetail({ badge, onClose }) {
             {badge.unlocked ? '✓ Débloqué' : 'Non débloqué'}
           </div>
         </div>
-      </motion.div>
+      </Motion.div>
     </>
   );
 }
@@ -96,7 +96,7 @@ export default function BadgesWidget() {
 
       {/* Progress bar */}
       <div className="h-1.5 rounded-full bg-white/8 mb-4">
-        <motion.div
+        <Motion.div
           className="h-full rounded-full"
           initial={{ width: 0 }}
           animate={{ width: `${(unlockedCount / totalCount) * 100}%` }}
@@ -113,7 +113,7 @@ export default function BadgesWidget() {
             onClick={() => setSelected(badge)}
             className="flex flex-col items-center gap-1.5 group"
           >
-            <motion.div
+            <Motion.div
               whileTap={{ scale: 0.9 }}
               className="w-10 h-10 rounded-xl flex items-center justify-center transition-all"
               style={{
@@ -123,7 +123,7 @@ export default function BadgesWidget() {
               }}
             >
               <BadgeIcon name={badge.icon} color={badge.color} unlocked={badge.unlocked} size={16} />
-            </motion.div>
+            </Motion.div>
           </button>
         ))}
       </div>

@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useEffect } from 'react';
 import { authApi } from '../services/api';
 
@@ -27,6 +28,7 @@ export function AuthProvider({ children }) {
         .finally(() => setLoading(false));
     } else {
       // Pas de token — on affiche directement le login
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLoading(false);
     }
   }, []);

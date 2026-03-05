@@ -6,6 +6,9 @@
   "scripts": {
     "dev": "nodemon src/index.js",
     "start": "node src/index.js",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "validate": "prisma validate",
     "prisma:generate": "npx prisma generate",
     "prisma:migrate": "npx prisma migrate dev",
     "prisma:studio": "npx prisma studio"
@@ -28,7 +31,10 @@
     "uuid": "^11.0.5"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@flydotio/dockerfile": "^0.7.10",
+    "eslint": "^10.0.2",
+    "globals": "^17.4.0",
     "nodemon": "^3.1.9",
     "prisma": "^6.2.0"
   }

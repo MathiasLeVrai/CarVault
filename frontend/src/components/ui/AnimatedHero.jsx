@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 
 /**
  * SplitText — reveals each character sliding up from below, staggered.
@@ -12,7 +12,7 @@ export function SplitText({ text, delay = 0, className = '' }) {
           key={i}
           style={{ display: 'inline-block', overflow: 'hidden', verticalAlign: 'bottom' }}
         >
-          <motion.span
+          <Motion.span
             style={{ display: 'inline-block' }}
             initial={{ y: '110%' }}
             animate={{ y: 0 }}
@@ -23,7 +23,7 @@ export function SplitText({ text, delay = 0, className = '' }) {
             }}
           >
             {char === ' ' ? '\u00a0' : char}
-          </motion.span>
+          </Motion.span>
         </span>
       ))}
     </span>
@@ -51,7 +51,7 @@ export function CyclingWord({ words, className = '', interval = 3800 }) {
   return (
     <span style={{ display: 'inline-flex', lineHeight: '1.15' }} className={className}>
       <AnimatePresence mode="wait" initial={false}>
-        <motion.span
+        <Motion.span
           key={index}
           style={{ display: 'inline-flex' }}
           variants={{
@@ -67,12 +67,12 @@ export function CyclingWord({ words, className = '', interval = 3800 }) {
               key={i}
               style={{ display: 'inline-block', overflow: 'hidden', lineHeight: 'inherit' }}
             >
-              <motion.span style={{ display: 'inline-block' }} variants={letterVariants}>
+              <Motion.span style={{ display: 'inline-block' }} variants={letterVariants}>
                 {char === ' ' ? '\u00a0' : char}
-              </motion.span>
+              </Motion.span>
             </span>
           ))}
-        </motion.span>
+        </Motion.span>
       </AnimatePresence>
     </span>
   );
@@ -83,13 +83,13 @@ export function CyclingWord({ words, className = '', interval = 3800 }) {
  */
 export function StatChip({ value, label, delay = 0 }) {
   return (
-    <motion.div
+    <Motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
     >
       <div className="text-2xl font-black text-white font-display leading-none">{value}</div>
       <div className="text-[11px] text-white/40 font-semibold mt-1 uppercase tracking-wide">{label}</div>
-    </motion.div>
+    </Motion.div>
   );
 }

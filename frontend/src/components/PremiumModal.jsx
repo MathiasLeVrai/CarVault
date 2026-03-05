@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion as Motion } from 'framer-motion';
 import { X, Zap, Check, Car, FileText, BarChart2, Shield, Loader2 } from 'lucide-react';
 import { subscriptionApi } from '../services/api';
 import { useToast } from '../context/ToastContext';
@@ -35,7 +35,7 @@ export default function PremiumModal({ onClose }) {
   return (
     <>
       {/* Backdrop */}
-      <motion.div
+      <Motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -44,7 +44,7 @@ export default function PremiumModal({ onClose }) {
       />
 
       {/* Modal */}
-      <motion.div
+      <Motion.div
         initial={{ scale: 0.9, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.9, opacity: 0, y: 20 }}
@@ -81,7 +81,7 @@ export default function PremiumModal({ onClose }) {
 
           {/* Perks */}
           <div className="space-y-2.5 mb-6">
-            {PERKS.map(({ icon: Icon, text }) => (
+            {PERKS.map(({ text }) => (
               <div key={text} className="flex items-center gap-3">
                 <div className="w-6 h-6 rounded-lg bg-accent/20 flex items-center justify-center flex-shrink-0">
                   <Check className="w-3.5 h-3.5 text-accent" strokeWidth={2.5} />
@@ -105,7 +105,7 @@ export default function PremiumModal({ onClose }) {
             Paiement sécurisé par Stripe · SSL 256-bit
           </p>
         </div>
-      </motion.div>
+      </Motion.div>
     </>
   );
 }

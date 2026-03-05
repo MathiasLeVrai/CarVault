@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { Fuel, Plus, Trash2, TrendingUp, TrendingDown, Minus, ChevronDown, ChevronUp } from 'lucide-react';
 import { fuelApi } from '../services/api';
 import Button from './ui/Button';
@@ -66,7 +66,7 @@ function AddFuelForm({ vehicleId, onAdded, onCancel }) {
   };
 
   return (
-    <motion.form
+    <Motion.form
       initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -8 }}
@@ -136,7 +136,7 @@ function AddFuelForm({ vehicleId, onAdded, onCancel }) {
           <Fuel className="w-3.5 h-3.5" /> Enregistrer
         </Button>
       </div>
-    </motion.form>
+    </Motion.form>
   );
 }
 
@@ -150,7 +150,7 @@ export default function FuelTracker({ vehicleId }) {
     try {
       const result = await fuelApi.getAll(vehicleId);
       setData(result);
-    } catch {}
+    } catch { /* ignore */ }
     finally { setLoading(false); }
   };
 
@@ -166,7 +166,7 @@ export default function FuelTracker({ vehicleId }) {
     try {
       await fuelApi.delete(vehicleId, id);
       load();
-    } catch {}
+    } catch { /* ignore */ }
   };
 
   const { entries = [], stats } = data || {};
@@ -251,10 +251,10 @@ export default function FuelTracker({ vehicleId }) {
         </div>
       ) : (
         <div className="divide-y divide-white/5">
-          {displayed.map((entry, i) => {
+          {displayed.map((entry) => {
             const date = new Date(entry.date);
             return (
-              <motion.div
+              <Motion.div
                 key={entry.id}
                 variants={itemVariants}
                 initial="hidden"
@@ -298,7 +298,7 @@ export default function FuelTracker({ vehicleId }) {
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
-              </motion.div>
+              </Motion.div>
             );
           })}
         </div>

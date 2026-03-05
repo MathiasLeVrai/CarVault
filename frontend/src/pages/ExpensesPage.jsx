@@ -10,7 +10,7 @@ import StatCard from '../components/ui/StatCard';
 import { Wallet, Plus, Trash2, TrendingUp, Calculator, Receipt } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { formatCurrency, formatDateShort, expenseCategoryLabels, expenseCategoryColors } from '../utils/helpers';
-import { motion } from 'framer-motion';
+import { motion as Motion } from 'framer-motion';
 
 const catFilters = [{value:'',label:'Toutes'},{value:'MAINTENANCE',label:'Entretien'},{value:'TIRES',label:'Pneus'},{value:'FUEL',label:'Carburant'},{value:'INSURANCE',label:'Assurance'},{value:'REPAIR',label:'Réparation'},{value:'PARKING',label:'Parking'},{value:'TOLL',label:'Péage'},{value:'OTHER',label:'Autre'}];
 const catForm = catFilters.filter(o=>o.value);
@@ -43,8 +43,8 @@ export default function ExpensesPage() {
   const [form, setForm] = useState({ amount:'', category:'MAINTENANCE', date:'', description:'', mileage:'', vehicleId:'' });
 
   useEffect(() => { load(); }, [filter]);
-  const load = async () => { try { const p={}; if(filter) p.category=filter; const [e,s,v] = await Promise.all([expenseApi.getAll(p), expenseApi.getStats(), vehicleApi.getAll()]); setExps(e); setStats(s); setVehicles(v); } catch{} finally { setLoading(false); } };
-  const submit = async (e) => { e.preventDefault(); setSub(true); try { await expenseApi.create({...form, amount:parseFloat(form.amount)}); setShowModal(false); setForm({amount:'',category:'MAINTENANCE',date:'',description:'',mileage:'',vehicleId:''}); load(); } catch{} finally { setSub(false); } };
+  const load = async () => { try { const p={}; if(filter) p.category=filter; const [e,s,v] = await Promise.all([expenseApi.getAll(p), expenseApi.getStats(), vehicleApi.getAll()]); setExps(e); setStats(s); setVehicles(v); } catch { /* ignore */ } finally { setLoading(false); } };
+  const submit = async (e) => { e.preventDefault(); setSub(true); try { await expenseApi.create({...form, amount:parseFloat(form.amount)}); setShowModal(false); setForm({amount:'',category:'MAINTENANCE',date:'',description:'',mileage:'',vehicleId:''}); load(); } catch { /* ignore */ } finally { setSub(false); } };
   const del = async (id) => { if(!confirm('Supprimer ?')) return; await expenseApi.delete(id); load(); };
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="relative w-12 h-12"><div className="absolute inset-0 rounded-full border-2 border-white/10 border-t-accent animate-spin" /></div></div>;
@@ -53,8 +53,8 @@ export default function ExpensesPage() {
   const avg = stats?.totalYear ? stats.totalYear / 12 : 0;
 
   return (
-    <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-6 md:space-y-8">
-      <motion.div variants={itemVariants} className="flex items-center justify-between">
+    <Motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-6 md:space-y-8">
+      <Motion.div variants={itemVariants} className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl md:text-4xl font-black text-white font-display tracking-tight">Dépenses</h1>
           <p className="text-sm text-ink-muted mt-1">Suivi financier complet</p>
@@ -62,16 +62,16 @@ export default function ExpensesPage() {
         <Button onClick={() => { if(vehicles.length) { setForm(p=>({...p,vehicleId:vehicles[0].id})); setShowModal(true); } }} variant="accent">
           <Plus className="w-4 h-4" strokeWidth={2.5} />Ajouter
         </Button>
-      </motion.div>
+      </Motion.div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
-        <motion.div variants={itemVariants}><StatCard icon={TrendingUp} label={`Total ${new Date().getFullYear()}`} value={formatCurrency(stats?.totalYear||0)} color="dark" /></motion.div>
-        <motion.div variants={itemVariants}><StatCard icon={Calculator} label="Moyenne mensuelle" value={formatCurrency(avg)} color="accent" /></motion.div>
-        <motion.div variants={itemVariants} className="col-span-2 md:col-span-1"><StatCard icon={Receipt} label="Transactions" value={stats?.expenseCount||0} color="orange" /></motion.div>
+        <Motion.div variants={itemVariants}><StatCard icon={TrendingUp} label={`Total ${new Date().getFullYear()}`} value={formatCurrency(stats?.totalYear||0)} color="dark" /></Motion.div>
+        <Motion.div variants={itemVariants}><StatCard icon={Calculator} label="Moyenne mensuelle" value={formatCurrency(avg)} color="accent" /></Motion.div>
+        <Motion.div variants={itemVariants} className="col-span-2 md:col-span-1"><StatCard icon={Receipt} label="Transactions" value={stats?.expenseCount||0} color="orange" /></Motion.div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        <motion.div variants={itemVariants} className="lg:col-span-3 bento-card p-6 md:p-8 flex flex-col justify-between">
+        <Motion.div variants={itemVariants} className="lg:col-span-3 bento-card p-6 md:p-8 flex flex-col justify-between">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-bold text-white font-display">Évolution</h3>
             <Badge variant="dark">{new Date().getFullYear()}</Badge>
@@ -87,9 +87,9 @@ export default function ExpensesPage() {
               </BarChart>
             </ResponsiveContainer>
           </div>
-        </motion.div>
+        </Motion.div>
 
-        <motion.div variants={itemVariants} className="lg:col-span-2 bento-card p-6 md:p-8 flex flex-col justify-between">
+        <Motion.div variants={itemVariants} className="lg:col-span-2 bento-card p-6 md:p-8 flex flex-col justify-between">
           <h3 className="text-lg font-bold text-white mb-6 font-display">Par catégorie</h3>
           {stats?.byCategory?.length > 0 ? (
             <div className="flex flex-col h-full justify-between">
@@ -115,10 +115,10 @@ export default function ExpensesPage() {
               </div>
             </div>
           ) : <p className="text-sm text-ink-muted text-center py-14">Aucune donnée</p>}
-        </motion.div>
+        </Motion.div>
       </div>
 
-      <motion.div variants={itemVariants} className="flex gap-2 flex-wrap">
+      <Motion.div variants={itemVariants} className="flex gap-2 flex-wrap">
         {catFilters.map(opt => (
           <button key={opt.value} onClick={() => setFilter(opt.value)}
             className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${
@@ -127,12 +127,12 @@ export default function ExpensesPage() {
             {opt.label}
           </button>
         ))}
-      </motion.div>
+      </Motion.div>
 
       {exps.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {exps.map(exp => (
-            <motion.div variants={itemVariants} key={exp.id} className="bento-card p-5 flex flex-col justify-between group">
+            <Motion.div variants={itemVariants} key={exp.id} className="bento-card p-5 flex flex-col justify-between group">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform"
@@ -159,14 +159,14 @@ export default function ExpensesPage() {
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
-            </motion.div>
+            </Motion.div>
           ))}
         </div>
       ) : (
-        <motion.div variants={itemVariants}>
+        <Motion.div variants={itemVariants}>
           <EmptyState icon={Wallet} title="Aucune dépense" description="Suivez carburant, entretien, assurance."
             action={vehicles.length>0 ? <Button onClick={()=>{setForm(p=>({...p,vehicleId:vehicles[0].id})); setShowModal(true);}} variant="accent"><Plus className="w-4 h-4" />Ajouter</Button> : <p className="text-sm text-ink-muted">Ajoutez d'abord un véhicule</p>} />
-        </motion.div>
+        </Motion.div>
       )}
 
       <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Nouvelle dépense">
@@ -182,6 +182,6 @@ export default function ExpensesPage() {
           <div className="flex justify-end gap-3 pt-4 border-t border-white/5"><Button variant="ghost" type="button" onClick={() => setShowModal(false)}>Annuler</Button><Button type="submit" loading={sub} variant="accent">Ajouter</Button></div>
         </form>
       </Modal>
-    </motion.div>
+    </Motion.div>
   );
 }

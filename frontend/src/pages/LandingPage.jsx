@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion as Motion } from 'framer-motion';
 import {
   FileText, Bell, Wrench, TrendingUp, MapPin, Shield,
   ArrowRight, CheckCircle, ChevronRight,
@@ -98,7 +98,7 @@ export default function LandingPage() {
 
       {/* ── Hero ─────────────────────────────────────────── */}
       <section className="relative z-10 flex flex-col items-center text-center px-6 pt-24 pb-20 md:pt-32 md:pb-28">
-        <motion.div
+        <Motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
@@ -106,9 +106,9 @@ export default function LandingPage() {
         >
           <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
           Le coffre-fort numérique de votre voiture
-        </motion.div>
+        </Motion.div>
 
-        <motion.h1
+        <Motion.h1
           initial={{ opacity: 0, y: 32 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
@@ -116,9 +116,9 @@ export default function LandingPage() {
         >
           Votre garage,{' '}
           <CyclingWord words={CYCLING_WORDS} className="text-accent" />
-        </motion.h1>
+        </Motion.h1>
 
-        <motion.p
+        <Motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
@@ -126,9 +126,9 @@ export default function LandingPage() {
         >
           Documents, entretiens, dépenses, alertes — tout ce qui concerne votre
           véhicule, centralisé en un seul endroit. Fini le chaos.
-        </motion.p>
+        </Motion.p>
 
-        <motion.div
+        <Motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.38, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
@@ -140,10 +140,10 @@ export default function LandingPage() {
           <Link to="/login" className="cv-btn-dark px-8 py-4 text-base rounded-xl inline-flex items-center gap-2 justify-center">
             J'ai déjà un compte <ChevronRight className="w-4 h-4" />
           </Link>
-        </motion.div>
+        </Motion.div>
 
         {/* Social proof */}
-        <motion.div
+        <Motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.55, duration: 0.5 }}
@@ -155,37 +155,37 @@ export default function LandingPage() {
               <div className="text-[11px] uppercase tracking-widest mt-0.5">{l}</div>
             </div>
           ))}
-        </motion.div>
+        </Motion.div>
       </section>
 
       {/* ── Problem ──────────────────────────────────────── */}
       <section className="relative z-10 px-6 md:px-12 py-16">
         <div className="max-w-3xl mx-auto cv-card p-8 md:p-12">
-          <motion.p {...fade()} className="text-2xl md:text-3xl font-bold text-white/80 leading-snug text-center">
+          <Motion.p {...fade()} className="text-2xl md:text-3xl font-bold text-white/80 leading-snug text-center">
             "J'ai oublié mon contrôle technique et j'ai pris{' '}
             <span className="text-accent">135€ d'amende.</span>"
-          </motion.p>
-          <motion.p {...fade(0.1)} className="text-center text-white/35 mt-4 font-medium">
+          </Motion.p>
+          <Motion.p {...fade(0.1)} className="text-center text-white/35 mt-4 font-medium">
             Ça arrive à des milliers de conducteurs chaque année. CarVault vous prévient bien avant.
-          </motion.p>
+          </Motion.p>
         </div>
       </section>
 
       {/* ── Features ─────────────────────────────────────── */}
       <section className="relative z-10 px-6 md:px-12 py-20">
         <div className="max-w-5xl mx-auto">
-          <motion.div {...fade()} className="text-center mb-14">
+          <Motion.div {...fade()} className="text-center mb-14">
             <h2 className="text-4xl md:text-5xl font-black font-display tracking-tight mb-4">
               Tout ce dont vous avez besoin
             </h2>
             <p className="text-white/40 text-lg font-medium max-w-lg mx-auto">
               Un seul outil pour remplacer les dossiers papier, les rappels oubliés, et les tableurs DIY.
             </p>
-          </motion.div>
+          </Motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {FEATURES.map((f, i) => (
-              <motion.div key={f.title} {...fade(i * 0.06)} className="cv-card p-6 group">
+              <Motion.div key={f.title} {...fade(i * 0.06)} className="cv-card p-6 group">
                 <div
                   className="w-11 h-11 rounded-xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110"
                   style={{ background: `${f.color}18`, border: `1px solid ${f.color}30` }}
@@ -194,7 +194,7 @@ export default function LandingPage() {
                 </div>
                 <h3 className="text-base font-bold text-white mb-2">{f.title}</h3>
                 <p className="text-sm text-white/45 font-medium leading-relaxed">{f.desc}</p>
-              </motion.div>
+              </Motion.div>
             ))}
           </div>
         </div>
@@ -203,15 +203,15 @@ export default function LandingPage() {
       {/* ── How it works ─────────────────────────────────── */}
       <section className="relative z-10 px-6 md:px-12 py-20">
         <div className="max-w-4xl mx-auto">
-          <motion.div {...fade()} className="text-center mb-14">
+          <Motion.div {...fade()} className="text-center mb-14">
             <h2 className="text-4xl md:text-5xl font-black font-display tracking-tight mb-4">
               En place en 3 minutes
             </h2>
-          </motion.div>
+          </Motion.div>
 
           <div className="space-y-4">
             {STEPS.map((s, i) => (
-              <motion.div key={s.n} {...fade(i * 0.08)} className="flex items-start gap-6 cv-card p-6 md:p-8">
+              <Motion.div key={s.n} {...fade(i * 0.08)} className="flex items-start gap-6 cv-card p-6 md:p-8">
                 <span className="text-5xl font-black font-display text-white/[0.06] leading-none flex-shrink-0 select-none">
                   {s.n}
                 </span>
@@ -220,7 +220,7 @@ export default function LandingPage() {
                   <p className="text-white/45 font-medium">{s.desc}</p>
                 </div>
                 <CheckCircle className="w-5 h-5 text-accent/60 flex-shrink-0 ml-auto mt-1" />
-              </motion.div>
+              </Motion.div>
             ))}
           </div>
         </div>
@@ -229,7 +229,7 @@ export default function LandingPage() {
       {/* ── Final CTA ────────────────────────────────────── */}
       <section className="relative z-10 px-6 md:px-12 py-24">
         <div className="max-w-2xl mx-auto text-center">
-          <motion.div {...fade()}>
+          <Motion.div {...fade()}>
             <div className="cv-card-accent p-12 md:p-16 relative overflow-hidden">
               <div className="absolute inset-0 mesh-accent opacity-40" />
               <div className="relative z-10">
@@ -244,7 +244,7 @@ export default function LandingPage() {
                 </Link>
               </div>
             </div>
-          </motion.div>
+          </Motion.div>
         </div>
       </section>
 

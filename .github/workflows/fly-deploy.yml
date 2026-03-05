@@ -1,18 +1,42 @@
-# See https://fly.io/docs/app-guides/continuous-deployment-with-github-actions/
+name: Deploy to Fly.io
 
-name: Fly Deploy
 on:
-  push:
-    branches:
-      - main
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
 jobs:
   deploy:
-    name: Deploy app
+    name: Deploy to Production
     runs-on: ubuntu-latest
-    concurrency: deploy-group    # optional: ensure only one action runs at a time
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    environment: production
     steps:
       - uses: actions/checkout@v4
+
       - uses: superfly/flyctl-actions/setup-flyctl@master
+
       - run: flyctl deploy --remote-only
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Verify deployment
+        run: |
+          sleep 10
+          flyctl status
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+  notify-failure:
+    name: Notify CI Failure
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    steps:
+      - run: |
+          echo "::error::CI failed — deployment skipped"
+          exit 1

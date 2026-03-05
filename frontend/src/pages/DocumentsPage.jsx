@@ -8,7 +8,7 @@ import Select from '../components/ui/Select';
 import EmptyState from '../components/ui/EmptyState';
 import { FileText, Plus, Trash2, Upload, ExternalLink, Camera, Sparkles, Bell } from 'lucide-react';
 import { formatDateShort, daysUntil, documentTypeLabels, documentTypeBadge } from '../utils/helpers';
-import { motion } from 'framer-motion';
+import { motion as Motion } from 'framer-motion';
 
 const typeFilters = [
   { value: '', label: 'Tous' },
@@ -73,7 +73,7 @@ export default function DocumentsPage() {
       ]);
       setDocs(d);
       setVehicles(v);
-    } catch {} finally {
+    } catch { /* ignore */ } finally {
       setLoading(false);
     }
   };
@@ -99,7 +99,7 @@ export default function DocumentsPage() {
         }
         setAutoDetected(true);
       }
-    } catch {}
+    } catch { /* ignore */ }
   }, [form.expirationDate]);
 
   const handleTypeChange = useCallback((type) => {
@@ -162,8 +162,8 @@ export default function DocumentsPage() {
   );
 
   return (
-    <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-6 md:space-y-8">
-      <motion.div variants={itemVariants} className="flex items-center justify-between">
+    <Motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-6 md:space-y-8">
+      <Motion.div variants={itemVariants} className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl md:text-4xl font-black text-white font-display tracking-tight">Documents</h1>
           <p className="text-sm text-ink-muted mt-1">{docs.length} document{docs.length !== 1 ? 's' : ''}</p>
@@ -171,10 +171,10 @@ export default function DocumentsPage() {
         <Button onClick={openModal} variant="accent" disabled={!vehicles.length}>
           <Plus className="w-4 h-4" strokeWidth={2.5} />Ajouter
         </Button>
-      </motion.div>
+      </Motion.div>
 
       {/* Filters */}
-      <motion.div variants={itemVariants} className="flex gap-2 flex-wrap">
+      <Motion.div variants={itemVariants} className="flex gap-2 flex-wrap">
         {typeFilters.map(opt => (
           <button
             key={opt.value}
@@ -188,14 +188,14 @@ export default function DocumentsPage() {
             {opt.label}
           </button>
         ))}
-      </motion.div>
+      </Motion.div>
 
       {docs.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {docs.map(doc => {
             const days = doc.expirationDate ? daysUntil(doc.expirationDate) : null;
             return (
-              <motion.div variants={itemVariants} key={doc.id} className="bento-card p-5 flex flex-col justify-between group">
+              <Motion.div variants={itemVariants} key={doc.id} className="bento-card p-5 flex flex-col justify-between group">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-4 min-w-0">
                     <div className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
@@ -252,12 +252,12 @@ export default function DocumentsPage() {
                     </button>
                   </div>
                 </div>
-              </motion.div>
+              </Motion.div>
             );
           })}
         </div>
       ) : (
-        <motion.div variants={itemVariants}>
+        <Motion.div variants={itemVariants}>
           <EmptyState
             icon={FileText}
             title="Aucun document"
@@ -268,7 +268,7 @@ export default function DocumentsPage() {
                 : <p className="text-sm text-ink-muted">Ajoutez d&apos;abord un véhicule</p>
             }
           />
-        </motion.div>
+        </Motion.div>
       )}
 
       <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Nouveau document">
@@ -395,6 +395,6 @@ export default function DocumentsPage() {
           </div>
         </form>
       </Modal>
-    </motion.div>
+    </Motion.div>
   );
 }

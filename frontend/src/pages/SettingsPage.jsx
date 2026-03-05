@@ -5,7 +5,7 @@ import Button from '../components/ui/Button';
 import {
   Bell, Mail, Smartphone, Calendar, Check, Settings,
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion as Motion } from 'framer-motion';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -16,12 +16,13 @@ const itemVariants = {
   show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 120, damping: 20 } },
 };
 
-function Toggle({ checked, onChange, label, description, icon: Icon, color = 'accent' }) {
+function Toggle({ checked, onChange, label, description, icon, color = 'accent' }) {
+  const IconComponent = icon;
   return (
     <div className="flex items-center justify-between p-5 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-all">
       <div className="flex items-center gap-4">
         <div className={`w-10 h-10 rounded-xl bg-${color}/10 border border-${color}/20 flex items-center justify-center shrink-0`}>
-          <Icon className={`w-5 h-5 text-${color}`} strokeWidth={2} />
+          <IconComponent className={`w-5 h-5 text-${color}`} strokeWidth={2} />
         </div>
         <div>
           <p className="text-sm font-bold text-white font-display">{label}</p>
@@ -45,10 +46,10 @@ function Toggle({ checked, onChange, label, description, icon: Icon, color = 'ac
 }
 
 export default function SettingsPage() {
-  const { user } = useAuth();
+  const { user: _user } = useAuth();
   const [prefs, setPrefs] = useState({ notifEmail: true, notifPush: false, notifWeekly: true });
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [_saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
@@ -82,13 +83,13 @@ export default function SettingsPage() {
   );
 
   return (
-    <motion.div
+    <Motion.div
       variants={containerVariants}
       initial="hidden"
       animate="show"
       className="space-y-8 md:space-y-10 max-w-2xl"
     >
-      <motion.div variants={itemVariants}>
+      <Motion.div variants={itemVariants}>
         <p className="text-[11px] font-bold text-accent uppercase tracking-[0.15em] mb-2">Paramètres</p>
         <h1 className="text-3xl md:text-4xl font-black text-white font-display tracking-tight">
           Notifications
@@ -96,10 +97,10 @@ export default function SettingsPage() {
         <p className="text-ink-muted mt-1.5 text-sm font-medium">
           Choisissez comment et quand recevoir vos rappels.
         </p>
-      </motion.div>
+      </Motion.div>
 
       {/* Notification channels */}
-      <motion.div variants={itemVariants} className="space-y-3">
+      <Motion.div variants={itemVariants} className="space-y-3">
         <div className="flex items-center gap-2.5 mb-2">
           <div className="w-7 h-7 rounded-lg bg-accent/10 flex items-center justify-center">
             <Bell className="w-3.5 h-3.5 text-accent" strokeWidth={2.5} />
@@ -123,10 +124,10 @@ export default function SettingsPage() {
           checked={prefs.notifPush}
           onChange={v => updatePref('notifPush', v)}
         />
-      </motion.div>
+      </Motion.div>
 
       {/* Frequency */}
-      <motion.div variants={itemVariants} className="space-y-3">
+      <Motion.div variants={itemVariants} className="space-y-3">
         <div className="flex items-center gap-2.5 mb-2">
           <div className="w-7 h-7 rounded-lg bg-lime/10 flex items-center justify-center">
             <Calendar className="w-3.5 h-3.5 text-lime" strokeWidth={2.5} />
@@ -142,10 +143,10 @@ export default function SettingsPage() {
           checked={prefs.notifWeekly}
           onChange={v => updatePref('notifWeekly', v)}
         />
-      </motion.div>
+      </Motion.div>
 
       {/* Anti-spam note */}
-      <motion.div variants={itemVariants} className="p-5 rounded-2xl bg-white/[0.02] border border-white/5">
+      <Motion.div variants={itemVariants} className="p-5 rounded-2xl bg-white/[0.02] border border-white/5">
         <div className="flex items-start gap-3">
           <Settings className="w-5 h-5 text-ink-muted shrink-0 mt-0.5" />
           <div>
@@ -157,18 +158,18 @@ export default function SettingsPage() {
             </p>
           </div>
         </div>
-      </motion.div>
+      </Motion.div>
 
       {/* Save feedback */}
       {saved && (
-        <motion.div
+        <Motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           className="flex items-center gap-2 text-lime text-sm font-bold"
         >
           <Check className="w-4 h-4" /> Préférences sauvegardées
-        </motion.div>
+        </Motion.div>
       )}
-    </motion.div>
+    </Motion.div>
   );
 }

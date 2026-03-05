@@ -22,7 +22,7 @@ class PlateService {
     }
 
     // Normaliser la plaque : supprimer espaces/tirets, majuscules, puis reformater XX-NNN-XX
-    let stripped = plate.replace(/[\s\-]+/g, '').toUpperCase();
+    let stripped = plate.replace(/[\s-]+/g, '').toUpperCase();
     const sivMatch = stripped.match(/^([A-Z]{2})(\d{3})([A-Z]{2})$/);
     const normalizedPlate = sivMatch
       ? `${sivMatch[1]}-${sivMatch[2]}-${sivMatch[3]}`

@@ -99,7 +99,7 @@ export const vehicleApi = {
       try {
         const json = JSON.parse(text);
         if (json?.error) msg = json.error;
-      } catch (_) {}
+      } catch { /* ignore */ }
       throw new Error(msg);
     }
     const blob = await response.blob();

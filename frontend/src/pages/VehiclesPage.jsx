@@ -9,7 +9,7 @@ import Autocomplete from '../components/ui/Autocomplete';
 import EmptyState from '../components/ui/EmptyState';
 import PlateScanModal from '../components/PlateScanModal';
 import { Car, Plus, FileText, ArrowUpRight, Gauge, Zap, Search, CheckCircle2, ScanLine } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import PremiumModal from '../components/PremiumModal';
 
 const fuelOpts = [
@@ -123,7 +123,7 @@ export default function VehiclesPage() {
     setModels([]); setTrims([]);
     if (!brand) return;
     setLoadingModels(true);
-    try { setModels(await brandApi.getModels(brand)); } catch (e) {} finally { setLoadingModels(false); }
+    try { setModels(await brandApi.getModels(brand)); } catch { /* ignore */ } finally { setLoadingModels(false); }
   };
 
   const handleModelChange = async (model) => {
@@ -142,7 +142,7 @@ export default function VehiclesPage() {
 
   const loadTrims = async (year, brand, model) => {
     setLoadingTrims(true);
-    try { setTrims(await brandApi.getTrims(year, brand, model)); } catch (e) {} finally { setLoadingTrims(false); }
+    try { setTrims(await brandApi.getTrims(year, brand, model)); } catch { /* ignore */ } finally { setLoadingTrims(false); }
   };
 
   const handleTrimSelect = async (trimId) => {
@@ -165,7 +165,7 @@ export default function VehiclesPage() {
           doors: data.doors ? String(data.doors) : '',
         }));
       }
-    } catch (e) {}
+    } catch { /* ignore */ }
   };
 
   const resetForm = () => {
@@ -199,8 +199,8 @@ export default function VehiclesPage() {
   );
 
   return (
-    <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-6 md:space-y-8">
-      <motion.div variants={itemVariants} className="flex items-center justify-between">
+    <Motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-6 md:space-y-8">
+      <Motion.div variants={itemVariants} className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl md:text-4xl font-black text-white font-display tracking-tight">Le Garage</h1>
           <p className="text-sm text-ink-muted mt-1">{vehicles.length} véhicule{vehicles.length !== 1 ? 's' : ''}</p>
@@ -208,12 +208,12 @@ export default function VehiclesPage() {
         <Button onClick={() => setShowModal(true)} variant="accent" className="shadow-lg shadow-accent/20">
           <Plus className="w-4 h-4" strokeWidth={2.5} />Ajouter
         </Button>
-      </motion.div>
+      </Motion.div>
 
       {vehicles.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {vehicles.map(v => (
-            <motion.div variants={itemVariants} key={v.id}
+            <Motion.div variants={itemVariants} key={v.id}
               className="bento-card p-0 cursor-pointer group flex flex-col"
               onClick={() => navigate(`/vehicles/${v.id}`)}>
               <div className="aspect-[16/10] bg-[#121214] relative overflow-hidden">
@@ -257,15 +257,15 @@ export default function VehiclesPage() {
                   </div>
                 </div>
               </div>
-            </motion.div>
+            </Motion.div>
           ))}
         </div>
       ) : (
-        <motion.div variants={itemVariants}>
+        <Motion.div variants={itemVariants}>
           <EmptyState icon={Car} title="Aucun véhicule"
             description="Ajoutez votre premier véhicule pour commencer."
             action={<Button onClick={() => setShowModal(true)} variant="accent"><Plus className="w-4 h-4" />Ajouter</Button>} />
-        </motion.div>
+        </Motion.div>
       )}
 
       {/* Plate scanner */}
@@ -352,7 +352,7 @@ export default function VehiclesPage() {
           )}
 
           {(plateFound || manualMode) && (
-            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="space-y-4">
+            <Motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <Select label="Année *" options={yearOpts} value={form.year} onChange={e => handleYearChange(e.target.value)} required />
                 <Autocomplete label="Marque *" value={form.brand} options={brands} onChange={handleBrandChange} placeholder="Marque" required allowCustom />
@@ -396,7 +396,7 @@ export default function VehiclesPage() {
                 <Button variant="ghost" type="button" onClick={() => { setShowModal(false); resetForm(); }}>Annuler</Button>
                 <Button type="submit" loading={submitting} variant="accent">Ajouter au garage</Button>
               </div>
-            </motion.div>
+            </Motion.div>
           )}
         </form>
       </Modal>
@@ -404,6 +404,6 @@ export default function VehiclesPage() {
       <AnimatePresence>
         {showPremium && <PremiumModal onClose={() => setShowPremium(false)} />}
       </AnimatePresence>
-    </motion.div>
+    </Motion.div>
   );
 }

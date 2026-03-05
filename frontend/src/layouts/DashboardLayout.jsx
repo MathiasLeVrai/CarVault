@@ -15,7 +15,10 @@ export default function DashboardLayout() {
   useEffect(() => {
     if (!user) return;
     const key = `carvault_tour_done_${user.id}`;
-    if (!localStorage.getItem(key)) setShowTour(true);
+    if (!localStorage.getItem(key)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setShowTour(true);
+    }
   }, [user]);
 
   return (

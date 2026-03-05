@@ -91,6 +91,7 @@ export default function Onboarding() {
   useEffect(() => {
     if (!storageKey) return;
     if (localStorage.getItem(storageKey)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setChecking(false);
       return;
     }

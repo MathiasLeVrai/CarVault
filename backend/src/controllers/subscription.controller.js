@@ -37,7 +37,7 @@ class SubscriptionController {
     }
   }
 
-  async webhook(req, res, next) {
+  async webhook(req, res, _next) {
     try {
       const sig = req.headers['stripe-signature'];
       const result = await stripeService.handleWebhook(req.body, sig);

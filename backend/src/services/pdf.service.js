@@ -42,7 +42,7 @@ function resolvePhotoPath(photoUrl) {
   for (const p of candidates) {
     try {
       if (fs.existsSync(p)) return p;
-    } catch (_) {}
+    } catch { /* ignore */ }
   }
   return null;
 }
@@ -120,7 +120,7 @@ class PdfService {
       try {
         doc.image(photoPath, 100, 140, { width: 400, height: 220, fit: [400, 220], align: 'center' });
         photoY = 380;
-      } catch {}
+      } catch { /* ignore */ }
     }
 
     // Nom du véhicule
@@ -258,7 +258,7 @@ class PdfService {
 
   // ===================== PAGE 3+ : HISTORIQUE ENTRETIEN/DÉPENSES =====================
 
-  _drawExpenseHistory(doc, expenses, stats) {
+  _drawExpenseHistory(doc, expenses, _stats) {
     this._drawHeader(doc, 'Historique des dépenses');
 
     if (!expenses || expenses.length === 0) {
@@ -372,7 +372,7 @@ class PdfService {
 
   // ===================== RÉSUMÉ FINANCIER =====================
 
-  _drawFinancialSummary(doc, expenses, stats, health) {
+  _drawFinancialSummary(doc, expenses, _stats, health) {
     this._drawHeader(doc, 'Résumé financier');
 
     let y = 120;

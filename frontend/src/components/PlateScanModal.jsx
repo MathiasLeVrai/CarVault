@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { X, RotateCcw, CheckCircle2, Loader2, AlertCircle, ScanLine } from 'lucide-react';
 
 // Extract French license plate from raw OCR text
@@ -17,7 +17,7 @@ function extractPlate(raw) {
 }
 
 function enhanceFrame(canvas) {
-  const ctx = canvas.getContext('2d');
+  const _ctx = canvas.getContext('2d');
   const w = canvas.width;
   const h = canvas.height;
   // Crop center 80% × 35%
@@ -147,7 +147,7 @@ export default function PlateScanModal({ onPlateFound, onClose }) {
 
   return (
     <AnimatePresence>
-      <motion.div
+      <Motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -207,7 +207,7 @@ export default function PlateScanModal({ onPlateFound, onClose }) {
 
                 {/* Animated scan line — moves on each tick */}
                 {!foundPlate && (
-                  <motion.div
+                  <Motion.div
                     key={scanTick}
                     className="absolute left-0 right-0 h-0.5 bg-accent shadow-[0_0_10px_rgba(255,42,63,0.9)]"
                     initial={{ top: '0%' }}
@@ -218,7 +218,7 @@ export default function PlateScanModal({ onPlateFound, onClose }) {
 
                 {/* Found overlay */}
                 {foundPlate && (
-                  <motion.div
+                  <Motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     className="absolute inset-0 flex items-center justify-center bg-lime/20 border border-lime/50 rounded-sm backdrop-blur-sm"
@@ -226,7 +226,7 @@ export default function PlateScanModal({ onPlateFound, onClose }) {
                     <span className="text-2xl font-black font-mono text-white tracking-widest drop-shadow-lg">
                       {foundPlate}
                     </span>
-                  </motion.div>
+                  </Motion.div>
                 )}
               </div>
 
@@ -245,7 +245,7 @@ export default function PlateScanModal({ onPlateFound, onClose }) {
         {/* Bottom */}
         <div className="px-6 py-6 flex flex-col items-center gap-4">
           {foundPlate ? (
-            <motion.div
+            <Motion.div
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               className="w-full space-y-3"
@@ -264,14 +264,14 @@ export default function PlateScanModal({ onPlateFound, onClose }) {
                   Utiliser cette plaque
                 </button>
               </div>
-            </motion.div>
+            </Motion.div>
           ) : (
             <p className="text-xs text-white/30 font-medium">
               Scan automatique actif — aucune action requise
             </p>
           )}
         </div>
-      </motion.div>
+      </Motion.div>
     </AnimatePresence>
   );
 }

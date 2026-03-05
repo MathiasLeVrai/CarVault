@@ -19,7 +19,7 @@ class ShareController {
       const vehicle = link.vehicle;
 
       let health = null;
-      try { health = await healthService.getHealthScore(vehicle.id, link.userId); } catch {}
+      try { health = await healthService.getHealthScore(vehicle.id, link.userId); } catch { /* ignore */ }
 
       const currentYear = new Date().getFullYear();
       const totalExpenses = vehicle.expenses.reduce((s, e) => s + (e.amount || 0), 0);
@@ -55,7 +55,7 @@ class ShareController {
       const vehicle = link.vehicle;
 
       let health = null;
-      try { health = await healthService.getHealthScore(vehicle.id, link.userId); } catch {}
+      try { health = await healthService.getHealthScore(vehicle.id, link.userId); } catch { /* ignore */ }
 
       const totalExpenses = vehicle.expenses.reduce((s, e) => s + (e.amount || 0), 0);
       const pdfBuffer = await pdfService.generateVehicleDossier(

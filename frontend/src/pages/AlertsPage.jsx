@@ -5,7 +5,7 @@ import Badge from '../components/ui/Badge';
 import EmptyState from '../components/ui/EmptyState';
 import { Bell, BellOff, Check, CheckCheck, Trash2, Clock, AlertTriangle, Shield, FileText, Wrench, Droplets, CircleDot, Gauge, Timer } from 'lucide-react';
 import { formatDate, alertTypeLabels, daysUntil } from '../utils/helpers';
-import { motion } from 'framer-motion';
+import { motion as Motion } from 'framer-motion';
 
 const icons = {
   DOCUMENT_EXPIRY: FileText,
@@ -52,7 +52,7 @@ export default function AlertsPage() {
   const [snoozeOpen, setSnoozeOpen] = useState(null);
 
   useEffect(() => { load(); }, [showAll]);
-  const load = async () => { try { setAlerts(await alertApi.getAll(!showAll)); } catch {} finally { setLoading(false); } };
+  const load = async () => { try { setAlerts(await alertApi.getAll(!showAll)); } catch { /* ignore */ } finally { setLoading(false); } };
   const markRead = async (id) => { await alertApi.markAsRead(id); load(); };
   const markAll = async () => { await alertApi.markAllAsRead(); load(); };
   const del = async (id) => { await alertApi.delete(id); load(); };
@@ -66,8 +66,8 @@ export default function AlertsPage() {
   const unread = alerts.filter(a => !a.isRead).length;
 
   return (
-    <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-6 md:space-y-8">
-      <motion.div variants={itemVariants} className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <Motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-6 md:space-y-8">
+      <Motion.div variants={itemVariants} className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl md:text-4xl font-black text-white font-display tracking-tight">Alertes</h1>
           <p className="text-sm text-ink-muted mt-1">{unread > 0 ? `${unread} non lue${unread > 1 ? 's' : ''}` : 'Tout est à jour'}</p>
@@ -79,7 +79,7 @@ export default function AlertsPage() {
           </Button>
           {unread > 0 && <Button variant="accent" size="sm" onClick={markAll}><CheckCheck className="w-4 h-4" />Tout lire</Button>}
         </div>
-      </motion.div>
+      </Motion.div>
 
       {alerts.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -89,7 +89,7 @@ export default function AlertsPage() {
             const days = alert.dueDate ? daysUntil(alert.dueDate) : null;
             const isSnoozed = alert.snoozedUntil && new Date(alert.snoozedUntil) > new Date();
             return (
-              <motion.div variants={itemVariants} key={alert.id} className={`bento-card p-5 flex flex-col justify-between group ${alert.isRead ? 'opacity-50 grayscale-[50%]' : ''}`}>
+              <Motion.div variants={itemVariants} key={alert.id} className={`bento-card p-5 flex flex-col justify-between group ${alert.isRead ? 'opacity-50 grayscale-[50%]' : ''}`}>
                 <div className="flex items-start gap-4 mb-4">
                   <div className={`w-12 h-12 rounded-2xl border ${iconStyle} flex items-center justify-center shrink-0 shadow-lg`}>
                     <Icon className="w-5 h-5" strokeWidth={2} />
@@ -144,16 +144,16 @@ export default function AlertsPage() {
                     </button>
                   </div>
                 </div>
-              </motion.div>
+              </Motion.div>
             );
           })}
         </div>
       ) : (
-        <motion.div variants={itemVariants}>
+        <Motion.div variants={itemVariants}>
           <EmptyState icon={Bell} title={showAll ? 'Aucune alerte' : 'Tout est en ordre'}
             description={showAll ? 'Les alertes apparaîtront quand vos documents expireront.' : 'Aucune alerte en attente.'} />
-        </motion.div>
+        </Motion.div>
       )}
-    </motion.div>
+    </Motion.div>
   );
 }

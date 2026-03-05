@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { Link2, Link2Off, RefreshCw, Fuel, ChevronDown, Loader2, CheckCircle2, AlertTriangle, Search, Building2 } from 'lucide-react';
 import { bankApi, vehicleApi, fuelApi } from '../services/api';
 import { useToast } from '../context/ToastContext';
@@ -61,7 +61,7 @@ function TxRow({ tx, vehicles, onImport, imported }) {
 
       <AnimatePresence>
         {open && !imported && (
-          <motion.div
+          <Motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
@@ -118,7 +118,7 @@ function TxRow({ tx, vehicles, onImport, imported }) {
                 Créer l'entrée carburant
               </button>
             </div>
-          </motion.div>
+          </Motion.div>
         )}
       </AnimatePresence>
     </div>
@@ -154,7 +154,7 @@ export default function BankPage() {
     try {
       const { banks: list } = await bankApi.listInstitutions();
       setBanks(list || []);
-    } catch {}
+    } catch { /* ignore */ }
   }, []);
 
   useEffect(() => {

@@ -1,4 +1,4 @@
-import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import {
   LayoutDashboard, Car, Wallet, Bell, LogOut, Settings, Plus, MapPin, Building2,
@@ -29,10 +29,17 @@ const sidebarItems = [
 export default function Sidebar({ onFabPress }) {
   const { logout } = useAuth();
   const location = useLocation();
-  const navigate = useNavigate();
   const [alertCount, setAlertCount] = useState(0);
 
+  const loadAlertCount = async () => {
+    try {
+      const { count } = await alertApi.countUnread();
+      setAlertCount(count);
+    } catch { /* ignore */ }
+  };
+
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadAlertCount();
     const interval = setInterval(loadAlertCount, 60_000);
     return () => clearInterval(interval);
@@ -42,13 +49,6 @@ export default function Sidebar({ onFabPress }) {
     if (!location.pathname.startsWith('/alerts')) return;
     return () => { loadAlertCount(); };
   }, [location.pathname]);
-
-  const loadAlertCount = async () => {
-    try {
-      const { count } = await alertApi.countUnread();
-      setAlertCount(count);
-    } catch {}
-  };
 
   return (
     <>
@@ -64,8 +64,9 @@ export default function Sidebar({ onFabPress }) {
         </div>
 
         <nav className="flex-1 space-y-1.5 mt-4">
-          {sidebarItems.map(({ to, icon: Icon, label, showBadge }) => {
+          {sidebarItems.map(({ to, icon, label, showBadge }) => {
             const active = location.pathname === to || location.pathname.startsWith(to + '/');
+            const IconComponent = icon;
             return (
               <NavLink
                 key={to}
@@ -79,7 +80,7 @@ export default function Sidebar({ onFabPress }) {
                 {active && (
                   <div className="absolute left-0 top-2 bottom-2 w-[3px] rounded-full bg-accent" />
                 )}
-                <Icon
+                <IconComponent
                   className={`w-[18px] h-[18px] transition-colors ${active ? 'text-accent' : 'text-current'}`}
                   strokeWidth={active ? 2.5 : 2}
                 />
@@ -110,8 +111,9 @@ export default function Sidebar({ onFabPress }) {
         <div className="cv-bottom-bar rounded-2xl shadow-2xl">
           <div className="flex items-center">
             {/* Left 2 items */}
-            {navItems.slice(0, 2).map(({ to, icon: Icon, label, showBadge }) => {
+            {navItems.slice(0, 2).map(({ to, icon, label, showBadge }) => {
               const active = location.pathname === to || location.pathname.startsWith(to + '/');
+              const IconComponent = icon;
               return (
                 <NavLink
                   key={to}
@@ -121,7 +123,7 @@ export default function Sidebar({ onFabPress }) {
                   }`}
                 >
                   <div className="relative">
-                    <Icon className="w-5 h-5" strokeWidth={active ? 2.5 : 2} color={active ? '#ff2a3f' : 'currentColor'} />
+                    <IconComponent className="w-5 h-5" strokeWidth={active ? 2.5 : 2} color={active ? '#ff2a3f' : 'currentColor'} />
                     {showBadge && alertCount > 0 && (
                       <span className="absolute -top-1 -right-1.5 min-w-[16px] h-4 px-1 rounded-full bg-accent text-white text-[9px] font-bold flex items-center justify-center shadow-[0_0_8px_rgba(255,42,63,0.4)]">
                         {alertCount > 9 ? '9+' : alertCount}
@@ -145,8 +147,9 @@ export default function Sidebar({ onFabPress }) {
             </div>
 
             {/* Right 2 items */}
-            {navItems.slice(2).map(({ to, icon: Icon, label, showBadge }) => {
+            {navItems.slice(2).map(({ to, icon, label, showBadge }) => {
               const active = location.pathname === to || location.pathname.startsWith(to + '/');
+              const IconComponent = icon;
               return (
                 <NavLink
                   key={to}
@@ -156,7 +159,7 @@ export default function Sidebar({ onFabPress }) {
                   }`}
                 >
                   <div className="relative">
-                    <Icon className="w-5 h-5" strokeWidth={active ? 2.5 : 2} color={active ? '#ff2a3f' : 'currentColor'} />
+                    <IconComponent className="w-5 h-5" strokeWidth={active ? 2.5 : 2} color={active ? '#ff2a3f' : 'currentColor'} />
                     {showBadge && alertCount > 0 && (
                       <span className="absolute -top-1 -right-1.5 min-w-[16px] h-4 px-1 rounded-full bg-accent text-white text-[9px] font-bold flex items-center justify-center shadow-[0_0_8px_rgba(255,42,63,0.4)]">
                         {alertCount > 9 ? '9+' : alertCount}

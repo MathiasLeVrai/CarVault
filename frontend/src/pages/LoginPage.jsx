@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion as Motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { ArrowRight } from 'lucide-react';
 import Button from '../components/ui/Button';
@@ -25,7 +25,7 @@ export default function LoginPage() {
     e.preventDefault();
     setError(''); setLoading(true);
     try { await login(email, password); }
-    catch (err) { setError('Email ou mot de passe incorrect.'); }
+    catch { setError('Email ou mot de passe incorrect.'); }
     finally { setLoading(false); }
   };
 
@@ -53,7 +53,7 @@ export default function LoginPage() {
 
         <div className="relative z-10 max-w-md w-full">
           {/* Brand pill */}
-          <motion.div
+          <Motion.div
             initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
@@ -61,7 +61,7 @@ export default function LoginPage() {
           >
             <span className="text-sm font-black text-accent font-display">CV</span>
             <span className="text-sm font-bold text-white/70">CarVault</span>
-          </motion.div>
+          </Motion.div>
 
           {/* Headline */}
           <h2 className="text-5xl font-black text-white leading-[1.15] mb-10 font-display tracking-tight">
@@ -70,7 +70,7 @@ export default function LoginPage() {
           </h2>
 
           {/* Divider */}
-          <motion.div
+          <Motion.div
             className="cv-divider mb-10"
             initial={{ scaleX: 0, originX: 0 }}
             animate={{ scaleX: 1 }}

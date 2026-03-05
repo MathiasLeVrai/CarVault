@@ -11,8 +11,8 @@ import StatCard from '../components/ui/StatCard';
 import { ArrowLeft, FileText, Wallet, Plus, Trash2, Gauge, Upload, FileDown, Heart, TrendingDown, ShieldCheck, Wrench, FileCheck, Route, Settings, Share2, Link2, Copy, Check, ExternalLink } from 'lucide-react';
 import FuelTracker from '../components/FuelTracker';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, ReferenceLine } from 'recharts';
-import { formatCurrency, formatDateShort, documentTypeLabels, documentTypeBadge, expenseCategoryLabels } from '../utils/helpers';
-import { motion } from 'framer-motion';
+import { formatCurrency, formatDateShort, documentTypeLabels, expenseCategoryLabels } from '../utils/helpers';
+import { motion as Motion } from 'framer-motion';
 
 const docTypeOpts = [{ value: 'INSURANCE', label: 'Assurance' },{ value: 'TECHNICAL_INSPECTION', label: 'Contrôle technique' },{ value: 'INVOICE', label: 'Facture' },{ value: 'WARRANTY', label: 'Garantie' },{ value: 'REGISTRATION', label: 'Carte grise' },{ value: 'OTHER', label: 'Autre' }];
 const expCatOpts = [{ value: 'MAINTENANCE', label: 'Entretien' },{ value: 'TIRES', label: 'Pneus' },{ value: 'FUEL', label: 'Carburant' },{ value: 'INSURANCE', label: 'Assurance' },{ value: 'REPAIR', label: 'Réparation' },{ value: 'PARKING', label: 'Stationnement' },{ value: 'TOLL', label: 'Péage' },{ value: 'OTHER', label: 'Autre' }];
@@ -63,12 +63,13 @@ function ScoreGauge({ score, grade, size = 140 }) {
   );
 }
 
-function SubScoreBar({ icon: Icon, label, score, max, color }) {
+function SubScoreBar({ icon, label, score, max, color }) {
+  const IconComponent = icon;
   const pct = max > 0 ? (score / max) * 100 : 0;
   return (
     <div className="flex items-center gap-4">
       <div className="w-10 h-10 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-center shrink-0">
-        <Icon className="w-4 h-4 text-white/60" strokeWidth={2} />
+        <IconComponent className="w-4 h-4 text-white/60" strokeWidth={2} />
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between mb-1.5">
@@ -138,13 +139,13 @@ export default function VehicleDetailPage() {
       setMileageEntries(entries);
     } catch { navigate('/vehicles'); } finally { setLoading(false); }
   };
-  const addDoc = async (e) => { e.preventDefault(); setSub(true); try { const fd=new FormData(); fd.append('vehicleId',id); fd.append('name',df.name); fd.append('type',df.type); if(df.expirationDate) fd.append('expirationDate',df.expirationDate); if(df.notes) fd.append('notes',df.notes); if(docFile) fd.append('file',docFile); await documentApi.create(fd); setShowDoc(false); setDf({name:'',type:'INSURANCE',expirationDate:'',notes:''}); setDocFile(null); load(); } catch{} finally{setSub(false);} };
+  const addDoc = async (e) => { e.preventDefault(); setSub(true); try { const fd=new FormData(); fd.append('vehicleId',id); fd.append('name',df.name); fd.append('type',df.type); if(df.expirationDate) fd.append('expirationDate',df.expirationDate); if(df.notes) fd.append('notes',df.notes); if(docFile) fd.append('file',docFile); await documentApi.create(fd); setShowDoc(false); setDf({name:'',type:'INSURANCE',expirationDate:'',notes:''}); setDocFile(null); load(); } catch { /* ignore */ } finally{setSub(false);} };
   const addExp = async (e) => { e.preventDefault(); setSub(true); try { await expenseApi.create({...ef,amount:parseFloat(ef.amount),vehicleId:id}); setShowExp(false); setEf({amount:'',category:'MAINTENANCE',date:'',description:'',mileage:''}); load(); } catch{console.error('erreur lors de l/ajout de la depense')} finally{setSub(false);} };
   const delDoc = async (did) => { if(!confirm('Supprimer ?')) return; await documentApi.delete(did); load(); };
   const delExp = async (eid) => { if(!confirm('Supprimer ?')) return; await expenseApi.delete(eid); load(); };
   const delVehicle = async () => { if(!confirm('Supprimer ce véhicule ?')) return; await vehicleApi.delete(id); navigate('/vehicles'); };
   const downloadPdf = async () => { setGeneratingPdf(true); try { await vehicleApi.downloadPdf(id); } catch (e) { console.error('PDF error:', e); } finally { setGeneratingPdf(false); } };
-  const addMileage = async (e) => { e.preventDefault(); setSub(true); try { await mileageApi.create(id, { mileage: parseInt(mf.mileage), date: mf.date, notes: mf.notes }); setShowMileage(false); setMf({ mileage:'', date: new Date().toISOString().split('T')[0], notes:'' }); load(); } catch {} finally { setSub(false); } };
+  const addMileage = async (e) => { e.preventDefault(); setSub(true); try { await mileageApi.create(id, { mileage: parseInt(mf.mileage), date: mf.date, notes: mf.notes }); setShowMileage(false); setMf({ mileage:'', date: new Date().toISOString().split('T')[0], notes:'' }); load(); } catch { /* ignore */ } finally { setSub(false); } };
   const delMileage = async (mid) => { if(!confirm('Supprimer ?')) return; await mileageApi.delete(id, mid); load(); };
   const createShareLink = async () => {
     setShareLoading(true);
@@ -174,9 +175,9 @@ export default function VehicleDetailPage() {
   const health = v.health;
 
   return (
-    <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-6 md:space-y-8">
+    <Motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-6 md:space-y-8">
       {/* Hero Header */}
-      <motion.div variants={itemVariants} className="relative rounded-3xl overflow-hidden bg-[#121214] border border-white/10 shadow-2xl group">
+      <Motion.div variants={itemVariants} className="relative rounded-3xl overflow-hidden bg-[#121214] border border-white/10 shadow-2xl group">
         <div className="absolute inset-0 mesh-accent opacity-30 mix-blend-screen pointer-events-none" />
         {v.photo && (
           <div className="absolute inset-0">
@@ -211,22 +212,22 @@ export default function VehicleDetailPage() {
             </Button>
           </div>
         </div>
-      </motion.div>
+      </Motion.div>
 
       {/* Stats Bento */}
       <div className={`grid grid-cols-2 ${health?.estimatedValue ? 'md:grid-cols-4' : 'md:grid-cols-3'} gap-4 md:gap-6`}>
-        <motion.div variants={itemVariants}><StatCard icon={Gauge} label="Kilométrage" value={`${v.mileage?.toLocaleString('fr-FR')} km`} color="accent" /></motion.div>
-        <motion.div variants={itemVariants}><StatCard icon={FileText} label="Documents" value={v._count?.documents || 0} color="violet" /></motion.div>
-        <motion.div variants={itemVariants}><StatCard icon={Wallet} label={`Dépenses ${new Date().getFullYear()}`} value={formatCurrency(v.stats?.totalExpensesYear || 0)} color="default" /></motion.div>
+        <Motion.div variants={itemVariants}><StatCard icon={Gauge} label="Kilométrage" value={`${v.mileage?.toLocaleString('fr-FR')} km`} color="accent" /></Motion.div>
+        <Motion.div variants={itemVariants}><StatCard icon={FileText} label="Documents" value={v._count?.documents || 0} color="violet" /></Motion.div>
+        <Motion.div variants={itemVariants}><StatCard icon={Wallet} label={`Dépenses ${new Date().getFullYear()}`} value={formatCurrency(v.stats?.totalExpensesYear || 0)} color="default" /></Motion.div>
         {health?.estimatedValue && (
-          <motion.div variants={itemVariants}><StatCard icon={TrendingDown} label="Valeur estimée" value={formatCurrency(health.estimatedValue)} color="orange" /></motion.div>
+          <Motion.div variants={itemVariants}><StatCard icon={TrendingDown} label="Valeur estimée" value={formatCurrency(health.estimatedValue)} color="orange" /></Motion.div>
         )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Health Score */}
         {health && (
-          <motion.div variants={itemVariants} className="lg:col-span-1 cv-card-dark p-6 md:p-8 flex flex-col items-center justify-center text-center">
+          <Motion.div variants={itemVariants} className="lg:col-span-1 cv-card-dark p-6 md:p-8 flex flex-col items-center justify-center text-center">
             <h3 className="text-lg font-bold text-white flex items-center gap-2 font-display mb-8">
               <Heart className="w-5 h-5 text-accent" strokeWidth={2.5} />Score Santé
             </h3>
@@ -235,12 +236,12 @@ export default function VehicleDetailPage() {
               <SubScoreBar icon={Wrench} label="Entretien" score={health.breakdown.maintenance.score} max={health.breakdown.maintenance.max} />
               <SubScoreBar icon={FileCheck} label="Documents" score={health.breakdown.documents.score} max={health.breakdown.documents.max} />
             </div>
-          </motion.div>
+          </Motion.div>
         )}
 
         <div className="lg:col-span-2 space-y-6">
           {/* Chart */}
-          <motion.div variants={itemVariants} className="bento-card p-6 md:p-8">
+          <Motion.div variants={itemVariants} className="bento-card p-6 md:p-8">
             <h3 className="text-lg font-bold text-white mb-6 font-display">Dépenses mensuelles</h3>
             <ResponsiveContainer width="100%" height={240}>
               <BarChart data={chartData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
@@ -251,11 +252,11 @@ export default function VehicleDetailPage() {
                 <Bar dataKey="total" fill="#ff2a3f" radius={[6,6,0,0]} maxBarSize={36} />
               </BarChart>
             </ResponsiveContainer>
-          </motion.div>
+          </Motion.div>
 
           {/* Lists */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <motion.div variants={itemVariants} className="bento-card p-6">
+            <Motion.div variants={itemVariants} className="bento-card p-6">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-base font-bold text-white font-display">Documents</h3>
                 <Button size="sm" variant="ghost" onClick={() => setShowDoc(true)} className="w-8 h-8 p-0 rounded-full bg-white/5 hover:bg-white/10"><Plus className="w-4 h-4" /></Button>
@@ -282,9 +283,9 @@ export default function VehicleDetailPage() {
                   </div>
                 ))}</div>
               ) : <p className="text-sm text-ink-muted text-center py-8">Aucun document</p>}
-            </motion.div>
+            </Motion.div>
 
-            <motion.div variants={itemVariants} className="bento-card p-6">
+            <Motion.div variants={itemVariants} className="bento-card p-6">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-base font-bold text-white font-display">Dépenses</h3>
                 <Button size="sm" variant="ghost" onClick={() => setShowExp(true)} className="w-8 h-8 p-0 rounded-full bg-white/5 hover:bg-white/10"><Plus className="w-4 h-4" /></Button>
@@ -311,13 +312,13 @@ export default function VehicleDetailPage() {
                   </div>
                 ))}</div>
               ) : <p className="text-sm text-ink-muted text-center py-8">Aucune dépense</p>}
-            </motion.div>
+            </Motion.div>
           </div>
         </div>
       </div>
 
       {/* Mileage History */}
-      <motion.div variants={itemVariants} className="bento-card p-6 md:p-8">
+      <Motion.div variants={itemVariants} className="bento-card p-6 md:p-8">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-bold text-white font-display flex items-center gap-2">
             <Route className="w-5 h-5 text-accent" strokeWidth={2.5} />Historique kilométrage
@@ -352,7 +353,7 @@ export default function VehicleDetailPage() {
             })}
           </div>
         ) : <p className="text-sm text-ink-muted text-center py-6">Aucune entrée</p>}
-      </motion.div>
+      </Motion.div>
 
       {/* Valeur & Dépréciation */}
       {(v.purchasePrice || v.msrp) && (() => {
@@ -365,7 +366,7 @@ export default function VehicleDetailPage() {
         const lossPct = originalValue && totalLoss ? Math.round((totalLoss / originalValue) * 100) : null;
         const argusUrl = `https://www.largus.fr/cote-auto/${encodeURIComponent((v.brand || '').toLowerCase())}-${encodeURIComponent((v.model || '').toLowerCase())}.html`;
         return (
-          <motion.div variants={itemVariants} className="bento-card p-6 md:p-8">
+          <Motion.div variants={itemVariants} className="bento-card p-6 md:p-8">
             <div className="flex items-center justify-between mb-5">
               <h3 className="text-lg font-bold text-white font-display flex items-center gap-2">
                 <TrendingDown className="w-5 h-5 text-orange" strokeWidth={2.5} />Valeur estimée
@@ -412,14 +413,14 @@ export default function VehicleDetailPage() {
             <p className="text-[10px] text-white/20 text-center mt-2 font-medium">
               Estimation — ligne pointillée = projection future
             </p>
-          </motion.div>
+          </Motion.div>
         );
       })()}
 
       {/* Fuel Tracker */}
-      <motion.div variants={itemVariants} className="bento-card p-6 md:p-8">
+      <Motion.div variants={itemVariants} className="bento-card p-6 md:p-8">
         <FuelTracker vehicleId={id} />
-      </motion.div>
+      </Motion.div>
 
       {/* Modals */}
       <Modal isOpen={showDoc} onClose={() => setShowDoc(false)} title="Ajouter un document">
@@ -534,6 +535,6 @@ export default function VehicleDetailPage() {
           )}
         </div>
       </Modal>
-    </motion.div>
+    </Motion.div>
   );
 }

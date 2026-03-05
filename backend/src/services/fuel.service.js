@@ -67,7 +67,7 @@ class FuelService {
    * Compute fuel statistics from a list of entries (ordered desc by date).
    * Consumption is calculated between consecutive full fill-ups.
    */
-  _computeStats(entries, vehicle) {
+  _computeStats(entries, _vehicle) {
     if (entries.length === 0) return null;
 
     // Only full fill-ups are valid for consumption calculation

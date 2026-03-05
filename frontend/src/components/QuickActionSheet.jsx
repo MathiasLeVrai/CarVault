@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { X, Fuel, Wallet, Gauge, CheckCircle2, ChevronDown } from 'lucide-react';
 import { vehicleApi, fuelApi, expenseApi, mileageApi } from '../services/api';
 import { useToast } from '../context/ToastContext';
@@ -143,7 +143,7 @@ export default function QuickActionSheet({ onClose }) {
   return (
     <AnimatePresence>
       {/* Backdrop */}
-      <motion.div
+      <Motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -152,7 +152,7 @@ export default function QuickActionSheet({ onClose }) {
       />
 
       {/* Sheet */}
-      <motion.div
+      <Motion.div
         initial={{ y: '100%' }}
         animate={{ y: 0 }}
         exit={{ y: '100%' }}
@@ -194,9 +194,9 @@ export default function QuickActionSheet({ onClose }) {
         {/* Success state */}
         {done ? (
           <div className="flex flex-col items-center gap-3 py-8">
-            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 300 }}>
+            <Motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 300 }}>
               <CheckCircle2 className="w-12 h-12 text-lime" />
-            </motion.div>
+            </Motion.div>
             <p className="text-base font-bold text-white">Enregistré !</p>
           </div>
         ) : (
@@ -286,7 +286,7 @@ export default function QuickActionSheet({ onClose }) {
             </button>
           </div>
         )}
-      </motion.div>
+      </Motion.div>
     </AnimatePresence>
   );
 }

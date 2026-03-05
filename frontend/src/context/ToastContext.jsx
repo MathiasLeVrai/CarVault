@@ -1,5 +1,6 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, XCircle, AlertTriangle, Info, X } from 'lucide-react';
 
 const ToastContext = createContext(null);
@@ -14,7 +15,7 @@ const ICONS = {
 function ToastItem({ toast, onDismiss }) {
   const { Icon, color, bg } = ICONS[toast.type] || ICONS.info;
   return (
-    <motion.div
+    <Motion.div
       layout
       initial={{ opacity: 0, y: -16, scale: 0.94 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -27,7 +28,7 @@ function ToastItem({ toast, onDismiss }) {
       <button onClick={() => onDismiss(toast.id)} className="shrink-0 text-white/30 hover:text-white/60 transition-colors mt-0.5">
         <X className="w-3.5 h-3.5" />
       </button>
-    </motion.div>
+    </Motion.div>
   );
 }
 
