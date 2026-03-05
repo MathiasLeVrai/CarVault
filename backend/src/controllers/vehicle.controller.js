@@ -1,6 +1,7 @@
 const vehicleService = require('../services/vehicle.service');
 const pdfService = require('../services/pdf.service');
 const healthService = require('../services/health.service');
+const storageService = require('../services/storage.service');
 
 class VehicleController {
   async getAll(req, res, next) {
@@ -43,6 +44,10 @@ class VehicleController {
         return res.status(400).json({ error: 'Marque, modèle et année sont requis' });
       }
 
+      const photo = req.file
+        ? await storageService.upload(req.file.buffer, req.file.originalname, 'vehicles')
+        : null;
+
       const data = {
         brand,
         model,
@@ -52,7 +57,7 @@ class VehicleController {
         color: color || null,
         fuelType: fuelType || 'GASOLINE',
         purchasePrice: purchasePrice ? parseFloat(purchasePrice) : null,
-        photo: req.file ? `/uploads/vehicles/${req.file.filename}` : null,
+        photo,
         carapiTrimId: carapiTrimId ? parseInt(carapiTrimId) : null,
         msrp: msrp ? parseFloat(msrp) : null,
         horsepower: horsepower ? parseInt(horsepower) : null,
@@ -74,7 +79,9 @@ class VehicleController {
       const data = { ...req.body };
       if (data.year) data.year = parseInt(data.year);
       if (data.mileage) data.mileage = parseInt(data.mileage);
-      if (req.file) data.photo = `/uploads/vehicles/${req.file.filename}`;
+      if (req.file) {
+        data.photo = await storageService.upload(req.file.buffer, req.file.originalname, 'vehicles');
+      }
 
       const vehicle = await vehicleService.update(req.params.id, data, req.userId);
       res.json(vehicle);

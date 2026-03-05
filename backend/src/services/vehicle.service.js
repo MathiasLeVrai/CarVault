@@ -102,18 +102,16 @@ class VehicleService {
    * Mettre à jour un véhicule
    */
   async update(id, data, userId) {
-    const vehicle = await prisma.vehicle.findFirst({
+    const result = await prisma.vehicle.updateMany({
       where: { id, userId },
+      data,
     });
 
-    if (!vehicle) {
+    if (result.count === 0) {
       throw new AppError('Véhicule non trouvé', 404);
     }
 
-    return prisma.vehicle.update({
-      where: { id },
-      data,
-    });
+    return prisma.vehicle.findUnique({ where: { id } });
   }
 
   /**

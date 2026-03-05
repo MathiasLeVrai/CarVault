@@ -9,6 +9,6 @@ const subscriptionController = require('../controllers/subscription.controller')
 router.get('/status', authenticate, subscriptionController.getStatus);
 router.post('/checkout', authenticate, subscriptionController.createCheckout);
 router.post('/portal', authenticate, subscriptionController.createPortal);
-router.post('/webhook', express.raw({ type: 'application/json' }), subscriptionController.webhook);
+router.post('/webhook', subscriptionController.webhook);
 
 module.exports = router;

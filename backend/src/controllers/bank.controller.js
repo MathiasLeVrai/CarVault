@@ -36,7 +36,13 @@ class BankController {
       if (!institutionId || !institutionName) {
         return res.status(400).json({ error: 'institutionId et institutionName requis' });
       }
-      const origin = req.headers.origin || process.env.APP_URL || 'http://localhost:5173';
+      const allowedOrigins = process.env.CORS_ORIGIN
+        ? process.env.CORS_ORIGIN.split(',')
+        : ['http://localhost:5173', 'http://localhost:5174'];
+      const requestOrigin = req.headers.origin || '';
+      const origin = allowedOrigins.includes(requestOrigin)
+        ? requestOrigin
+        : (process.env.APP_URL || 'http://localhost:5173');
       const redirectUrl = `${origin}/bank/callback`;
       const result = await nordigenService.createRequisition(req.userId, institutionId, institutionName, redirectUrl);
       res.json(result);

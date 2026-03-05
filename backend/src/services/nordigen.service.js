@@ -21,11 +21,21 @@ function isFuelTransaction(description = '', amount = 0) {
 }
 
 class NordigenService {
+  constructor() {
+    this._token = null;
+    this._tokenExpiry = null;
+  }
+
   isConfigured() {
     return !!(process.env.NORDIGEN_SECRET_ID && process.env.NORDIGEN_SECRET_KEY);
   }
 
   async getToken() {
+    // Return cached token if still valid (with 60s buffer)
+    if (this._token && this._tokenExpiry && Date.now() < this._tokenExpiry - 60_000) {
+      return this._token;
+    }
+
     const res = await fetch(`${BASE_URL}/token/new/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
@@ -36,7 +46,11 @@ class NordigenService {
     });
     if (!res.ok) throw new Error('Nordigen auth failed');
     const data = await res.json();
-    return data.access;
+    this._token = data.access;
+    // access tokens are valid for 24h; use access_expires if provided
+    const expiresIn = (data.access_expires || 86400) * 1000;
+    this._tokenExpiry = Date.now() + expiresIn;
+    return this._token;
   }
 
   async listInstitutions(country = 'FR') {

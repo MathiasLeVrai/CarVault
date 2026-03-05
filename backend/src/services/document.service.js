@@ -1,5 +1,6 @@
 const prisma = require('../lib/prisma');
 const { AppError } = require('../middleware/error.middleware');
+const storageService = require('./storage.service');
 
 class DocumentService {
   /**
@@ -84,6 +85,7 @@ class DocumentService {
       throw new AppError('Document non trouvé', 404);
     }
 
+    await storageService.delete(document.filePath);
     return prisma.document.delete({ where: { id } });
   }
 
