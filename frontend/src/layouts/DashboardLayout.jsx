@@ -1,15 +1,26 @@
+import { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import Onboarding from '../components/Onboarding';
+import OnboardingTour from '../components/OnboardingTour';
+import QuickActionSheet from '../components/QuickActionSheet';
+import { useAuth } from '../context/AuthContext';
 
 export default function DashboardLayout() {
+  const { user } = useAuth();
+  const [showQuickAction, setShowQuickAction] = useState(false);
+  const [showTour, setShowTour] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    const key = `carvault_tour_done_${user.id}`;
+    if (!localStorage.getItem(key)) setShowTour(true);
+  }, [user]);
+
   return (
     <div className="min-h-screen bg-bg relative selection:bg-accent/30 selection:text-white">
-      {/* Subtle grid */}
       <div className="fixed inset-0 cv-grid-bg pointer-events-none" />
-
-      {/* Ambient aurora orbs */}
       <div
         className="fixed top-[-20%] left-[-15%] w-[60%] h-[60%] rounded-full pointer-events-none aurora-1"
         style={{ background: 'radial-gradient(circle at center, rgba(255,42,63,0.1) 0%, transparent 65%)', filter: 'blur(90px)' }}
@@ -23,14 +34,20 @@ export default function DashboardLayout() {
         style={{ background: 'radial-gradient(circle at center, rgba(56,189,248,0.05) 0%, transparent 70%)', filter: 'blur(80px)' }}
       />
 
-      <Onboarding />
+      {showTour
+        ? <OnboardingTour onDone={() => setShowTour(false)} />
+        : <Onboarding />
+      }
+
       <Header />
       <div className="flex relative z-10">
-        <Sidebar />
+        <Sidebar onFabPress={() => setShowQuickAction(true)} />
         <main className="flex-1 md:ml-[300px] mt-16 md:mt-24 p-5 md:p-8 pb-32 md:pb-12 max-w-[1600px] mx-auto w-full">
           <Outlet />
         </main>
       </div>
+
+      {showQuickAction && <QuickActionSheet onClose={() => setShowQuickAction(false)} />}
     </div>
   );
 }

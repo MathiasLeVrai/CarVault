@@ -22,6 +22,7 @@ const errorHandler = (err, req, res, _next) => {
 
   res.status(statusCode).json({
     error: message,
+    code: err.appCode || undefined,
     ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
   });
 };
@@ -30,9 +31,10 @@ const errorHandler = (err, req, res, _next) => {
  * Classe d'erreur personnalisée avec code HTTP
  */
 class AppError extends Error {
-  constructor(message, statusCode) {
+  constructor(message, statusCode, appCode) {
     super(message);
     this.statusCode = statusCode;
+    this.appCode = appCode;
   }
 }
 

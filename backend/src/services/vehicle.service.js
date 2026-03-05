@@ -1,5 +1,6 @@
 const prisma = require('../lib/prisma');
 const { AppError } = require('../middleware/error.middleware');
+const stripeService = require('./stripe.service');
 
 class VehicleService {
   /**
@@ -78,9 +79,17 @@ class VehicleService {
   }
 
   /**
-   * Créer un véhicule
+   * Créer un véhicule (vérifie la limite freemium)
    */
   async create(data, userId) {
+    const limit = await stripeService.checkVehicleLimit(userId);
+    if (!limit.allowed) {
+      throw new AppError(
+        `Limite atteinte : les comptes gratuits ne peuvent avoir qu'un seul véhicule. Passez à Premium pour en ajouter davantage.`,
+        403,
+        'PREMIUM_REQUIRED'
+      );
+    }
     return prisma.vehicle.create({
       data: {
         ...data,

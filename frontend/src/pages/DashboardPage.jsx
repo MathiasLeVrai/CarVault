@@ -8,7 +8,7 @@ import Button from '../components/ui/Button';
 import {
   Car, Wallet, CalendarClock, Bell, ChevronRight, TrendingDown,
   ArrowRight, FileText, Activity, Plus, Shield, Wrench, AlertTriangle,
-  Clock,
+  Clock, TrendingUp,
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -19,6 +19,7 @@ import {
   documentTypeLabels,
 } from '../utils/helpers';
 import { motion } from 'framer-motion';
+import BadgesWidget from '../components/BadgesWidget';
 
 const ChartTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
@@ -146,6 +147,41 @@ export default function DashboardPage() {
           <Plus className="w-4 h-4" /> Ajouter un véhicule
         </Button>
       </motion.div>
+
+      {/* ─── Ce mois-ci ─── */}
+      {(() => {
+        const now = new Date();
+        const monthKey = now.toLocaleString('fr-FR', { month: 'short' }).replace('.', '');
+        const monthly = data?.monthlyExpenses || [];
+        const current = monthly.find(m => m.month?.toLowerCase().startsWith(monthKey.toLowerCase()));
+        const prevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        const prevKey = prevMonth.toLocaleString('fr-FR', { month: 'short' }).replace('.', '');
+        const prev = monthly.find(m => m.month?.toLowerCase().startsWith(prevKey.toLowerCase()));
+        if (!current || !current.total) return null;
+        const diff = prev?.total ? Math.round(((current.total - prev.total) / prev.total) * 100) : null;
+        const up = diff !== null && diff > 0;
+        return (
+          <motion.div variants={itemVariants}>
+            <div className="flex items-center justify-between px-5 py-3.5 rounded-2xl bg-white/[0.03] border border-white/[0.06]">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-orange/10 flex items-center justify-center">
+                  <Wallet className="w-4 h-4 text-orange" strokeWidth={2} />
+                </div>
+                <div>
+                  <p className="text-[11px] font-bold text-white/40 uppercase tracking-widest">Ce mois-ci</p>
+                  <p className="text-base font-black text-white font-display leading-tight">{formatCurrency(current.total)}</p>
+                </div>
+              </div>
+              {diff !== null && (
+                <div className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold ${up ? 'bg-accent/10 text-accent' : 'bg-lime/10 text-lime'}`}>
+                  {up ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                  {up ? '+' : ''}{diff}% vs mois dernier
+                </div>
+              )}
+            </div>
+          </motion.div>
+        );
+      })()}
 
       {/* ─── Action Cards ("À faire bientôt") ─── */}
       {actionCards.length > 0 && (
@@ -388,6 +424,11 @@ export default function DashboardPage() {
           </div>
         </motion.div>
       </div>
+
+      {/* ─── Badges ─── */}
+      <motion.div variants={itemVariants}>
+        <BadgesWidget />
+      </motion.div>
     </motion.div>
   );
 }

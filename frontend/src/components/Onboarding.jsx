@@ -110,7 +110,7 @@ export default function Onboarding() {
     const interval = setInterval(() => {
       checkProgress().then(p => {
         if (steps.every(s => p[s.id])) {
-          localStorage.setItem(STORAGE_KEY, '1');
+          if (storageKey) localStorage.setItem(storageKey, '1');
           setTimeout(() => setVisible(false), 1500);
         }
       });

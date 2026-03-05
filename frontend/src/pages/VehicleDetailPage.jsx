@@ -10,7 +10,7 @@ import Select from '../components/ui/Select';
 import StatCard from '../components/ui/StatCard';
 import { ArrowLeft, FileText, Wallet, Plus, Trash2, Gauge, Upload, FileDown, Heart, TrendingDown, ShieldCheck, Wrench, FileCheck, Route, Settings, Share2, Link2, Copy, Check, ExternalLink } from 'lucide-react';
 import FuelTracker from '../components/FuelTracker';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, ReferenceLine } from 'recharts';
 import { formatCurrency, formatDateShort, documentTypeLabels, documentTypeBadge, expenseCategoryLabels } from '../utils/helpers';
 import { motion } from 'framer-motion';
 
@@ -83,6 +83,26 @@ function SubScoreBar({ icon: Icon, label, score, max, color }) {
       </div>
     </div>
   );
+}
+
+function calcDepreciation(basePrice, purchaseYear, currentMileage) {
+  const currentYear = new Date().getFullYear();
+  const age = Math.max(0, currentYear - purchaseYear);
+  const points = [];
+  let value = Number(basePrice);
+  for (let y = 0; y <= age + 5; y++) {
+    if (y === age && currentMileage) {
+      const expectedKm = age * 15000;
+      const correction = 1 + Math.max(-0.3, Math.min(0.15, -((currentMileage - expectedKm) / 10000) * 0.02));
+      value *= correction;
+    }
+    points.push({ year: purchaseYear + y, value: Math.round(value), isFuture: y > age });
+    if (y === 0) value *= 0.80;
+    else if (y === 1) value *= 0.85;
+    else if (y <= 4) value *= 0.90;
+    else value *= 0.93;
+  }
+  return points;
 }
 
 const containerVariants = {
@@ -333,6 +353,68 @@ export default function VehicleDetailPage() {
           </div>
         ) : <p className="text-sm text-ink-muted text-center py-6">Aucune entrée</p>}
       </motion.div>
+
+      {/* Valeur & Dépréciation */}
+      {(v.purchasePrice || v.msrp) && (() => {
+        const base = v.purchasePrice || v.msrp;
+        const depData = calcDepreciation(base, v.year, v.mileage);
+        const currentYear = new Date().getFullYear();
+        const currentPoint = depData.find(d => d.year === currentYear) || depData[depData.length - 1];
+        const originalValue = depData[0]?.value;
+        const totalLoss = originalValue && currentPoint ? originalValue - currentPoint.value : null;
+        const lossPct = originalValue && totalLoss ? Math.round((totalLoss / originalValue) * 100) : null;
+        const argusUrl = `https://www.largus.fr/cote-auto/${encodeURIComponent((v.brand || '').toLowerCase())}-${encodeURIComponent((v.model || '').toLowerCase())}.html`;
+        return (
+          <motion.div variants={itemVariants} className="bento-card p-6 md:p-8">
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-lg font-bold text-white font-display flex items-center gap-2">
+                <TrendingDown className="w-5 h-5 text-orange" strokeWidth={2.5} />Valeur estimée
+              </h3>
+              <a href={argusUrl} target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-1.5 text-xs font-bold text-white/35 hover:text-white/60 transition-colors">
+                Vérifier sur L'Argus <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            </div>
+            <div className="flex items-end justify-between mb-6">
+              <div>
+                <p className="text-3xl font-black text-white font-display leading-none">
+                  {formatCurrency(currentPoint?.value || 0)}
+                </p>
+                <p className="text-xs text-white/35 mt-1.5 font-medium">Estimation aujourd'hui</p>
+              </div>
+              {totalLoss !== null && (
+                <div className="text-right">
+                  <p className="text-sm font-bold text-accent">−{formatCurrency(totalLoss)}</p>
+                  <p className="text-[11px] text-white/30 font-medium">dépréciation ({lossPct}%)</p>
+                </div>
+              )}
+            </div>
+            <ResponsiveContainer width="100%" height={160}>
+              <LineChart data={depData} margin={{ top: 4, right: 8, left: -22, bottom: 0 }}>
+                <CartesianGrid stroke="rgba(255,255,255,0.04)" vertical={false} />
+                <XAxis dataKey="year" stroke="#71717a" fontSize={10} fontWeight={600} tickLine={false} axisLine={false} />
+                <YAxis stroke="#71717a" fontSize={10} fontWeight={600} tickLine={false} axisLine={false} tickFormatter={val => `${Math.round(val / 1000)}k€`} />
+                <Tooltip content={({ active, payload, label }) => {
+                  if (!active || !payload?.length) return null;
+                  return (
+                    <div className="bg-bg-alt border border-white/10 rounded-xl px-3 py-2 shadow-xl">
+                      <p className="text-[10px] font-semibold text-white/50">{label}{payload[0]?.payload?.isFuture ? ' (proj.)' : ''}</p>
+                      <p className="text-sm font-bold text-white font-display">{formatCurrency(payload[0].value)}</p>
+                    </div>
+                  );
+                }} cursor={{ stroke: 'rgba(255,255,255,0.1)' }} />
+                <ReferenceLine x={currentYear} stroke="rgba(255,42,63,0.3)" strokeDasharray="3 3" />
+                <Line dataKey="value" stroke="#ff6b00" strokeWidth={2.5} dot={false}
+                  strokeDasharray={(d) => d?.isFuture ? '4 4' : undefined}
+                  activeDot={{ r: 4, fill: '#ff6b00', strokeWidth: 0 }} />
+              </LineChart>
+            </ResponsiveContainer>
+            <p className="text-[10px] text-white/20 text-center mt-2 font-medium">
+              Estimation — ligne pointillée = projection future
+            </p>
+          </motion.div>
+        );
+      })()}
 
       {/* Fuel Tracker */}
       <motion.div variants={itemVariants} className="bento-card p-6 md:p-8">

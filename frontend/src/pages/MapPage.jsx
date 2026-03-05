@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import { motion } from 'framer-motion';
-import { MapPin, Navigation, Wrench, ShieldCheck, Droplets, Search, ExternalLink, Loader2 } from 'lucide-react';
+import { MapPin, Navigation, Wrench, ShieldCheck, Droplets, Fuel, Search, ExternalLink, Loader2 } from 'lucide-react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -14,43 +14,47 @@ L.Icon.Default.mergeOptions({
 });
 
 const FILTERS = [
-  { id: 'garage',    label: 'Garages',          icon: Wrench,      color: '#7c5cfc', tags: [['amenity','car_repair'],['shop','car_repair']] },
-  { id: 'ct',        label: 'Contrôle tech.',    icon: ShieldCheck, color: '#22c55e', tags: [['amenity','vehicle_inspection']] },
-  { id: 'carwash',   label: 'Lavage',            icon: Droplets,    color: '#38bdf8', tags: [['amenity','car_wash'],['shop','car_wash']] },
+  { id: 'garage',  label: 'Garages',       icon: Wrench,      color: '#7c5cfc', tags: [['amenity','car_repair'],['shop','car_repair']] },
+  { id: 'ct',      label: 'Contrôle tech.', icon: ShieldCheck, color: '#22c55e', tags: [['amenity','vehicle_inspection']] },
+  { id: 'carwash', label: 'Lavage',         icon: Droplets,    color: '#38bdf8', tags: [['amenity','car_wash'],['shop','car_wash']] },
+  { id: 'fuel',    label: 'Carburant',      icon: Fuel,        color: '#f59e0b', tags: [] },
 ];
 
-const DEFAULT_CENTER = [48.8566, 2.3522]; // Paris fallback
-const RADIUS = 5000; // 5km
+const DEFAULT_CENTER = [48.8566, 2.3522];
+const RADIUS = 5000;
 
 function makeIcon(color) {
   return L.divIcon({
     className: '',
-    html: `<div style="
-      width:32px;height:32px;border-radius:50% 50% 50% 0;
-      background:${color};border:2px solid white;
-      box-shadow:0 2px 8px rgba(0,0,0,0.4);
-      transform:rotate(-45deg);
-    "></div>`,
+    html: `<div style="width:32px;height:32px;border-radius:50% 50% 50% 0;background:${color};border:2px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.4);transform:rotate(-45deg);"></div>`,
     iconSize: [32, 32],
     iconAnchor: [16, 32],
     popupAnchor: [0, -36],
   });
 }
 
-const ICONS = Object.fromEntries(FILTERS.map(f => [f.id, makeIcon(f.color)]));
+function makeFuelIcon(gazolePrice) {
+  const label = gazolePrice ? `${parseFloat(gazolePrice).toFixed(3)}€` : '⛽';
+  return L.divIcon({
+    className: '',
+    html: `<div style="background:#f59e0b;border:2px solid rgba(255,255,255,0.9);border-radius:8px;padding:3px 7px;font-size:10px;font-weight:800;color:white;letter-spacing:-0.3px;box-shadow:0 2px 10px rgba(245,158,11,0.5);white-space:nowrap;">${label}</div>`,
+    iconSize: [58, 24],
+    iconAnchor: [29, 24],
+    popupAnchor: [0, -28],
+  });
+}
+
+const ICONS = Object.fromEntries(
+  FILTERS.filter(f => f.id !== 'fuel').map(f => [f.id, makeIcon(f.color)])
+);
 
 const userIcon = L.divIcon({
   className: '',
-  html: `<div style="
-    width:18px;height:18px;border-radius:50%;
-    background:#ff2a3f;border:3px solid white;
-    box-shadow:0 0 0 6px rgba(255,42,63,0.2), 0 2px 8px rgba(0,0,0,0.4);
-  "></div>`,
+  html: `<div style="width:18px;height:18px;border-radius:50%;background:#ff2a3f;border:3px solid white;box-shadow:0 0 0 6px rgba(255,42,63,0.2), 0 2px 8px rgba(0,0,0,0.4);"></div>`,
   iconSize: [18, 18],
   iconAnchor: [9, 9],
 });
 
-// Helper: recenter map when center changes
 function MapController({ center }) {
   const map = useMap();
   useEffect(() => {
@@ -60,9 +64,10 @@ function MapController({ center }) {
 }
 
 async function fetchPOIs(lat, lon, activeFilters) {
-  if (activeFilters.length === 0) return [];
+  const overpassFilters = activeFilters.filter(id => id !== 'fuel');
+  if (overpassFilters.length === 0) return [];
 
-  const conditions = activeFilters.flatMap(id => {
+  const conditions = overpassFilters.flatMap(id => {
     const f = FILTERS.find(f => f.id === id);
     return f.tags.map(([k, v]) => `node["${k}"="${v}"](around:${RADIUS},${lat},${lon});way["${k}"="${v}"](around:${RADIUS},${lat},${lon});`);
   });
@@ -77,7 +82,6 @@ async function fetchPOIs(lat, lon, activeFilters) {
     const lon2 = el.lon ?? el.center?.lon;
     if (!lat2 || !lon2) return null;
 
-    // Determine type
     let type = 'garage';
     if (el.tags?.amenity === 'vehicle_inspection' || el.tags?.shop === 'vehicle_inspection') type = 'ct';
     else if (el.tags?.amenity === 'car_wash' || el.tags?.shop === 'car_wash') type = 'carwash';
@@ -90,12 +94,70 @@ async function fetchPOIs(lat, lon, activeFilters) {
   }).filter(Boolean);
 }
 
+async function fetchFuelStations(lat, lon) {
+  // ODS geo filter: POINT(longitude latitude) — lon first, URL-encoded
+  const where = encodeURIComponent(`distance(geom,geom'POINT(${lon} ${lat})',5000m)`);
+  const url = `https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/records?where=${where}&limit=20&select=id,adresse,ville,geom,gazole_prix,sp95_prix,e10_prix,sp98_prix`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('Fuel API error');
+  const data = await res.json();
+
+  return (data.results || [])
+    .map(s => {
+      // geom field contains proper WGS84 coords {lat, lon}
+      if (!s.geom?.lat || !s.geom?.lon) return null;
+      return {
+        id: `fuel_${s.id}`,
+        lat: s.geom.lat,
+        lon: s.geom.lon,
+        name: [s.adresse, s.ville].filter(Boolean).join(' — ') || 'Station service',
+        address: s.ville || '',
+        type: 'fuel',
+        prices: {
+          Gazole: s.gazole_prix ?? null,
+          SP95:   s.sp95_prix   ?? null,
+          E10:    s.e10_prix    ?? null,
+          SP98:   s.sp98_prix   ?? null,
+        },
+      };
+    })
+    .filter(Boolean);
+}
+
 function distance(lat1, lon1, lat2, lon2) {
   const R = 6371000;
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLon = (lon2 - lon1) * Math.PI / 180;
   const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
   return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+}
+
+function FuelPopup({ poi, onDirections }) {
+  const priceEntries = Object.entries(poi.prices).filter(([, v]) => v !== null);
+  return (
+    <div className="min-w-[180px]">
+      <div className="font-bold text-sm mb-1">{poi.name}</div>
+      {poi.address && <div className="text-xs text-gray-500 mb-2">{poi.address}</div>}
+      {priceEntries.length > 0 ? (
+        <div className="grid grid-cols-2 gap-1 mb-2">
+          {priceEntries.map(([fuel, price]) => (
+            <div key={fuel} className="flex items-center justify-between bg-orange-50 rounded px-2 py-1">
+              <span className="text-[11px] font-bold text-gray-600">{fuel}</span>
+              <span className="text-[11px] font-black text-gray-900">{price.toFixed(3)}€</span>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-xs text-gray-400 mb-2">Prix non disponibles</p>
+      )}
+      <button
+        onClick={onDirections}
+        className="text-xs font-bold text-blue-600 flex items-center gap-1 hover:underline"
+      >
+        Itinéraire <ExternalLink className="w-3 h-3" />
+      </button>
+    </div>
+  );
 }
 
 export default function MapPage() {
@@ -111,10 +173,13 @@ export default function MapPage() {
   const loadPOIs = useCallback(async (lat, lon, filters) => {
     setLoading(true);
     try {
-      const results = await fetchPOIs(lat, lon, filters);
-      setPois(results);
+      const [overpassResults, fuelResults] = await Promise.all([
+        fetchPOIs(lat, lon, filters),
+        filters.includes('fuel') ? fetchFuelStations(lat, lon) : Promise.resolve([]),
+      ]);
+      setPois([...overpassResults, ...fuelResults]);
     } catch {
-      // silently fail — map is still usable
+      // silently fail — map remains usable
     } finally {
       setLoading(false);
     }
@@ -142,7 +207,6 @@ export default function MapPage() {
     );
   }, [activeFilters, loadPOIs]);
 
-  // Auto-locate on mount
   useEffect(() => { locateUser(); }, []);
 
   const toggleFilter = (id) => {
@@ -161,9 +225,15 @@ export default function MapPage() {
     ? [...pois].sort((a, b) => distance(userPos[0], userPos[1], a.lat, a.lon) - distance(userPos[0], userPos[1], b.lat, b.lon))
     : pois;
 
+  const fuelStations = pois.filter(p => p.type === 'fuel');
+  const gazolePrices = fuelStations.map(s => s.prices?.Gazole).filter(Boolean);
+  const avgGazole = gazolePrices.length > 0
+    ? (gazolePrices.reduce((a, b) => a + b, 0) / gazolePrices.length).toFixed(3)
+    : null;
+
   return (
     <div className="h-[calc(100vh-80px)] md:h-screen flex flex-col overflow-hidden">
-      {/* ── Header ─────────────────────────────────────── */}
+      {/* ── Header ── */}
       <div className="flex-shrink-0 px-4 md:px-6 pt-4 pb-3">
         <div className="flex items-center justify-between">
           <div>
@@ -171,7 +241,7 @@ export default function MapPage() {
               Carte des services
             </h1>
             <p className="text-xs text-white/40 font-medium mt-0.5">
-              Garages, contrôles techniques et lavages à proximité
+              Garages, contrôles, lavages & carburant à proximité
             </p>
           </div>
           <button
@@ -191,6 +261,7 @@ export default function MapPage() {
         <div className="flex gap-2 mt-3 overflow-x-auto pb-1">
           {FILTERS.map(f => {
             const active = activeFilters.includes(f.id);
+            const count = pois.filter(p => p.type === f.id).length;
             return (
               <button
                 key={f.id}
@@ -204,9 +275,9 @@ export default function MapPage() {
               >
                 <f.icon className="w-3.5 h-3.5" />
                 {f.label}
-                {active && pois.filter(p => p.type === f.id).length > 0 && (
+                {active && count > 0 && (
                   <span className="ml-0.5 opacity-70">
-                    ({pois.filter(p => p.type === f.id).length})
+                    {f.id === 'fuel' && avgGazole ? `· moy. ${avgGazole}€` : `(${count})`}
                   </span>
                 )}
               </button>
@@ -219,7 +290,7 @@ export default function MapPage() {
         )}
       </div>
 
-      {/* ── Map + List ─────────────────────────────────── */}
+      {/* ── Map + List ── */}
       <div className="flex-1 flex gap-4 px-4 md:px-6 pb-4 md:pb-6 min-h-0">
         {/* Map */}
         <div className="flex-1 rounded-2xl overflow-hidden border border-white/8 relative">
@@ -235,7 +306,6 @@ export default function MapPage() {
             />
             <MapController center={mapCenter} />
 
-            {/* User marker */}
             {userPos && (
               <Marker position={userPos} icon={userIcon}>
                 <Popup>
@@ -244,8 +314,22 @@ export default function MapPage() {
               </Marker>
             )}
 
-            {/* POI markers */}
             {sortedPois.map(poi => {
+              if (poi.type === 'fuel') {
+                return (
+                  <Marker
+                    key={poi.id}
+                    position={[poi.lat, poi.lon]}
+                    icon={makeFuelIcon(poi.prices?.Gazole)}
+                    ref={ref => { if (ref) markersRef.current[poi.id] = ref; }}
+                    eventHandlers={{ click: () => setSelected(poi) }}
+                  >
+                    <Popup>
+                      <FuelPopup poi={poi} onDirections={() => openDirections(poi)} />
+                    </Popup>
+                  </Marker>
+                );
+              }
               const filterDef = FILTERS.find(f => f.id === poi.type);
               return (
                 <Marker
@@ -275,7 +359,6 @@ export default function MapPage() {
             })}
           </MapContainer>
 
-          {/* Loading overlay */}
           {loading && (
             <div className="absolute inset-0 flex items-center justify-center bg-bg/60 backdrop-blur-sm z-[1000]">
               <div className="flex flex-col items-center gap-3">
@@ -324,6 +407,21 @@ export default function MapPage() {
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-bold text-white truncate">{poi.name}</p>
                     {poi.address && <p className="text-xs text-white/35 truncate mt-0.5">{poi.address}</p>}
+
+                    {/* Fuel prices inline */}
+                    {poi.type === 'fuel' && poi.prices && (
+                      <div className="flex gap-2 mt-1.5 flex-wrap">
+                        {Object.entries(poi.prices)
+                          .filter(([, v]) => v !== null)
+                          .map(([fuel, price]) => (
+                            <span key={fuel} className="text-[10px] font-black" style={{ color: '#f59e0b' }}>
+                              {fuel} {price.toFixed(3)}€
+                            </span>
+                          ))
+                        }
+                      </div>
+                    )}
+
                     <div className="flex items-center justify-between mt-2">
                       <span className="text-[10px] font-bold uppercase tracking-wide" style={{ color: filterDef?.color }}>
                         {filterDef?.label}
@@ -349,11 +447,11 @@ export default function MapPage() {
         </div>
       </div>
 
-      {/* Mobile: bottom sheet mini list */}
+      {/* Mobile: horizontal scroll cards */}
       {sortedPois.length > 0 && (
         <div className="lg:hidden flex-shrink-0 px-4 pb-4">
           <div className="flex gap-3 overflow-x-auto pb-1">
-            {sortedPois.slice(0, 6).map(poi => {
+            {sortedPois.slice(0, 8).map(poi => {
               const filterDef = FILTERS.find(f => f.id === poi.type);
               const dist = userPos ? distance(userPos[0], userPos[1], poi.lat, poi.lon) : null;
               return (
@@ -367,6 +465,11 @@ export default function MapPage() {
                   className="cv-card p-3 text-left flex-shrink-0 w-48"
                 >
                   <p className="text-xs font-bold text-white truncate">{poi.name}</p>
+                  {poi.type === 'fuel' && poi.prices?.Gazole && (
+                    <p className="text-[11px] font-black mt-0.5" style={{ color: '#f59e0b' }}>
+                      Gazole {poi.prices.Gazole.toFixed(3)}€
+                    </p>
+                  )}
                   <div className="flex items-center justify-between mt-1.5">
                     <span className="text-[10px] font-bold uppercase" style={{ color: filterDef?.color }}>
                       {filterDef?.label}
