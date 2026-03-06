@@ -1,7 +1,7 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import {
-  LayoutDashboard, Car, Wallet, Bell, LogOut, Settings, Plus, MapPin, Building2,
+  LayoutDashboard, Car, Wallet, Bell, LogOut, Settings, Plus, MapPin,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { alertApi } from '../services/api';
@@ -21,7 +21,6 @@ const sidebarItems = [
   { to: '/vehicles', icon: Car, label: 'Véhicules' },
   { to: '/expenses', icon: Wallet, label: 'Dépenses' },
   { to: '/map', icon: MapPin, label: 'Carte' },
-  { to: '/bank', icon: Building2, label: 'Banque' },
   { to: '/alerts', icon: Bell, label: 'Alertes', showBadge: true },
   { to: '/settings', icon: Settings, label: 'Paramètres' },
 ];
