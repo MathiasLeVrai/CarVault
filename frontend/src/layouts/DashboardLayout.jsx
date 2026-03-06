@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
-import Onboarding from '../components/Onboarding';
 import OnboardingTour from '../components/OnboardingTour';
 import QuickActionSheet from '../components/QuickActionSheet';
 import { useAuth } from '../context/AuthContext';
@@ -37,10 +36,7 @@ export default function DashboardLayout() {
         style={{ background: 'radial-gradient(circle at center, rgba(56,189,248,0.05) 0%, transparent 70%)', filter: 'blur(80px)' }}
       />
 
-      {showTour
-        ? <OnboardingTour onDone={() => setShowTour(false)} />
-        : <Onboarding />
-      }
+      {showTour && <OnboardingTour onDone={() => setShowTour(false)} />}
 
       <Header />
       <div className="flex relative z-10">

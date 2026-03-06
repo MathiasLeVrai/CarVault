@@ -81,21 +81,25 @@ export default function PlateScanModal({ onPlateFound, onClose }) {
   useEffect(() => {
     (async () => {
       try {
+        if (!navigator.mediaDevices?.getUserMedia) {
+          setCameraError("Votre navigateur ne supporte pas l'accès caméra.");
+          return;
+        }
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } },
+          video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } },
         });
         streamRef.current = stream;
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
           videoRef.current.onloadedmetadata = () => {
-            videoRef.current.play();
+            videoRef.current.play().catch(() => {});
             setCameraReady(true);
           };
         }
       } catch (err) {
-        if (err.name === 'NotAllowedError') setCameraError("Accès caméra refusé.");
-        else if (err.name === 'NotFoundError') setCameraError("Aucune caméra trouvée.");
-        else setCameraError("Impossible d'accéder à la caméra.");
+        if (err.name === 'NotAllowedError') setCameraError("Accès caméra refusé. Autorisez la caméra dans les réglages.");
+        else if (err.name === 'NotFoundError') setCameraError("Aucune caméra trouvée sur cet appareil.");
+        else setCameraError("Impossible d'accéder à la caméra. Saisissez la plaque manuellement.");
       }
     })();
     return () => stopCamera();
@@ -184,8 +188,14 @@ export default function PlateScanModal({ onPlateFound, onClose }) {
           {cameraError ? (
             <div className="absolute inset-0 flex items-center justify-center p-8">
               <div className="text-center">
-                <AlertCircle className="w-12 h-12 text-accent mx-auto mb-3" />
-                <p className="text-white font-semibold text-sm">{cameraError}</p>
+                <AlertCircle className="w-12 h-12 text-accent mx-auto mb-4" />
+                <p className="text-white font-semibold text-sm mb-6">{cameraError}</p>
+                <button
+                  onClick={() => { stopCamera(); onClose(); }}
+                  className="px-5 py-3 rounded-xl cv-btn-accent text-sm font-bold"
+                >
+                  Saisir manuellement
+                </button>
               </div>
             </div>
           ) : !cameraReady ? (

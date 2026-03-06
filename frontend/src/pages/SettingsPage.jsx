@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { notificationApi } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import Button from '../components/ui/Button';
 import {
-  Bell, Mail, Smartphone, Calendar, Check, Settings,
+  Bell, Mail, Smartphone, Calendar, Check, Settings, Sun, Moon, LogOut,
 } from 'lucide-react';
 import { motion as Motion } from 'framer-motion';
 
@@ -25,7 +26,7 @@ function Toggle({ checked, onChange, label, description, icon, color = 'accent' 
           <IconComponent className={`w-5 h-5 text-${color}`} strokeWidth={2} />
         </div>
         <div>
-          <p className="text-sm font-bold text-white font-display">{label}</p>
+          <p className="text-sm font-bold text-ink font-display">{label}</p>
           <p className="text-[11px] text-ink-muted mt-0.5 leading-relaxed">{description}</p>
         </div>
       </div>
@@ -46,7 +47,8 @@ function Toggle({ checked, onChange, label, description, icon, color = 'accent' 
 }
 
 export default function SettingsPage() {
-  const { user: _user } = useAuth();
+  const { user: _user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [prefs, setPrefs] = useState({ notifEmail: true, notifPush: false, notifWeekly: true });
   const [loading, setLoading] = useState(true);
   const [_saving, setSaving] = useState(false);
@@ -91,10 +93,58 @@ export default function SettingsPage() {
     >
       <Motion.div variants={itemVariants}>
         <p className="text-[11px] font-bold text-accent uppercase tracking-[0.15em] mb-2">Paramètres</p>
-        <h1 className="text-3xl md:text-4xl font-black text-white font-display tracking-tight">
-          Notifications
+        <h1 className="text-3xl md:text-4xl font-black text-ink font-display tracking-tight">
+          Compte
         </h1>
-        <p className="text-ink-muted mt-1.5 text-sm font-medium">
+      </Motion.div>
+
+      {/* Apparence */}
+      <Motion.div variants={itemVariants} className="space-y-3">
+        <div className="flex items-center gap-2.5 mb-2">
+          <div className="w-7 h-7 rounded-lg bg-violet/10 flex items-center justify-center">
+            {theme === 'dark'
+              ? <Moon className="w-3.5 h-3.5 text-violet" strokeWidth={2.5} />
+              : <Sun className="w-3.5 h-3.5 text-violet" strokeWidth={2.5} />
+            }
+          </div>
+          <h2 className="text-sm font-bold text-ink font-display tracking-tight">Apparence</h2>
+        </div>
+
+        <div className="flex items-center justify-between p-5 rounded-2xl cv-card">
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 rounded-xl bg-violet/10 border border-violet/20 flex items-center justify-center shrink-0">
+              {theme === 'dark'
+                ? <Moon className="w-5 h-5 text-violet" strokeWidth={2} />
+                : <Sun className="w-5 h-5 text-violet" strokeWidth={2} />
+              }
+            </div>
+            <div>
+              <p className="text-sm font-bold text-ink font-display">
+                {theme === 'dark' ? 'Mode sombre' : 'Mode clair'}
+              </p>
+              <p className="text-[11px] text-ink-muted mt-0.5">
+                {theme === 'dark' ? 'Interface sombre — recommandé la nuit.' : 'Interface claire — recommandé le jour.'}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={toggleTheme}
+            className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors shrink-0 ml-4 ${
+              theme === 'light' ? 'bg-violet' : 'bg-white/10'
+            }`}
+          >
+            <span
+              className={`inline-block h-5 w-5 rounded-full bg-white shadow-md transform transition-transform ${
+                theme === 'light' ? 'translate-x-6' : 'translate-x-1'
+              }`}
+            />
+          </button>
+        </div>
+      </Motion.div>
+
+      {/* Notifications title */}
+      <Motion.div variants={itemVariants}>
+        <p className="text-ink-muted text-sm font-medium">
           Choisissez comment et quand recevoir vos rappels.
         </p>
       </Motion.div>
@@ -150,7 +200,7 @@ export default function SettingsPage() {
         <div className="flex items-start gap-3">
           <Settings className="w-5 h-5 text-ink-muted shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm font-bold text-white font-display">Politique anti-spam</p>
+            <p className="text-sm font-bold text-ink font-display">Politique anti-spam</p>
             <p className="text-[11px] text-ink-muted mt-1 leading-relaxed">
               CarVault limite les notifications à 1 alerte par document par palier (J-30, J-7, J-1).
               Vous pouvez aussi reporter (snooze) chaque alerte individuellement depuis la page Alertes.
@@ -158,6 +208,17 @@ export default function SettingsPage() {
             </p>
           </div>
         </div>
+      </Motion.div>
+
+      {/* Déconnexion */}
+      <Motion.div variants={itemVariants}>
+        <button
+          onClick={logout}
+          className="flex items-center gap-3 w-full p-5 rounded-2xl cv-btn-danger text-sm font-bold transition-all"
+        >
+          <LogOut className="w-5 h-5 shrink-0" />
+          Se déconnecter
+        </button>
       </Motion.div>
 
       {/* Save feedback */}

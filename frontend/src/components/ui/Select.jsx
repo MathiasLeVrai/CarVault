@@ -3,11 +3,11 @@ import { clsx } from 'clsx';
 export default function Select({ label, options, error, className, ...props }) {
   return (
     <div className="space-y-2">
-      {label && <label className="block text-sm font-semibold text-white/80">{label}</label>}
+      {label && <label className="block text-sm font-semibold text-ink-light">{label}</label>}
       <div className="relative">
         <select
           className={clsx(
-            'cv-input w-full px-4 py-3 text-sm text-white bg-white/[0.02] appearance-none cursor-pointer pr-10',
+            'cv-input w-full px-4 py-3 text-sm text-ink appearance-none cursor-pointer pr-10',
             error && 'border-accent focus:border-accent focus:shadow-[0_0_0_3px_rgba(255,42,63,0.15)]',
             className
           )}

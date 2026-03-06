@@ -72,7 +72,7 @@ export default function OnboardingTour({ onDone }) {
   };
 
   return (
-    <div className="fixed inset-0 z-[300] bg-bg/95 backdrop-blur-xl flex flex-col items-center justify-center p-6">
+    <div className="fixed inset-0 z-[300] flex flex-col items-center justify-center p-6" style={{ background: 'var(--color-bg)', backdropFilter: 'blur(20px)' }}>
       {/* Skip */}
       <button
         onClick={finish}

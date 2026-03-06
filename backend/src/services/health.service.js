@@ -131,7 +131,7 @@ class HealthService {
   // ============================================================
 
   _estimateValue(vehicle) {
-    const basePrice = vehicle.purchasePrice || vehicle.msrp;
+    const basePrice = vehicle.msrp || vehicle.purchasePrice;
     if (!basePrice) return null;
 
     const currentYear = new Date().getFullYear();

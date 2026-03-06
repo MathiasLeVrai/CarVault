@@ -34,7 +34,7 @@ function CvInput({ type = 'text', ...props }) {
   return (
     <input
       type={type}
-      className="cv-input w-full px-4 py-3 text-sm text-white"
+      className="cv-input w-full px-4 py-3 text-sm text-ink"
       {...props}
     />
   );
@@ -48,7 +48,7 @@ function VehicleSelect({ vehicles, value, onChange }) {
         <select
           value={value}
           onChange={e => onChange(e.target.value)}
-          className="cv-input w-full px-4 py-3 text-sm text-white appearance-none"
+          className="cv-input w-full px-4 py-3 text-sm text-ink appearance-none"
         >
           <option value="">Sélectionner…</option>
           {vehicles.map(v => (
@@ -144,6 +144,7 @@ export default function QuickActionSheet({ onClose }) {
     <AnimatePresence>
       {/* Backdrop */}
       <Motion.div
+        key="backdrop"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -153,12 +154,13 @@ export default function QuickActionSheet({ onClose }) {
 
       {/* Sheet */}
       <Motion.div
+        key="sheet"
         initial={{ y: '100%' }}
         animate={{ y: 0 }}
         exit={{ y: '100%' }}
         transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-        className="fixed bottom-0 left-0 right-0 z-[160] rounded-t-3xl glass-panel px-5 pb-safe"
-        style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}
+        className="fixed bottom-0 left-0 right-0 z-[160] rounded-t-3xl px-5"
+        style={{ background: 'var(--color-bg-alt)', borderTop: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 -8px 40px rgba(0,0,0,0.5)', paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}
         onClick={e => e.stopPropagation()}
       >
         {/* Handle */}
@@ -245,7 +247,7 @@ export default function QuickActionSheet({ onClose }) {
                     <select
                       value={exp.category}
                       onChange={e => setExp(p => ({ ...p, category: e.target.value }))}
-                      className="cv-input w-full px-4 py-3 text-sm text-white appearance-none"
+                      className="cv-input w-full px-4 py-3 text-sm text-ink appearance-none"
                     >
                       {EXPENSE_CATS.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
                     </select>

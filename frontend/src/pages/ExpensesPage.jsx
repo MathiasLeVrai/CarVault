@@ -148,11 +148,12 @@ export default function ExpensesPage() {
                 </div>
               </div>
               <div className="flex items-center justify-between pt-4 border-t border-white/5">
-                <div className="flex flex-col">
-                  {exp.vehicle && <span className="text-[11px] font-semibold text-white/50">{exp.vehicle.brand} {exp.vehicle.model}</span>}
-                  <div className="flex items-center gap-2 mt-1">
+                <div className="flex flex-col gap-1 min-w-0 flex-1 mr-2">
+                  {exp.description && <span className="text-[11px] font-semibold text-white/70 truncate">{exp.description}</span>}
+                  <div className="flex items-center gap-2">
+                    {exp.vehicle && <span className="text-[10px] font-semibold text-white/40">{exp.vehicle.brand} {exp.vehicle.model}</span>}
+                    {exp.vehicle && <span className="text-white/20 text-[10px]">·</span>}
                     <span className="text-[10px] font-bold text-white/30">{formatDateShort(exp.date)}</span>
-                    {exp.description && <span className="text-[10px] text-white/40 truncate max-w-[120px]">— {exp.description}</span>}
                   </div>
                 </div>
                 <button onClick={() => del(exp.id)} className="p-2 rounded-xl bg-white/5 hover:bg-accent/20 text-white/60 hover:text-accent transition-all">

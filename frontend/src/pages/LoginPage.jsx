@@ -111,12 +111,12 @@ export default function LoginPage() {
             <div className="space-y-2">
               <label className="block text-sm font-semibold text-white/80">Email</label>
               <input type="email" value={email} onChange={e => setEmail(e.target.value)}
-                placeholder="nom@exemple.com" className="cv-input w-full px-4 py-3.5 text-sm text-white bg-white/[0.02]" required />
+                placeholder="nom@exemple.com" className="cv-input w-full px-4 py-3.5 text-sm text-ink" required />
             </div>
             <div className="space-y-2">
               <label className="block text-sm font-semibold text-white/80">Mot de passe</label>
               <input type="password" value={password} onChange={e => setPassword(e.target.value)}
-                placeholder="••••••••" className="cv-input w-full px-4 py-3.5 text-sm text-white bg-white/[0.02]" required />
+                placeholder="••••••••" className="cv-input w-full px-4 py-3.5 text-sm text-ink" required />
             </div>
             <Button type="submit" loading={loading} className="w-full" size="lg" variant="accent">
               Se connecter <ArrowRight className="w-4 h-4" />

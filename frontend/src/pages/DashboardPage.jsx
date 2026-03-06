@@ -173,9 +173,10 @@ export default function DashboardPage() {
                 </div>
               </div>
               {diff !== null && (
-                <div className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold ${up ? 'bg-accent/10 text-accent' : 'bg-lime/10 text-lime'}`}>
+                <div className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold flex-shrink-0 ${up ? 'bg-accent/10 text-accent' : 'bg-lime/10 text-lime'}`}>
                   {up ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                  {up ? '+' : ''}{diff}% vs mois dernier
+                  <span className="hidden sm:inline">{up ? '+' : ''}{diff}% vs mois dernier</span>
+                  <span className="sm:hidden">{up ? '+' : ''}{diff}%</span>
                 </div>
               )}
             </div>
@@ -255,7 +256,7 @@ export default function DashboardPage() {
             }
           />
           <div className="h-[220px] md:h-[260px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
               <BarChart data={data?.monthlyExpenses || []} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
                 <CartesianGrid stroke="rgba(255,255,255,0.04)" vertical={false} />
                 <XAxis dataKey="month" stroke="#71717a" fontSize={11} fontWeight={600} tickLine={false} axisLine={false} />
@@ -281,7 +282,7 @@ export default function DashboardPage() {
             <>
               <div className="flex-1 flex items-center justify-center my-2">
                 <div className="w-[160px] h-[160px]">
-                  <ResponsiveContainer width="100%" height="100%">
+                  <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                     <PieChart>
                       <Pie
                         data={data.expensesByCategory}

@@ -22,7 +22,7 @@ export default function PremiumModal({ onClose }) {
       if (url) {
         window.location.href = url;
       } else {
-        toast.info('Stripe non configuré — contactez le support.');
+        toast.info('Envoyez un email à hello@carvault.fr pour activer votre compte Premium.');
         onClose();
       }
     } catch (err) {

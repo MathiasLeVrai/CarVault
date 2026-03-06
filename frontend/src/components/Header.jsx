@@ -1,12 +1,14 @@
-import { Bell, LogOut } from 'lucide-react';
+import { Bell, LogOut, Sun, Moon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { alertApi } from '../services/api';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 
 export default function Header() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const { theme, toggleTheme } = useTheme();
   const [alertCount, setAlertCount] = useState(0);
 
   useEffect(() => {
@@ -54,6 +56,17 @@ export default function Header() {
             <p className="text-[11px] text-ink-muted">{user?.email}</p>
           </div>
         </div>
+
+        <button
+          onClick={toggleTheme}
+          className="w-9 h-9 rounded-xl flex items-center justify-center text-ink-muted hover:text-accent transition-colors"
+          aria-label="Changer le thème"
+        >
+          {theme === 'dark'
+            ? <Sun className="w-4 h-4" strokeWidth={2} />
+            : <Moon className="w-4 h-4" strokeWidth={2} />
+          }
+        </button>
 
         <button
           onClick={logout}

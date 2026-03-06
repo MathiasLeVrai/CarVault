@@ -11,7 +11,7 @@ const navItems = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Accueil' },
   { to: '/vehicles', icon: Car, label: 'Véhicules' },
   // [FAB placeholder]
-  { to: '/map', icon: MapPin, label: 'Carte' },
+  { to: '/alerts', icon: Bell, label: 'Alertes', showBadge: true },
   { to: '/settings', icon: Settings, label: 'Compte' },
 ];
 

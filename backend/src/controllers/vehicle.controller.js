@@ -16,7 +16,8 @@ class VehicleController {
   async getById(req, res, next) {
     try {
       const vehicle = await vehicleService.getById(req.params.id, req.userId);
-      const health = await healthService.getHealthScore(req.params.id, req.userId);
+      let health = null;
+      try { health = await healthService.getHealthScore(req.params.id, req.userId); } catch { /* health optionnel */ }
       res.json({ ...vehicle, health });
     } catch (error) {
       next(error);
@@ -76,9 +77,18 @@ class VehicleController {
 
   async update(req, res, next) {
     try {
-      const data = { ...req.body };
-      if (data.year) data.year = parseInt(data.year);
-      if (data.mileage) data.mileage = parseInt(data.mileage);
+      const allowed = ['brand', 'model', 'year', 'mileage', 'licensePlate', 'color', 'fuelType', 'purchasePrice'];
+      const data = {};
+
+      for (const key of allowed) {
+        if (req.body[key] === undefined) continue;
+        const val = req.body[key];
+        if (key === 'year') { const n = parseInt(val); if (!isNaN(n)) data.year = n; }
+        else if (key === 'mileage') { const n = parseInt(val); if (!isNaN(n)) data.mileage = n; }
+        else if (key === 'purchasePrice') { const n = parseFloat(val); data.purchasePrice = isNaN(n) ? null : n; }
+        else { data[key] = val === '' ? null : val; }
+      }
+
       if (req.file) {
         data.photo = await storageService.upload(req.file.buffer, req.file.originalname, 'vehicles');
       }
@@ -102,7 +112,8 @@ class VehicleController {
   async generatePdf(req, res, next) {
     try {
       const { vehicle, documents, expenses, stats } = await vehicleService.getFullData(req.params.id, req.userId);
-      const health = await healthService.getHealthScore(req.params.id, req.userId);
+      let health = null;
+      try { health = await healthService.getHealthScore(req.params.id, req.userId); } catch { /* health optionnel */ }
 
       const pdfBuffer = await pdfService.generateVehicleDossier(vehicle, documents, expenses, stats, health);
 

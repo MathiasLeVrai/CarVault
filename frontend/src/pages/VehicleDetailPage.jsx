@@ -8,12 +8,15 @@ import Modal from '../components/ui/Modal';
 import Input from '../components/ui/Input';
 import Select from '../components/ui/Select';
 import StatCard from '../components/ui/StatCard';
-import { ArrowLeft, FileText, Wallet, Plus, Trash2, Gauge, Upload, FileDown, Heart, TrendingDown, ShieldCheck, Wrench, FileCheck, Route, Settings, Share2, Link2, Copy, Check, ExternalLink } from 'lucide-react';
+import { ArrowLeft, FileText, Wallet, Plus, Trash2, Gauge, Upload, FileDown, Heart, TrendingDown, ShieldCheck, Wrench, FileCheck, Route, Settings, Share2, Link2, Copy, Check, ExternalLink, Pencil } from 'lucide-react';
 import FuelTracker from '../components/FuelTracker';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, ReferenceLine } from 'recharts';
 import { formatCurrency, formatDateShort, documentTypeLabels, expenseCategoryLabels } from '../utils/helpers';
 import { motion as Motion } from 'framer-motion';
 
+const fuelOpts = [{ value: 'GASOLINE', label: 'Essence' },{ value: 'DIESEL', label: 'Diesel' },{ value: 'HYBRID', label: 'Hybride' },{ value: 'ELECTRIC', label: 'Électrique' },{ value: 'LPG', label: 'GPL' },{ value: 'OTHER', label: 'Autre' }];
+const currentYear = new Date().getFullYear();
+const yearOpts = Array.from({ length: currentYear + 1 - 1990 + 1 }, (_, i) => { const y = currentYear + 1 - i; return { value: String(y), label: String(y) }; });
 const docTypeOpts = [{ value: 'INSURANCE', label: 'Assurance' },{ value: 'TECHNICAL_INSPECTION', label: 'Contrôle technique' },{ value: 'INVOICE', label: 'Facture' },{ value: 'WARRANTY', label: 'Garantie' },{ value: 'REGISTRATION', label: 'Carte grise' },{ value: 'OTHER', label: 'Autre' }];
 const expCatOpts = [{ value: 'MAINTENANCE', label: 'Entretien' },{ value: 'TIRES', label: 'Pneus' },{ value: 'FUEL', label: 'Carburant' },{ value: 'INSURANCE', label: 'Assurance' },{ value: 'REPAIR', label: 'Réparation' },{ value: 'PARKING', label: 'Stationnement' },{ value: 'TOLL', label: 'Péage' },{ value: 'OTHER', label: 'Autre' }];
 const monthNames = ['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Août','Sep','Oct','Nov','Déc'];
@@ -120,6 +123,10 @@ export default function VehicleDetailPage() {
   const { id } = useParams(); const navigate = useNavigate();
   const [v, setV] = useState(null); const [loading, setLoading] = useState(true);
   const [showDoc, setShowDoc] = useState(false); const [showExp, setShowExp] = useState(false); const [sub, setSub] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
+  const [editForm, setEditForm] = useState({ brand: '', model: '', year: '', mileage: '', licensePlate: '', color: '', fuelType: 'GASOLINE', purchasePrice: '' });
+  const [editPhoto, setEditPhoto] = useState(null);
+  const [editSubmitting, setEditSubmitting] = useState(false);
   const [generatingPdf, setGeneratingPdf] = useState(false);
   const [df, setDf] = useState({ name:'', type:'INSURANCE', expirationDate:'', notes:'' }); const [docFile, setDocFile] = useState(null);
   const [ef, setEf] = useState({ amount:'', category:'MAINTENANCE', date:'', description:'', mileage:'' });
@@ -130,6 +137,13 @@ export default function VehicleDetailPage() {
   const [shareLink, setShareLink] = useState(null);
   const [shareLoading, setShareLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  const openEdit = () => {
+    setEditForm({ brand: v.brand || '', model: v.model || '', year: String(v.year || ''), mileage: String(v.mileage || ''), licensePlate: v.licensePlate || '', color: v.color || '', fuelType: v.fuelType || 'GASOLINE', purchasePrice: v.purchasePrice ? String(v.purchasePrice) : '' });
+    setEditPhoto(null);
+    setShowEdit(true);
+  };
+  const submitEdit = async (e) => { e.preventDefault(); setEditSubmitting(true); try { const fd = new FormData(); Object.entries(editForm).forEach(([k, val]) => { if (val) fd.append(k, val); }); if (editPhoto) fd.append('photo', editPhoto); await vehicleApi.update(id, fd); setShowEdit(false); load(); } catch { /* ignore */ } finally { setEditSubmitting(false); } };
 
   useEffect(() => { load(); }, [id]);
   const load = async () => {
@@ -201,11 +215,14 @@ export default function VehicleDetailPage() {
             </div>
           </div>
           <div className="flex flex-wrap md:flex-nowrap items-center gap-3">
+            <Button variant="outline" onClick={openEdit} className="flex-1 md:flex-none border-white/20 text-white hover:bg-white/10">
+              <Pencil className="w-4 h-4" />Modifier
+            </Button>
             <Button variant="outline" onClick={() => { setShowShare(true); createShareLink(); }} className="flex-1 md:flex-none border-white/20 text-white hover:bg-white/10">
               <Share2 className="w-4 h-4" />Partager
             </Button>
             <Button variant="outline" onClick={downloadPdf} loading={generatingPdf} className="flex-1 md:flex-none border-white/20 text-white hover:bg-white/10">
-              <FileDown className="w-4 h-4" />Dossier PDF
+              <FileDown className="w-4 h-4" />PDF
             </Button>
             <Button variant="danger" onClick={delVehicle} className="px-3">
               <Trash2 className="w-4 h-4" />
@@ -277,7 +294,7 @@ export default function VehicleDetailPage() {
                       </div>
                     </div>
                     <button onClick={e => { e.stopPropagation(); delDoc(d.id); }}
-                      className="p-2 rounded-xl md:opacity-0 md:group-hover:opacity-100 hover:bg-accent/20 text-white/40 hover:text-accent transition-all">
+                      className="w-11 h-11 flex items-center justify-center rounded-xl md:opacity-0 md:group-hover:opacity-100 hover:bg-accent/20 text-white/40 hover:text-accent transition-all">
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
@@ -306,7 +323,7 @@ export default function VehicleDetailPage() {
                       </div>
                     </div>
                     <button onClick={e => { e.stopPropagation(); delExp(exp.id); }}
-                      className="p-2 rounded-xl md:opacity-0 md:group-hover:opacity-100 hover:bg-accent/20 text-white/40 hover:text-accent transition-all">
+                      className="w-11 h-11 flex items-center justify-center rounded-xl md:opacity-0 md:group-hover:opacity-100 hover:bg-accent/20 text-white/40 hover:text-accent transition-all">
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
@@ -344,7 +361,7 @@ export default function VehicleDetailPage() {
                       <p className="text-[11px] font-bold uppercase tracking-widest text-white/40">{new Date(entry.date).toLocaleDateString('fr-FR')}</p>
                       {diff !== null && <p className="text-[10px] text-lime font-black mt-0.5">+{diff.toLocaleString('fr-FR')} km</p>}
                     </div>
-                    <button onClick={() => delMileage(entry.id)} className="p-2 rounded-xl md:opacity-0 md:group-hover:opacity-100 hover:bg-accent/20 text-white/40 hover:text-accent transition-all">
+                    <button onClick={() => delMileage(entry.id)} className="w-11 h-11 flex items-center justify-center rounded-xl md:opacity-0 md:group-hover:opacity-100 hover:bg-accent/20 text-white/40 hover:text-accent transition-all">
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
@@ -356,15 +373,17 @@ export default function VehicleDetailPage() {
       </Motion.div>
 
       {/* Valeur & Dépréciation */}
-      {(v.purchasePrice || v.msrp) && (() => {
-        const base = v.purchasePrice || v.msrp;
+      {(v.msrp || v.purchasePrice) && (() => {
+        // Base = prix neuf (MSRP en priorité). Le prix d'achat peut être un prix occasion, pas adapté pour la dépréciation.
+        const base = v.msrp || v.purchasePrice;
         const depData = calcDepreciation(base, v.year, v.mileage);
         const currentYear = new Date().getFullYear();
         const currentPoint = depData.find(d => d.year === currentYear) || depData[depData.length - 1];
         const originalValue = depData[0]?.value;
         const totalLoss = originalValue && currentPoint ? originalValue - currentPoint.value : null;
         const lossPct = originalValue && totalLoss ? Math.round((totalLoss / originalValue) * 100) : null;
-        const argusUrl = `https://www.largus.fr/cote-auto/${encodeURIComponent((v.brand || '').toLowerCase())}-${encodeURIComponent((v.model || '').toLowerCase())}.html`;
+        const toSlug = str => (str || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        const argusUrl = `https://www.largus.fr/cote-auto/${toSlug(v.brand)}-${toSlug(v.model)}.html`;
         return (
           <Motion.div variants={itemVariants} className="bento-card p-6 md:p-8">
             <div className="flex items-center justify-between mb-5">
@@ -411,7 +430,7 @@ export default function VehicleDetailPage() {
               </LineChart>
             </ResponsiveContainer>
             <p className="text-[10px] text-white/20 text-center mt-2 font-medium">
-              Estimation — ligne pointillée = projection future
+              Estimation basée sur {v.msrp ? 'le prix neuf (MSRP)' : 'le prix d\'achat'} — projection approximative
             </p>
           </Motion.div>
         );
@@ -534,6 +553,37 @@ export default function VehicleDetailPage() {
             </Button>
           )}
         </div>
+      </Modal>
+
+      {/* Modal modification véhicule */}
+      <Modal isOpen={showEdit} onClose={() => setShowEdit(false)} title="Modifier le véhicule">
+        <form onSubmit={submitEdit} className="space-y-4">
+          <div className="grid grid-cols-3 gap-3">
+            <Select label="Année *" options={yearOpts} value={editForm.year} onChange={e => setEditForm(p => ({ ...p, year: e.target.value }))} required />
+            <Input label="Marque *" placeholder="Renault" value={editForm.brand} onChange={e => setEditForm(p => ({ ...p, brand: e.target.value }))} required />
+            <Input label="Modèle *" placeholder="Clio" value={editForm.model} onChange={e => setEditForm(p => ({ ...p, model: e.target.value }))} required />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Input label="Kilométrage" type="number" placeholder="45000" value={editForm.mileage} onChange={e => setEditForm(p => ({ ...p, mileage: e.target.value }))} />
+            <Select label="Carburant" options={fuelOpts} value={editForm.fuelType} onChange={e => setEditForm(p => ({ ...p, fuelType: e.target.value }))} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Input label="Plaque" placeholder="AB-123-CD" value={editForm.licensePlate} onChange={e => setEditForm(p => ({ ...p, licensePlate: e.target.value }))} />
+            <Input label="Couleur" placeholder="Noir" value={editForm.color} onChange={e => setEditForm(p => ({ ...p, color: e.target.value }))} />
+          </div>
+          <Input label="Prix d'achat (€)" type="number" step="0.01" placeholder="25000" value={editForm.purchasePrice} onChange={e => setEditForm(p => ({ ...p, purchasePrice: e.target.value }))} />
+          <div className="space-y-1.5">
+            <label className="block text-sm font-semibold text-ink">Photo</label>
+            <label className="flex items-center justify-center gap-2 w-full py-4 bg-white/[0.02] border border-white/10 border-dashed rounded-xl cursor-pointer text-sm text-ink-muted hover:bg-white/[0.04] hover:border-accent/50 transition-all">
+              <input type="file" accept="image/*" onChange={e => setEditPhoto(e.target.files[0])} className="hidden" />
+              {editPhoto ? <span className="text-accent font-semibold">{editPhoto.name}</span> : 'Changer la photo'}
+            </label>
+          </div>
+          <div className="flex justify-end gap-3 pt-4 border-t border-white/5">
+            <Button variant="ghost" type="button" onClick={() => setShowEdit(false)}>Annuler</Button>
+            <Button type="submit" loading={editSubmitting} variant="accent">Enregistrer</Button>
+          </div>
+        </form>
       </Modal>
     </Motion.div>
   );

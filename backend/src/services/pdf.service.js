@@ -229,11 +229,11 @@ class PdfService {
       y += 22;
 
       const breakdown = [
-        ['Entretien', health.breakdown.maintenance.score, health.breakdown.maintenance.max],
-        ['Documents', health.breakdown.documents.score, health.breakdown.documents.max],
-        ['Coût maîtrisé', health.breakdown.cost.score, health.breakdown.cost.max],
-        ['Complétude', health.breakdown.completeness.score, health.breakdown.completeness.max],
-      ];
+        health.breakdown?.maintenance && ['Entretien', health.breakdown.maintenance.score, health.breakdown.maintenance.max],
+        health.breakdown?.documents && ['Documents', health.breakdown.documents.score, health.breakdown.documents.max],
+        health.breakdown?.cost && ['Coût maîtrisé', health.breakdown.cost.score, health.breakdown.cost.max],
+        health.breakdown?.completeness && ['Complétude', health.breakdown.completeness.score, health.breakdown.completeness.max],
+      ].filter(Boolean);
 
       for (const [label, score, max] of breakdown) {
         const pct = max > 0 ? score / max : 0;

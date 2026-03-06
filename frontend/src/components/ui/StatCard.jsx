@@ -26,7 +26,7 @@ export default function StatCard({ icon, label, value, trend, color = 'default' 
         </div>
         <div className="min-w-0 flex-1">
           <p className="text-[11px] font-semibold text-ink-muted uppercase tracking-wider leading-tight">{label}</p>
-          <p className="text-xl md:text-2xl font-black text-white font-display truncate mt-1">{value}</p>
+          <p className="text-xl md:text-2xl font-black text-ink font-display truncate mt-1">{value}</p>
           {trend && <p className="text-[11px] text-ink-muted mt-0.5 truncate">{trend}</p>}
         </div>
       </div>
