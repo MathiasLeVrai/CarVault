@@ -34,4 +34,10 @@ const uploadVehiclePhoto = multer({
   limits: { fileSize: 15 * 1024 * 1024 }, // 15MB
 });
 
-module.exports = { uploadDocument, uploadVehiclePhoto };
+const uploadVehicleWithDoc = multer({
+  storage: memoryStorage,
+  fileFilter,
+  limits: { fileSize: 15 * 1024 * 1024 },
+});
+
+module.exports = { uploadDocument, uploadVehiclePhoto, uploadVehicleWithDoc };

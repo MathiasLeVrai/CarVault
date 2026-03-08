@@ -2,6 +2,7 @@ const vehicleService = require('../services/vehicle.service');
 const pdfService = require('../services/pdf.service');
 const healthService = require('../services/health.service');
 const storageService = require('../services/storage.service');
+const prisma = require('../lib/prisma');
 
 class VehicleController {
   async getAll(req, res, next) {
@@ -45,8 +46,25 @@ class VehicleController {
         return res.status(400).json({ error: 'Marque, modèle et année sont requis' });
       }
 
-      const photo = req.file
-        ? await storageService.upload(req.file.buffer, req.file.originalname, 'vehicles')
+      // Carte grise obligatoire pour les nouveaux véhicules
+      const regFile = req.files?.registrationDoc?.[0];
+      if (!regFile) {
+        return res.status(400).json({ error: 'La carte grise est obligatoire pour ajouter un véhicule', code: 'REGISTRATION_REQUIRED' });
+      }
+
+      // Vérifier que la plaque n'est pas déjà prise par un autre utilisateur
+      if (licensePlate) {
+        const existing = await prisma.vehicle.findFirst({
+          where: { licensePlate: licensePlate.toUpperCase().replace(/\s+/g, '-'), userId: { not: req.userId } },
+        });
+        if (existing) {
+          return res.status(409).json({ error: 'Ce véhicule est déjà enregistré par un autre utilisateur', code: 'PLATE_TAKEN' });
+        }
+      }
+
+      const photoFile = req.files?.photo?.[0];
+      const photo = photoFile
+        ? await storageService.upload(photoFile.buffer, photoFile.originalname, 'vehicles')
         : null;
 
       const data = {
@@ -69,6 +87,42 @@ class VehicleController {
       };
 
       const vehicle = await vehicleService.create(data, req.userId);
+
+      // Si l'utilisateur indique que l'entretien est à jour, créer des dépenses à 0€
+      // pour que le cron ne génère pas d'alertes immédiatement
+      if (req.body.maintenanceUpToDate === 'true') {
+        const today = new Date();
+        const mileageVal = parseInt(mileage) || 0;
+        const maintenanceEntries = [
+          { category: 'MAINTENANCE', description: 'Entretien à jour (déclaré à l\'ajout)' },
+          { category: 'OIL_CHANGE', description: 'Vidange à jour (déclaré à l\'ajout)' },
+        ];
+        for (const entry of maintenanceEntries) {
+          await prisma.expense.create({
+            data: {
+              amount: 0,
+              category: entry.category,
+              description: entry.description,
+              date: today,
+              mileage: mileageVal,
+              vehicleId: vehicle.id,
+            },
+          });
+        }
+      }
+
+      // Sauvegarder automatiquement la carte grise comme document REGISTRATION
+      const regPath = await storageService.upload(regFile.buffer, regFile.originalname, 'documents');
+      await prisma.document.create({
+        data: {
+          name: 'Carte grise',
+          type: 'REGISTRATION',
+          filePath: regPath,
+          fileName: regFile.originalname,
+          vehicleId: vehicle.id,
+        },
+      });
+
       res.status(201).json(vehicle);
     } catch (error) {
       next(error);

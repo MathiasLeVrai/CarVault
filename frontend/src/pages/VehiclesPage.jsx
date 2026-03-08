@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { vehicleApi, brandApi } from '../services/api';
 import compressImage from '../utils/compressImage';
+import { useToast } from '../context/ToastContext';
 import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
 import Input from '../components/ui/Input';
@@ -9,7 +10,7 @@ import Select from '../components/ui/Select';
 import Autocomplete from '../components/ui/Autocomplete';
 import EmptyState from '../components/ui/EmptyState';
 import PlateScanModal from '../components/PlateScanModal';
-import { Car, Plus, FileText, ArrowUpRight, Gauge, Zap, Search, CheckCircle2, ScanLine } from 'lucide-react';
+import { Car, Plus, FileText, ArrowUpRight, Gauge, Zap, Search, CheckCircle2, ScanLine, Upload } from 'lucide-react';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
 import PremiumModal from '../components/PremiumModal';
 
@@ -46,6 +47,7 @@ const itemVariants = {
 
 export default function VehiclesPage() {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -66,6 +68,8 @@ export default function VehiclesPage() {
     horsepower: '', engineSize: '', transmission: '', bodyType: '', doors: '',
   });
   const [photo, setPhoto] = useState(null);
+  const [registrationDoc, setRegistrationDoc] = useState(null);
+  const [maintenanceUpToDate, setMaintenanceUpToDate] = useState(false);
 
   const [brands, setBrands] = useState([]);
   const [models, setModels] = useState([]);
@@ -171,7 +175,7 @@ export default function VehiclesPage() {
 
   const resetForm = () => {
     setForm({ brand: '', model: '', year: '', mileage: '', licensePlate: '', color: '', fuelType: 'GASOLINE', purchasePrice: '', carapiTrimId: '', msrp: '', horsepower: '', engineSize: '', transmission: '', bodyType: '', doors: '' });
-    setPhoto(null); setModels([]); setTrims([]);
+    setPhoto(null); setRegistrationDoc(null); setMaintenanceUpToDate(false); setModels([]); setTrims([]);
     setPlateInput(''); setPlateFound(false); setPlateError(''); setManualMode(false);
   };
 
@@ -181,12 +185,20 @@ export default function VehiclesPage() {
       const fd = new FormData();
       Object.entries(form).forEach(([k, v]) => { if (v) fd.append(k, v); });
       if (photo) fd.append('photo', await compressImage(photo));
+      if (registrationDoc) fd.append('registrationDoc', registrationDoc);
+      if (maintenanceUpToDate) fd.append('maintenanceUpToDate', 'true');
       await vehicleApi.create(fd);
       setShowModal(false); resetForm(); loadVehicles();
     } catch (err) {
       if (err.code === 'PREMIUM_REQUIRED') {
         setShowModal(false);
         setShowPremium(true);
+      } else if (err.code === 'PLATE_TAKEN') {
+        showToast('Ce véhicule est déjà enregistré par un autre utilisateur', 'error');
+      } else if (err.code === 'REGISTRATION_REQUIRED') {
+        showToast('La carte grise est obligatoire', 'error');
+      } else {
+        showToast(err.message || 'Erreur lors de l\'ajout', 'error');
       }
     } finally { setSubmitting(false); }
   };
@@ -382,9 +394,23 @@ export default function VehiclesPage() {
                 <Input label="Plaque" placeholder="AB-123-CD" value={form.licensePlate} onChange={e => setForm(p => ({ ...p, licensePlate: e.target.value }))} />
                 <Input label="Couleur" placeholder="Noir" value={form.color} onChange={e => setForm(p => ({ ...p, color: e.target.value }))} />
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <Input label="Prix d'achat (€)" type="number" step="0.01" placeholder="25000" value={form.purchasePrice} onChange={e => setForm(p => ({ ...p, purchasePrice: e.target.value }))} />
-                <div />
+              <Input label="Prix d'achat (€)" type="number" step="0.01" placeholder="25000" value={form.purchasePrice} onChange={e => setForm(p => ({ ...p, purchasePrice: e.target.value }))} />
+              <label className="flex items-center gap-3 p-4 rounded-xl bg-white/[0.02] border border-white/5 cursor-pointer hover:bg-white/[0.04] transition-all select-none">
+                <input type="checkbox" checked={maintenanceUpToDate} onChange={e => setMaintenanceUpToDate(e.target.checked)}
+                  className="w-5 h-5 rounded-md border-2 border-white/20 bg-transparent accent-lime shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold text-white">Entretien à jour</p>
+                  <p className="text-[11px] text-ink-muted mt-0.5">Cochez si la vidange, révision, etc. sont récents</p>
+                </div>
+              </label>
+              <div className="space-y-1.5">
+                <label className="block text-sm font-semibold text-ink">Carte grise *</label>
+                <label className={`flex items-center justify-center gap-2 w-full py-4 border border-dashed rounded-xl cursor-pointer text-sm transition-all ${registrationDoc ? 'bg-lime/5 border-lime/30 text-lime' : 'bg-white/[0.02] border-white/10 text-ink-muted hover:bg-white/[0.04] hover:border-accent/50'}`}>
+                  <Upload className="w-5 h-5" />
+                  <input type="file" accept="image/*,application/pdf" onChange={e => setRegistrationDoc(e.target.files[0])} className="hidden" />
+                  {registrationDoc ? <span className="font-semibold">{registrationDoc.name}</span> : 'Photo ou scan de la carte grise'}
+                </label>
+                <p className="text-[11px] text-ink-muted">Preuve de propriété obligatoire</p>
               </div>
               <div className="space-y-1.5">
                 <label className="block text-sm font-semibold text-ink">Photo</label>

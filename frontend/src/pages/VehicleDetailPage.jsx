@@ -19,7 +19,7 @@ const fuelOpts = [{ value: 'GASOLINE', label: 'Essence' },{ value: 'DIESEL', lab
 const currentYear = new Date().getFullYear();
 const yearOpts = Array.from({ length: currentYear + 1 - 1990 + 1 }, (_, i) => { const y = currentYear + 1 - i; return { value: String(y), label: String(y) }; });
 const docTypeOpts = [{ value: 'INSURANCE', label: 'Assurance' },{ value: 'TECHNICAL_INSPECTION', label: 'Contrôle technique' },{ value: 'INVOICE', label: 'Facture' },{ value: 'WARRANTY', label: 'Garantie' },{ value: 'REGISTRATION', label: 'Carte grise' },{ value: 'OTHER', label: 'Autre' }];
-const expCatOpts = [{ value: 'MAINTENANCE', label: 'Entretien' },{ value: 'TIRES', label: 'Pneus' },{ value: 'FUEL', label: 'Carburant' },{ value: 'INSURANCE', label: 'Assurance' },{ value: 'REPAIR', label: 'Réparation' },{ value: 'PARKING', label: 'Stationnement' },{ value: 'TOLL', label: 'Péage' },{ value: 'OTHER', label: 'Autre' }];
+const expCatOpts = [{ value: 'MAINTENANCE', label: 'Entretien / Révision' },{ value: 'OIL_CHANGE', label: 'Vidange' },{ value: 'BRAKES', label: 'Freins / Plaquettes' },{ value: 'TIRES', label: 'Pneus' },{ value: 'BODYWORK', label: 'Carrosserie' },{ value: 'TECHNICAL_INSPECTION', label: 'Contrôle technique' },{ value: 'PARKING', label: 'Stationnement' },{ value: 'TOLL', label: 'Péage' },{ value: 'OTHER', label: 'Autre' }];
 const monthNames = ['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Août','Sep','Oct','Nov','Déc'];
 
 const ChartTip = ({ active, payload, label }) => {

@@ -8,9 +8,9 @@ const DOC_TYPES = {
   INVOICE: 'Facture', WARRANTY: 'Garantie', REGISTRATION: 'Carte grise', OTHER: 'Autre',
 };
 const EXP_CATS = {
-  MAINTENANCE: 'Entretien', TIRES: 'Pneus', FUEL: 'Carburant',
-  INSURANCE: 'Assurance', REPAIR: 'Réparation', PARKING: 'Stationnement',
-  TOLL: 'Péage', OTHER: 'Autre',
+  MAINTENANCE: 'Entretien / Révision', OIL_CHANGE: 'Vidange', BRAKES: 'Freins / Plaquettes',
+  TIRES: 'Pneus', BODYWORK: 'Carrosserie', TECHNICAL_INSPECTION: 'Contrôle technique',
+  PARKING: 'Stationnement', TOLL: 'Péage', OTHER: 'Autre',
 };
 const FUEL_TYPES = {
   GASOLINE: 'Essence', DIESEL: 'Diesel', HYBRID: 'Hybride',

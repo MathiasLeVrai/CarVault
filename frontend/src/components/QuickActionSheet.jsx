@@ -11,11 +11,12 @@ const TABS = [
 ];
 
 const EXPENSE_CATS = [
-  { value: 'FUEL',        label: 'Carburant' },
-  { value: 'MAINTENANCE', label: 'Entretien' },
+  { value: 'MAINTENANCE', label: 'Entretien / Révision' },
+  { value: 'OIL_CHANGE',  label: 'Vidange' },
+  { value: 'BRAKES',      label: 'Freins / Plaquettes' },
   { value: 'TIRES',       label: 'Pneus' },
-  { value: 'REPAIR',      label: 'Réparation' },
-  { value: 'INSURANCE',   label: 'Assurance' },
+  { value: 'BODYWORK',    label: 'Carrosserie' },
+  { value: 'TECHNICAL_INSPECTION', label: 'Contrôle technique' },
   { value: 'PARKING',     label: 'Stationnement' },
   { value: 'TOLL',        label: 'Péage' },
   { value: 'OTHER',       label: 'Autre' },

@@ -151,13 +151,25 @@ Export resale PDF (complete report)
 
 Public read-only share links (token, 30 days expiration)
 
-Action-oriented dashboard
+Action-oriented dashboard (3 action cards max, CTA 1-tap)
 
-Guided onboarding (4 steps)
+Guided onboarding (4 steps with progress tracking)
 
 Mileage history tracking
 
-Notification preferences center
+Fuel tracking with statistics
+
+Badge/gamification system
+
+Notification preferences center (email/push/weekly digest)
+
+Configurable per-document reminders
+
+Smart document type auto-detection on upload
+
+Interactive map (garage/station locator)
+
+Stripe premium subscriptions
 
 PWA installable with service worker
 
@@ -191,7 +203,7 @@ Other:
 
 JWT + bcryptjs
 
-Multer (local storage)
+Multer (memory storage → Fly.io Volume persistent disk)
 
 PDFKit
 
@@ -199,27 +211,40 @@ node-cron
 
 Nodemailer
 
+Stripe (subscriptions, webhooks)
+
 Docker multi-stage
 
-Fly.io (CDG region)
+Fly.io (CDG region, 1GB persistent volume for uploads)
 
 RapidAPI (license plate)
 
 CarAPI (vehicle specs)
 
+CI/CD:
+
+GitHub Actions pipeline:
+- CI: ESLint (backend + frontend), Vite build, Prisma validate, Docker build
+- CD: Auto-deploy to Fly.io when CI passes on main
+
+Git strategy: single `main` branch + feature branches via PR
+
 Architecture:
 
 Monolithic Express API
 
-7 Prisma models
+10+ Prisma models
 
-35+ REST endpoints
+45+ REST endpoints
 
-40 backend files
+50+ backend files
 
-31 frontend files
+35+ frontend files
 
 Stateless API, horizontally scalable.
+
+Disabled features (code present but not connected):
+- Bank/Nordigen integration (backend/src/controllers/bank.controller.js, frontend/src/pages/BankPage.jsx)
 
 8️⃣ Business Model
 
@@ -274,9 +299,9 @@ Technical scalability:
 
 Neon (serverless PostgreSQL)
 
-Fly.io autoscaling
+Fly.io autoscaling (CDG region, persistent volume)
 
-Easy migration to S3/R2
+Storage service abstracted (local disk / S3-compatible — ready for R2 migration)
 
 Monolith easily splittable into microservices
 
@@ -341,21 +366,27 @@ What would make users feel unsafe leaving CarVault?
 
 1️⃣3️⃣ Immediate Priorities
 
-OCR intelligent document scanning
+Done:
+- Stripe payments (backend integrated, subscription flow)
+- Persistent file storage (Fly.io Volume at /app/backend/uploads)
+- CI/CD pipeline (GitHub Actions → Fly.io auto-deploy)
+- ESLint backend + frontend (zero errors)
+- Fuel tracking + statistics
+- Badge/gamification system
+- Configurable document reminders (per-document J-30, J-7, etc.)
+- Share links + public PDF export
+- Notification preferences center
+- Guided onboarding with progress tracking
+- Smart document type auto-detection on upload
 
-Push notifications (true PWA push)
-
-Stripe payments
-
-Cloud file storage (S3/R2)
-
-Job queue (BullMQ)
-
-Monitoring + Sentry
-
-Automated tests
-
-Multi-language (EN / DE)
+Next:
+- OCR intelligent document scanning
+- Push notifications (true PWA push)
+- Job queue (BullMQ)
+- Monitoring + Sentry
+- Automated tests
+- Multi-language (EN / DE)
+- Bank integration (Nordigen — code ready, disabled)
 
 🎯 Founder Intent
 

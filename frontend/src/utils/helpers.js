@@ -58,11 +58,12 @@ export const documentTypeBadge = {
  * Labels pour les catégories de dépenses
  */
 export const expenseCategoryLabels = {
-  MAINTENANCE: 'Entretien',
+  MAINTENANCE: 'Entretien / Révision',
+  OIL_CHANGE: 'Vidange',
+  BRAKES: 'Freins / Plaquettes',
   TIRES: 'Pneus',
-  FUEL: 'Carburant',
-  INSURANCE: 'Assurance',
-  REPAIR: 'Réparation',
+  BODYWORK: 'Carrosserie',
+  TECHNICAL_INSPECTION: 'Contrôle technique',
   PARKING: 'Stationnement',
   TOLL: 'Péage',
   OTHER: 'Autre',
@@ -72,14 +73,15 @@ export const expenseCategoryLabels = {
  * Couleurs pour les catégories de dépenses (Recharts)
  */
 export const expenseCategoryColors = {
-  MAINTENANCE: '#38bdf8', // sky
-  TIRES: '#7c5cfc', // violet
-  FUEL: '#ff6b00', // orange
-  INSURANCE: '#a28dff', // violet-light
-  REPAIR: '#ff2a3f', // accent (rose)
-  PARKING: '#22c55e', // lime
-  TOLL: '#ff6b7a', // accent-light
-  OTHER: '#71717a', // ink-muted
+  MAINTENANCE: '#38bdf8',
+  OIL_CHANGE: '#06b6d4',
+  BRAKES: '#f43f5e',
+  TIRES: '#7c5cfc',
+  BODYWORK: '#f97316',
+  TECHNICAL_INSPECTION: '#ff6b00',
+  PARKING: '#22c55e',
+  TOLL: '#ff6b7a',
+  OTHER: '#71717a',
 };
 
 /**

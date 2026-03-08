@@ -12,7 +12,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { formatCurrency, formatDateShort, expenseCategoryLabels, expenseCategoryColors } from '../utils/helpers';
 import { motion as Motion } from 'framer-motion';
 
-const catFilters = [{value:'',label:'Toutes'},{value:'MAINTENANCE',label:'Entretien'},{value:'TIRES',label:'Pneus'},{value:'FUEL',label:'Carburant'},{value:'INSURANCE',label:'Assurance'},{value:'REPAIR',label:'Réparation'},{value:'PARKING',label:'Parking'},{value:'TOLL',label:'Péage'},{value:'OTHER',label:'Autre'}];
+const catFilters = [{value:'',label:'Toutes'},{value:'MAINTENANCE',label:'Entretien'},{value:'OIL_CHANGE',label:'Vidange'},{value:'BRAKES',label:'Freins'},{value:'TIRES',label:'Pneus'},{value:'BODYWORK',label:'Carrosserie'},{value:'TECHNICAL_INSPECTION',label:'CT'},{value:'PARKING',label:'Parking'},{value:'TOLL',label:'Péage'},{value:'OTHER',label:'Autre'}];
 const catForm = catFilters.filter(o=>o.value);
 const months = ['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Août','Sep','Oct','Nov','Déc'];
 
