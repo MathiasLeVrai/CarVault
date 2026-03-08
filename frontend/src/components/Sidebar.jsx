@@ -108,7 +108,7 @@ export default function Sidebar({ onFabPress }) {
       {/* Mobile Bottom Tab Bar */}
       <nav className="md:hidden fixed left-0 right-0 bottom-0 z-50">
         <div className="cv-bottom-bar cv-bottom-nav shadow-2xl">
-          <div className="flex items-center">
+          <div className="flex items-center pb-[env(safe-area-inset-bottom,0px)]">
             {/* Left 2 items */}
             {navItems.slice(0, 2).map(({ to, icon, label, showBadge }) => {
               const active = location.pathname === to || location.pathname.startsWith(to + '/');

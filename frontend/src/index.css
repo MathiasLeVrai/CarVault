@@ -375,9 +375,9 @@ html, body {
   }
 }
 
-/* Mobile bottom nav — full width, flush with bottom, padding for home indicator */
+/* Mobile bottom nav — full width, flush with bottom */
 .cv-bottom-nav {
-  padding-bottom: var(--safe-bottom);
+  padding-bottom: 0;
 }
 
 /* =========== GRID BACKGROUND =========== */
