@@ -83,6 +83,8 @@ jobs:
 
       - run: npm ci
       - run: npx prisma validate
+        env:
+          DATABASE_URL: "postgresql://fake:fake@localhost:5432/fake"
       - run: npx prisma generate
 
   docker-build:
