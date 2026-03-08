@@ -3,6 +3,8 @@ import I18nContext from './I18nContext';
 import fr from './fr';
 import en from './en';
 
+export { I18nContext };
+
 const translations = { fr, en };
 const STORAGE_KEY = 'carvault_lang';
 
