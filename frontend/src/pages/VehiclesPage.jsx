@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { vehicleApi, brandApi } from '../services/api';
+import compressImage from '../utils/compressImage';
 import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
 import Input from '../components/ui/Input';
@@ -179,7 +180,7 @@ export default function VehiclesPage() {
     try {
       const fd = new FormData();
       Object.entries(form).forEach(([k, v]) => { if (v) fd.append(k, v); });
-      if (photo) fd.append('photo', photo);
+      if (photo) fd.append('photo', await compressImage(photo));
       await vehicleApi.create(fd);
       setShowModal(false); resetForm(); loadVehicles();
     } catch (err) {

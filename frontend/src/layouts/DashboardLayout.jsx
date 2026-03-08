@@ -41,7 +41,7 @@ export default function DashboardLayout() {
       <Header />
       <div className="flex relative z-10">
         <Sidebar onFabPress={() => setShowQuickAction(true)} />
-        <main className="flex-1 md:ml-[300px] mt-16 md:mt-24 p-5 md:p-8 pb-32 md:pb-12 max-w-[1600px] mx-auto w-full">
+        <main className="main-content-top flex-1 md:ml-[300px] p-5 md:p-8 max-w-[1600px] mx-auto w-full">
           <Outlet />
         </main>
       </div>

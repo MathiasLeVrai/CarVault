@@ -10,6 +10,7 @@ import Select from '../components/ui/Select';
 import StatCard from '../components/ui/StatCard';
 import { ArrowLeft, FileText, Wallet, Plus, Trash2, Gauge, Upload, FileDown, Heart, TrendingDown, ShieldCheck, Wrench, FileCheck, Route, Settings, Share2, Link2, Copy, Check, ExternalLink, Pencil } from 'lucide-react';
 import FuelTracker from '../components/FuelTracker';
+import compressImage from '../utils/compressImage';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, ReferenceLine } from 'recharts';
 import { formatCurrency, formatDateShort, documentTypeLabels, expenseCategoryLabels } from '../utils/helpers';
 import { motion as Motion } from 'framer-motion';
@@ -143,7 +144,7 @@ export default function VehicleDetailPage() {
     setEditPhoto(null);
     setShowEdit(true);
   };
-  const submitEdit = async (e) => { e.preventDefault(); setEditSubmitting(true); try { const fd = new FormData(); Object.entries(editForm).forEach(([k, val]) => { if (val) fd.append(k, val); }); if (editPhoto) fd.append('photo', editPhoto); await vehicleApi.update(id, fd); setShowEdit(false); load(); } catch { /* ignore */ } finally { setEditSubmitting(false); } };
+  const submitEdit = async (e) => { e.preventDefault(); setEditSubmitting(true); try { const fd = new FormData(); Object.entries(editForm).forEach(([k, val]) => { if (val) fd.append(k, val); }); if (editPhoto) fd.append('photo', await compressImage(editPhoto)); await vehicleApi.update(id, fd); setShowEdit(false); load(); } catch { /* ignore */ } finally { setEditSubmitting(false); } };
 
   useEffect(() => { load(); }, [id]);
   const load = async () => {
@@ -373,17 +374,16 @@ export default function VehicleDetailPage() {
       </Motion.div>
 
       {/* Valeur & Dépréciation */}
-      {(v.msrp || v.purchasePrice) && (() => {
-        // Base = prix neuf (MSRP en priorité). Le prix d'achat peut être un prix occasion, pas adapté pour la dépréciation.
-        const base = v.msrp || v.purchasePrice;
+      {v.msrp && (() => {
+        // Base = prix neuf (MSRP) pour la dépréciation, le prix d'achat n'est PAS le prix neuf
+        const base = v.msrp;
         const depData = calcDepreciation(base, v.year, v.mileage);
         const currentYear = new Date().getFullYear();
         const currentPoint = depData.find(d => d.year === currentYear) || depData[depData.length - 1];
         const originalValue = depData[0]?.value;
         const totalLoss = originalValue && currentPoint ? originalValue - currentPoint.value : null;
         const lossPct = originalValue && totalLoss ? Math.round((totalLoss / originalValue) * 100) : null;
-        const toSlug = str => (str || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-        const argusUrl = `https://www.largus.fr/cote-auto/${toSlug(v.brand)}-${toSlug(v.model)}.html`;
+        const argusUrl = `https://www.largus.fr/cote-auto/`;
         return (
           <Motion.div variants={itemVariants} className="bento-card p-6 md:p-8">
             <div className="flex items-center justify-between mb-5">
@@ -430,7 +430,7 @@ export default function VehicleDetailPage() {
               </LineChart>
             </ResponsiveContainer>
             <p className="text-[10px] text-white/20 text-center mt-2 font-medium">
-              Estimation basée sur {v.msrp ? 'le prix neuf (MSRP)' : 'le prix d\'achat'} — projection approximative
+              Estimation basée sur le prix neuf (MSRP) — projection approximative
             </p>
           </Motion.div>
         );

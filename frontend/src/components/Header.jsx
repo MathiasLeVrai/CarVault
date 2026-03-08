@@ -20,7 +20,8 @@ export default function Header() {
     : 'CV';
 
   return (
-    <header className="fixed top-0 left-0 right-0 h-16 md:h-20 cv-header-glass flex items-center justify-between px-5 md:px-8 z-50">
+    <header className="fixed top-0 left-0 right-0 cv-header-glass z-50" style={{ paddingTop: 'var(--safe-top)' }}>
+      <div className="h-16 md:h-20 flex items-center justify-between px-5 md:px-8">
       {/* Brand */}
       <div className="flex items-center gap-2.5">
         <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center shadow-[0_0_16px_rgba(255,42,63,0.3)]">
@@ -74,6 +75,7 @@ export default function Header() {
         >
           <LogOut className="w-4 h-4" strokeWidth={2} />
         </button>
+      </div>
       </div>
     </header>
   );

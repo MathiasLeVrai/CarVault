@@ -106,7 +106,7 @@ export default function Sidebar({ onFabPress }) {
       </aside>
 
       {/* Mobile Bottom Tab Bar */}
-      <nav className="md:hidden fixed bottom-4 left-4 right-4 z-50 safe-bottom">
+      <nav className="md:hidden fixed left-4 right-4 z-50 cv-bottom-nav">
         <div className="cv-bottom-bar rounded-2xl shadow-2xl">
           <div className="flex items-center">
             {/* Left 2 items */}

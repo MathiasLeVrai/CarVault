@@ -31,7 +31,7 @@ const uploadVehiclePhoto = multer({
       cb(new Error('Seules les images sont autorisées'), false);
     }
   },
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+  limits: { fileSize: 15 * 1024 * 1024 }, // 15MB
 });
 
 module.exports = { uploadDocument, uploadVehiclePhoto };
