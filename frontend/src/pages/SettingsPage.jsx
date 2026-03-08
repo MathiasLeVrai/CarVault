@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { notificationApi } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import usePush from '../hooks/usePush';
 import Button from '../components/ui/Button';
 import {
   Bell, Mail, Smartphone, Calendar, Check, Settings, Sun, Moon, LogOut,
@@ -49,6 +50,7 @@ function Toggle({ checked, onChange, label, description, icon, color = 'accent' 
 export default function SettingsPage() {
   const { user: _user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const push = usePush();
   const [prefs, setPrefs] = useState({ notifEmail: true, notifPush: false, notifWeekly: true });
   const [loading, setLoading] = useState(true);
   const [_saving, setSaving] = useState(false);
@@ -166,14 +168,24 @@ export default function SettingsPage() {
           checked={prefs.notifEmail}
           onChange={v => updatePref('notifEmail', v)}
         />
-        <Toggle
-          icon={Smartphone}
-          color="violet"
-          label="Notifications push"
-          description="Notifications dans votre navigateur (nécessite l'autorisation)."
-          checked={prefs.notifPush}
-          onChange={v => updatePref('notifPush', v)}
-        />
+        {push.supported && (
+          <Toggle
+            icon={Smartphone}
+            color="violet"
+            label="Notifications push"
+            description={push.subscribed ? 'Activées — vous recevrez les alertes sur cet appareil.' : 'Recevez les alertes directement sur votre écran.'}
+            checked={push.subscribed}
+            onChange={async (v) => {
+              if (v) {
+                const ok = await push.subscribe();
+                if (ok) updatePref('notifPush', true);
+              } else {
+                await push.unsubscribe();
+                updatePref('notifPush', false);
+              }
+            }}
+          />
+        )}
       </Motion.div>
 
       {/* Frequency */}

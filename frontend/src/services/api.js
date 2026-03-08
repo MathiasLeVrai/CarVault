@@ -195,4 +195,10 @@ export const subscriptionApi = {
   createPortal: () => api.post('/subscription/portal'),
 };
 
+export const pushApi = {
+  getVapidKey: () => api.get('/push/vapid-key'),
+  subscribe: (subscription) => api.post('/push/subscribe', { subscription }),
+  unsubscribe: (endpoint) => api.post('/push/unsubscribe', { endpoint }),
+};
+
 export default api;

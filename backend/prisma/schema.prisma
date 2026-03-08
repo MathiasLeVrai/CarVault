@@ -28,7 +28,8 @@ model User {
   vehicles       Vehicle[]
   alerts         Alert[]
   shareLinks     ShareLink[]
-  bankConnection BankConnection?
+  bankConnection    BankConnection?
+  pushSubscriptions PushSubscription[]
 
   @@map("users")
 }
@@ -203,6 +204,20 @@ model BankConnection {
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("bank_connections")
+}
+
+model PushSubscription {
+  id        String   @id @default(uuid())
+  endpoint  String
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, endpoint])
+  @@map("push_subscriptions")
 }
 
 model ShareLink {

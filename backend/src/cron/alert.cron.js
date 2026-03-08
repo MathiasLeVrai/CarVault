@@ -2,6 +2,7 @@ const cron = require('node-cron');
 const prisma = require('../lib/prisma');
 const { getMaintenanceIntervals } = require('../data/vehicles');
 const emailService = require('../services/email.service');
+const pushService = require('../services/push.service');
 
 /**
  * Système d'alertes intelligentes CarVault
@@ -26,7 +27,12 @@ async function alertExists(userId, type, titleContains, options = {}) {
 }
 
 async function createAlert(data) {
-  return prisma.alert.create({ data });
+  const alert = await prisma.alert.create({ data });
+  // Send push notification
+  try {
+    await pushService.sendToUser(data.userId, data.title, data.message);
+  } catch { /* push is best-effort */ }
+  return alert;
 }
 
 // ============================================================

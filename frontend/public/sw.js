@@ -110,6 +110,38 @@ async function networkFirst(request, cacheName) {
   }
 }
 
+// ===== Push Notifications =====
+self.addEventListener('push', (event) => {
+  if (!event.data) return;
+  try {
+    const data = event.data.json();
+    event.waitUntil(
+      self.registration.showNotification(data.title || 'CarVault', {
+        body: data.body || '',
+        icon: data.icon || '/icons/icon-192.svg',
+        badge: data.badge || '/icons/icon-192.svg',
+        data: { url: data.url || '/alerts' },
+        vibrate: [100, 50, 100],
+      })
+    );
+  } catch { /* ignore malformed push */ }
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const url = event.notification.data?.url || '/alerts';
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
+      const existing = clients.find(c => c.url.includes(self.location.origin));
+      if (existing) {
+        existing.navigate(url);
+        return existing.focus();
+      }
+      return self.clients.openWindow(url);
+    })
+  );
+});
+
 /**
  * Cache First : cache prioritaire, réseau en fallback
  * Idéal pour les ressources statiques

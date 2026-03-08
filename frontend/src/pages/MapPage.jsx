@@ -16,7 +16,7 @@ L.Icon.Default.mergeOptions({
 const FILTERS = [
   { id: 'garage',  label: 'Garages',       icon: Wrench,      color: '#7c5cfc', tags: [['amenity','car_repair'],['shop','car_repair']] },
   { id: 'ct',      label: 'Contrôle tech.', icon: ShieldCheck, color: '#22c55e', tags: [['amenity','vehicle_inspection']] },
-  { id: 'carwash', label: 'Lavage',         icon: Droplets,    color: '#38bdf8', tags: [['amenity','car_wash'],['shop','car_wash']] },
+  { id: 'carwash', label: 'Lavage',         icon: Droplets,    color: '#38bdf8', tags: [['amenity','car_wash'],['shop','car_wash'],['self_service','car_wash']] },
   { id: 'fuel',    label: 'Carburant',      icon: Fuel,        color: '#f59e0b', tags: [] },
 ];
 
@@ -84,7 +84,7 @@ async function fetchPOIs(lat, lon, activeFilters) {
 
     let type = 'garage';
     if (el.tags?.amenity === 'vehicle_inspection' || el.tags?.shop === 'vehicle_inspection') type = 'ct';
-    else if (el.tags?.amenity === 'car_wash' || el.tags?.shop === 'car_wash') type = 'carwash';
+    else if (el.tags?.amenity === 'car_wash' || el.tags?.shop === 'car_wash' || el.tags?.self_service === 'car_wash') type = 'carwash';
 
     const name = el.tags?.name || el.tags?.operator || FILTERS.find(f => f.id === type)?.label || 'Lieu';
     const address = [el.tags?.['addr:housenumber'], el.tags?.['addr:street'], el.tags?.['addr:city']]
@@ -163,12 +163,13 @@ function FuelPopup({ poi, onDirections }) {
 export default function MapPage() {
   const [userPos, setUserPos] = useState(null);
   const [mapCenter, setMapCenter] = useState(DEFAULT_CENTER);
-  const [activeFilters, setActiveFilters] = useState(['garage', 'ct']);
+  const [activeFilters, setActiveFilters] = useState(['garage', 'ct', 'carwash', 'fuel']);
   const [pois, setPois] = useState([]);
   const [loading, setLoading] = useState(false);
   const [geoError, setGeoError] = useState(null);
   const [selected, setSelected] = useState(null);
   const markersRef = useRef({});
+  const userPosRef = useRef(null);
 
   const loadPOIs = useCallback(async (lat, lon, filters) => {
     setLoading(true);
@@ -196,6 +197,7 @@ export default function MapPage() {
       ({ coords }) => {
         const pos = [coords.latitude, coords.longitude];
         setUserPos(pos);
+        userPosRef.current = pos;
         setMapCenter(pos);
         loadPOIs(coords.latitude, coords.longitude, activeFilters);
       },
@@ -212,7 +214,8 @@ export default function MapPage() {
   const toggleFilter = (id) => {
     setActiveFilters(prev => {
       const next = prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id];
-      if (userPos) loadPOIs(userPos[0], userPos[1], next);
+      const pos = userPosRef.current;
+      if (pos) loadPOIs(pos[0], pos[1], next);
       return next;
     });
   };
