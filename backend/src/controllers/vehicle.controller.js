@@ -90,15 +90,12 @@ class VehicleController {
       }
 
       if (req.file) {
-        console.log('[Vehicle Update] Uploading photo:', req.file.originalname, req.file.size, 'bytes');
         data.photo = await storageService.upload(req.file.buffer, req.file.originalname, 'vehicles');
-        console.log('[Vehicle Update] Photo saved:', data.photo);
       }
 
       const vehicle = await vehicleService.update(req.params.id, data, req.userId);
       res.json(vehicle);
     } catch (error) {
-      console.error('[Vehicle Update] Error:', error);
       next(error);
     }
   }
