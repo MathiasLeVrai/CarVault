@@ -6,21 +6,38 @@
 
 // Intervalles de maintenance par défaut (si modèle non trouvé)
 const DEFAULT_MAINTENANCE = {
-  oilChange: 15000,       // Vidange tous les 15 000 km
-  brakes: 30000,          // Plaquettes de frein tous les 30 000 km
-  timingBelt: 120000,     // Courroie de distribution tous les 120 000 km
-  tires: 40000,           // Pneus tous les 40 000 km
-  generalService: 20000,  // Révision générale tous les 20 000 km
+  oilChange: 15000,         // Vidange tous les 15 000 km
+  brakes: 30000,            // Plaquettes de frein tous les 30 000 km
+  timingBelt: 120000,       // Courroie de distribution tous les 120 000 km
+  tires: 40000,             // Pneus tous les 40 000 km
+  generalService: 20000,    // Révision générale tous les 20 000 km
+  airFilter: 25000,         // Filtre à air tous les 25 000 km
+  cabinFilter: 20000,       // Filtre habitacle tous les 20 000 km
+  coolant: 80000,           // Liquide de refroidissement tous les 80 000 km
+  sparkPlugs: 45000,        // Bougies tous les 45 000 km (essence uniquement)
 };
 
 // Intervalles spécifiques par type de carburant
 const FUEL_MAINTENANCE = {
-  GASOLINE: { oilChange: 15000 },
-  DIESEL:   { oilChange: 20000 },
-  HYBRID:   { oilChange: 20000 },
-  ELECTRIC: { oilChange: null },  // Pas de vidange pour les électriques
-  LPG:      { oilChange: 10000 },
-  OTHER:    { oilChange: 15000 },
+  GASOLINE: { oilChange: 15000, sparkPlugs: 45000 },
+  DIESEL:   { oilChange: 20000, sparkPlugs: null },  // Pas de bougies diesel
+  HYBRID:   { oilChange: 20000, sparkPlugs: 60000 },
+  ELECTRIC: { oilChange: null, sparkPlugs: null, timingBelt: null, coolant: null, airFilter: null },
+  LPG:      { oilChange: 10000, sparkPlugs: 30000 },
+  OTHER:    { oilChange: 15000, sparkPlugs: 45000 },
+};
+
+// Labels humains pour les types de maintenance
+const MAINTENANCE_LABELS = {
+  oilChange: 'Vidange',
+  brakes: 'Plaquettes de frein',
+  timingBelt: 'Courroie de distribution',
+  tires: 'Pneus',
+  generalService: 'Révision générale',
+  airFilter: 'Filtre à air',
+  cabinFilter: 'Filtre habitacle',
+  coolant: 'Liquide de refroidissement',
+  sparkPlugs: 'Bougies',
 };
 
 const vehicleBrands = [
@@ -195,4 +212,4 @@ function getMaintenanceIntervals(brandName, fuelType = 'GASOLINE') {
   return intervals;
 }
 
-module.exports = { vehicleBrands, getMaintenanceIntervals, DEFAULT_MAINTENANCE, FUEL_MAINTENANCE };
+module.exports = { vehicleBrands, getMaintenanceIntervals, DEFAULT_MAINTENANCE, FUEL_MAINTENANCE, MAINTENANCE_LABELS };

@@ -51,8 +51,9 @@ model Vehicle {
   engineSize    Float?
   transmission  String?
   bodyType      String?
-  doors         Int?
-  createdAt     DateTime @default(now())
+  doors              Int?
+  maintenanceConfig  Json?    // Intervalles personnalisés par l'utilisateur
+  createdAt          DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
   userId        String

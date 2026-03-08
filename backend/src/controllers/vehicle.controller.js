@@ -3,6 +3,24 @@ const pdfService = require('../services/pdf.service');
 const healthService = require('../services/health.service');
 const storageService = require('../services/storage.service');
 const prisma = require('../lib/prisma');
+const { getMaintenanceIntervals, MAINTENANCE_LABELS } = require('../data/vehicles');
+
+function findLastExpenseForType(expenses, maintenanceKey) {
+  const mapping = {
+    oilChange: (e) => e.category === 'OIL_CHANGE' || (e.category === 'MAINTENANCE' && e.description && /vidange|huile|oil/i.test(e.description)),
+    brakes: (e) => e.category === 'BRAKES' || (e.category === 'REPAIR' && e.description && /frein|brake|plaquette/i.test(e.description)),
+    timingBelt: (e) => e.description && /courroie|distribution|timing|belt/i.test(e.description),
+    tires: (e) => e.category === 'TIRES',
+    generalService: (e) => e.category === 'MAINTENANCE',
+    airFilter: (e) => e.description && /filtre.*air|air.*filter/i.test(e.description),
+    cabinFilter: (e) => e.description && /filtre.*habitacle|cabin.*filter|filtre.*pollen/i.test(e.description),
+    coolant: (e) => e.description && /liquide.*refroid|coolant|antigel/i.test(e.description),
+    sparkPlugs: (e) => e.description && /bougie|spark.*plug/i.test(e.description),
+  };
+  const matcher = mapping[maintenanceKey];
+  if (!matcher) return null;
+  return expenses.find(matcher) || null;
+}
 
 class VehicleController {
   async getAll(req, res, next) {
@@ -149,6 +167,87 @@ class VehicleController {
 
       const vehicle = await vehicleService.update(req.params.id, data, req.userId);
       res.json(vehicle);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getMaintenancePlan(req, res, next) {
+    try {
+      const vehicle = await prisma.vehicle.findFirst({
+        where: { id: req.params.id, userId: req.userId },
+        include: {
+          expenses: { orderBy: { date: 'desc' } },
+        },
+      });
+      if (!vehicle) return res.status(404).json({ error: 'Véhicule non trouvé' });
+
+      // Intervalles par défaut basés sur marque/carburant
+      const defaults = getMaintenanceIntervals(vehicle.brand, vehicle.fuelType || 'GASOLINE');
+      // Merge avec les personnalisations de l'utilisateur
+      const custom = vehicle.maintenanceConfig || {};
+      const intervals = { ...defaults, ...custom };
+
+      // Pour chaque type, calculer le dernier km et la prochaine échéance
+      const plan = [];
+      for (const [key, intervalKm] of Object.entries(intervals)) {
+        if (intervalKm === null || intervalKm === undefined) continue;
+
+        // Trouver la dernière dépense correspondante
+        const lastExpense = findLastExpenseForType(vehicle.expenses, key);
+        const lastKm = lastExpense?.mileage || 0;
+        const lastDate = lastExpense?.date || null;
+        const kmSinceLast = vehicle.mileage - lastKm;
+        const nextAtKm = lastKm + intervalKm;
+        const remaining = nextAtKm - vehicle.mileage;
+        const pct = Math.min(100, Math.round((kmSinceLast / intervalKm) * 100));
+
+        plan.push({
+          key,
+          label: MAINTENANCE_LABELS[key] || key,
+          intervalKm,
+          isCustom: custom[key] !== undefined,
+          lastKm,
+          lastDate,
+          nextAtKm,
+          remaining,
+          pct,
+          status: remaining <= 0 ? 'overdue' : pct >= 80 ? 'soon' : 'ok',
+        });
+      }
+
+      // Trier : overdue d'abord, puis soon, puis ok
+      const order = { overdue: 0, soon: 1, ok: 2 };
+      plan.sort((a, b) => order[a.status] - order[b.status]);
+
+      res.json({ plan, defaults, custom });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async updateMaintenancePlan(req, res, next) {
+    try {
+      const { intervals } = req.body;
+      if (!intervals || typeof intervals !== 'object') {
+        return res.status(400).json({ error: 'Intervalles requis' });
+      }
+
+      // Valider que les clés sont légitimes
+      const validKeys = Object.keys(MAINTENANCE_LABELS);
+      const clean = {};
+      for (const [k, v] of Object.entries(intervals)) {
+        if (!validKeys.includes(k)) continue;
+        clean[k] = v === null ? null : parseInt(v);
+      }
+
+      const result = await prisma.vehicle.updateMany({
+        where: { id: req.params.id, userId: req.userId },
+        data: { maintenanceConfig: clean },
+      });
+      if (result.count === 0) return res.status(404).json({ error: 'Véhicule non trouvé' });
+
+      res.json({ ok: true });
     } catch (error) {
       next(error);
     }

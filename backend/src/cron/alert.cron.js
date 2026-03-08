@@ -178,7 +178,8 @@ async function checkOilChange() {
   });
 
   for (const v of vehicles) {
-    const intervals = getMaintenanceIntervals(v.brand, v.fuelType || 'GASOLINE');
+    const defaults = getMaintenanceIntervals(v.brand, v.fuelType || 'GASOLINE');
+    const intervals = { ...defaults, ...(v.maintenanceConfig || {}) };
 
     // Pas de vidange pour les électriques
     if (!intervals.oilChange) continue;
@@ -285,7 +286,8 @@ async function checkMileageService() {
   });
 
   for (const v of vehicles) {
-    const intervals = getMaintenanceIntervals(v.brand, v.fuelType || 'GASOLINE');
+    const defaults = getMaintenanceIntervals(v.brand, v.fuelType || 'GASOLINE');
+    const intervals = { ...defaults, ...(v.maintenanceConfig || {}) };
     const threeMonthsAgo = new Date();
     threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
 

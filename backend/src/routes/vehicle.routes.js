@@ -12,6 +12,8 @@ router.get('/:id/pdf', vehicleController.generatePdf);
 router.get('/:id/health', vehicleController.getHealthScore);
 router.post('/', uploadVehicleWithDoc.fields([{ name: 'photo', maxCount: 1 }, { name: 'registrationDoc', maxCount: 1 }]), vehicleController.create);
 router.put('/:id', uploadVehiclePhoto.single('photo'), vehicleController.update);
+router.get('/:id/maintenance', vehicleController.getMaintenancePlan);
+router.put('/:id/maintenance', vehicleController.updateMaintenancePlan);
 router.delete('/:id', vehicleController.delete);
 
 module.exports = router;
