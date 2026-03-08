@@ -19,7 +19,6 @@ import {
   documentTypeLabels,
 } from '../utils/helpers';
 import { motion as Motion } from 'framer-motion';
-import BadgesWidget from '../components/BadgesWidget';
 
 const ChartTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
@@ -484,10 +483,6 @@ export default function DashboardPage() {
         </Motion.div>
       )}
 
-      {/* ─── Badges ─── */}
-      <Motion.div variants={itemVariants}>
-        <BadgesWidget />
-      </Motion.div>
     </Motion.div>
   );
 }

@@ -55,8 +55,23 @@ export function AuthProvider({ children }) {
     setUser(null);
   };
 
+  const refreshUser = async () => {
+    try {
+      const profile = await authApi.getProfile();
+      setUser(profile);
+      localStorage.setItem('carvault_user', JSON.stringify(profile));
+    } catch { /* ignore */ }
+  };
+
+  const updateProfile = async (formData) => {
+    const updated = await authApi.updateProfile(formData);
+    setUser(updated);
+    localStorage.setItem('carvault_user', JSON.stringify(updated));
+    return updated;
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, loading }}>
+    <AuthContext.Provider value={{ user, login, register, logout, loading, refreshUser, updateProfile }}>
       {children}
     </AuthContext.Provider>
   );
