@@ -42,6 +42,7 @@ const { startAlertCron } = require('./cron/alert.cron');
 const { startMonthlyReportCron } = require('./cron/monthly-report.cron');
 
 const app = express();
+app.set('trust proxy', 1);
 const PORT = process.env.PORT || 3001;
 
 // Rate limiters
