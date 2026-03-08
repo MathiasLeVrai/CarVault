@@ -25,7 +25,6 @@ const shareRoutes = require('./routes/share.routes');
 const notificationRoutes = require('./routes/notification.routes');
 const subscriptionRoutes = require('./routes/subscription.routes');
 const badgeRoutes = require('./routes/badge.routes');
-// const bankRoutes = require('./routes/bank.routes'); // disabled
 const { errorHandler } = require('./middleware/error.middleware');
 const { startAlertCron } = require('./cron/alert.cron');
 
@@ -106,7 +105,6 @@ app.use('/api/share', shareRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/subscription', subscriptionRoutes);
 app.use('/api/badges', apiLimiter, badgeRoutes);
-// app.use('/api/bank', apiLimiter, bankRoutes); // disabled
 
 // Health check
 app.get('/api/health', (req, res) => {

@@ -160,7 +160,7 @@ class PdfService {
 
     const hasPhoto = !!resolvePhotoPath(vehicle.photo);
     const byType = (documents || []).reduce((acc, d) => { acc[d.type] = (acc[d.type] || 0) + 1; return acc; }, {});
-    const maintenanceCount = (expenses || []).filter(e => e.category === 'MAINTENANCE' || e.category === 'REPAIR').length;
+    const maintenanceCount = (expenses || []).filter(e => e.category === 'MAINTENANCE').length;
     const invoiceCount = byType.INVOICE || 0;
     const ctCount = byType.TECHNICAL_INSPECTION || 0;
     const carteGriseCount = byType.REGISTRATION || 0;

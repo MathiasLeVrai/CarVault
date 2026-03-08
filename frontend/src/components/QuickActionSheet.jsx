@@ -75,7 +75,7 @@ export default function QuickActionSheet({ onClose }) {
   // Fuel form
   const [fuel, setFuel] = useState({ mileage: '', liters: '', pricePerLiter: '', isFull: true });
   // Expense form
-  const [exp, setExp] = useState({ amount: '', category: 'FUEL', description: '' });
+  const [exp, setExp] = useState({ amount: '', category: 'MAINTENANCE', description: '' });
   // Mileage form
   const [km, setKm] = useState({ mileage: '', notes: '' });
 

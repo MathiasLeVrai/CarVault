@@ -141,21 +141,13 @@ enum DocumentType {
 
 enum ExpenseCategory {
   MAINTENANCE
-  TIRES
-  FUEL          // @deprecated — kept for DB compat, hidden in UI
-  INSURANCE
-  REPAIR
-  PARKING
-  TOLL
   OIL_CHANGE
   BRAKES
-  BATTERY
+  TIRES
   BODYWORK
-  WINDSHIELD
   TECHNICAL_INSPECTION
-  REGISTRATION
-  CLEANING
-  ACCESSORIES
+  PARKING
+  TOLL
   OTHER
 }
 

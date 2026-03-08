@@ -285,10 +285,7 @@ async function checkMileageService() {
 
     // -- Freins --
     if (intervals.brakes) {
-      const lastBrakeExp = v.expenses.find(e =>
-        e.category === 'BRAKES' ||
-        (e.category === 'REPAIR' && e.description && /frein|brake|plaquette/i.test(e.description))
-      );
+      const lastBrakeExp = v.expenses.find(e => e.category === 'BRAKES');
       const lastBrakeKm = lastBrakeExp?.mileage || 0;
       const kmSinceBrake = v.mileage - lastBrakeKm;
 

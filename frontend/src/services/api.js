@@ -185,15 +185,6 @@ export const brandApi = {
   lookupPlate: (plate) => api.get(`/brands/plate/${encodeURIComponent(plate)}`),
 };
 
-export const bankApi = {
-  getStatus: () => api.get('/bank/status'),
-  listInstitutions: () => api.get('/bank/institutions'),
-  connect: (institutionId, institutionName) => api.post('/bank/connect', { institutionId, institutionName }),
-  callback: () => api.post('/bank/callback'),
-  disconnect: () => api.request('/bank/disconnect', { method: 'DELETE' }),
-  detectFuel: () => api.get('/bank/fuel-transactions'),
-};
-
 export const badgeApi = {
   getAll: () => api.get('/badges'),
 };

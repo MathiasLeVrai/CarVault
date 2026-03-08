@@ -14,8 +14,6 @@ import AlertsPage from './pages/AlertsPage';
 import SettingsPage from './pages/SettingsPage';
 import SharePage from './pages/SharePage';
 import MapPage from './pages/MapPage';
-// import BankPage from './pages/BankPage'; // disabled
-
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
   if (loading) return (
@@ -85,8 +83,6 @@ export default function App() {
         <Route path="alerts" element={<AlertsPage />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="map" element={<MapPage />} />
-        {/* <Route path="bank" element={<BankPage />} /> */}
-        {/* <Route path="bank/callback" element={<BankPage />} /> */}
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
