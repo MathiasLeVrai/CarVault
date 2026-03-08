@@ -4,6 +4,11 @@
 const errorHandler = (err, req, res, _next) => {
   console.error('Error:', err.message);
 
+  // Report to Sentry (non-client errors only)
+  if ((!err.statusCode || err.statusCode >= 500) && process.env.SENTRY_DSN) {
+    try { require('@sentry/node').captureException(err); } catch { /* sentry not loaded */ }
+  }
+
   if (err.code === 'P2002') {
     return res.status(409).json({
       error: 'Cette ressource existe déjà',

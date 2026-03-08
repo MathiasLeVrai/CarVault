@@ -93,14 +93,18 @@ class DashboardService {
       console.error('Erreur calcul score moyen:', err.message);
     }
 
-    // --- Feature 1 & 4: Action cards ("À faire bientôt") ---
+    // --- Action cards ("À faire bientôt") ---
     const actionCards = await this._buildActionCards(userId, now);
+
+    // --- Coût total de possession par véhicule ---
+    const ownershipCosts = await this._calcOwnershipCosts(userId);
 
     return {
       vehicleCount,
       totalExpensesYear: yearExpenses._sum.amount || 0,
       avgHealthScore,
       monthlyExpenses: formattedMonthly,
+      ownershipCosts,
       upcomingDeadlines: upcomingDeadlines.map(d => ({
         id: d.id,
         name: d.name,
@@ -230,6 +234,50 @@ class DashboardService {
     cards.sort((a, b) => (urgencyOrder[a.urgency] ?? 9) - (urgencyOrder[b.urgency] ?? 9));
 
     return cards.slice(0, 3);
+  }
+
+  async _calcOwnershipCosts(userId) {
+    const vehicles = await prisma.vehicle.findMany({
+      where: { userId },
+      select: { id: true, brand: true, model: true, createdAt: true, purchasePrice: true },
+    });
+
+    if (vehicles.length === 0) return [];
+
+    const results = [];
+    for (const v of vehicles) {
+      const monthsOwned = Math.max(1, Math.round((Date.now() - new Date(v.createdAt).getTime()) / (30.44 * 24 * 60 * 60 * 1000)));
+
+      const totalExpenses = await prisma.expense.aggregate({
+        where: { vehicleId: v.id },
+        _sum: { amount: true },
+      });
+
+      const totalFuel = await prisma.fuelEntry.aggregate({
+        where: { vehicleId: v.id },
+        _sum: { totalCost: true },
+      });
+
+      const expenseTotal = Number(totalExpenses._sum.amount || 0);
+      const fuelTotal = Number(totalFuel._sum.totalCost || 0);
+      const grandTotal = expenseTotal + fuelTotal;
+      const monthly = Math.round((grandTotal / monthsOwned) * 100) / 100;
+      const daily = Math.round((grandTotal / (monthsOwned * 30.44)) * 100) / 100;
+
+      results.push({
+        vehicleId: v.id,
+        brand: v.brand,
+        model: v.model,
+        monthsOwned,
+        totalExpenses: expenseTotal,
+        totalFuel: fuelTotal,
+        grandTotal,
+        monthlyAvg: monthly,
+        dailyAvg: daily,
+      });
+    }
+
+    return results;
   }
 }
 

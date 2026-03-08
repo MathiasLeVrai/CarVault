@@ -1,4 +1,15 @@
 require('dotenv').config();
+const Sentry = require('@sentry/node');
+
+// Init Sentry before everything else
+if (process.env.SENTRY_DSN) {
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    environment: process.env.NODE_ENV || 'production',
+    tracesSampleRate: 0.2,
+  });
+}
+
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -28,6 +39,7 @@ const badgeRoutes = require('./routes/badge.routes');
 const pushRoutes = require('./routes/push.routes');
 const { errorHandler } = require('./middleware/error.middleware');
 const { startAlertCron } = require('./cron/alert.cron');
+const { startMonthlyReportCron } = require('./cron/monthly-report.cron');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -128,6 +140,7 @@ app.get('*', (req, res) => {
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚗 CarVault API running on port ${PORT}`);
   startAlertCron();
+  startMonthlyReportCron();
 });
 
 process.on('unhandledRejection', (reason) => {

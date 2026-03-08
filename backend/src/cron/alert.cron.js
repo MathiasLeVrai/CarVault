@@ -58,16 +58,22 @@ async function checkDocumentExpiry() {
     if (await alertExists(doc.vehicle.userId, 'DOCUMENT_EXPIRY', doc.name, { dueDate: doc.expirationDate })) continue;
     const daysLeft = Math.ceil((doc.expirationDate - now) / (1000 * 60 * 60 * 24));
 
-    // Use per-document reminder days, fallback to [30, 7, 1]
-    const thresholds = (doc.reminderDays?.length > 0 ? doc.reminderDays : [30, 7, 1]).sort((a, b) => b - a);
+    // CT gets earlier + more frequent warnings (amende = 135€)
+    const isCT = doc.type === 'TECHNICAL_INSPECTION';
+    const defaultThresholds = isCT ? [60, 30, 14, 7, 1] : [30, 7, 1];
+    const thresholds = (doc.reminderDays?.length > 0 ? doc.reminderDays : defaultThresholds).sort((a, b) => b - a);
     const matchesThreshold = thresholds.some((p, i) => {
       const nextThreshold = thresholds[i + 1] || 0;
       return daysLeft <= p && daysLeft > nextThreshold;
     });
     if (!matchesThreshold) continue;
 
-    const title = `Expiration dans ${daysLeft}j : ${doc.name}`;
-    const message = `Le document "${doc.name}" de votre ${doc.vehicle.brand} ${doc.vehicle.model} expire le ${doc.expirationDate.toLocaleDateString('fr-FR')}.`;
+    const title = isCT
+      ? `CT dans ${daysLeft}j : ${doc.vehicle.brand} ${doc.vehicle.model}`
+      : `Expiration dans ${daysLeft}j : ${doc.name}`;
+    const message = isCT
+      ? `Votre contrôle technique expire le ${doc.expirationDate.toLocaleDateString('fr-FR')}. ${daysLeft <= 14 ? 'Prenez rendez-vous rapidement — rouler sans CT valide = 135€ d\'amende.' : 'Pensez à prendre rendez-vous pour éviter l\'amende de 135€.'}`
+      : `Le document "${doc.name}" de votre ${doc.vehicle.brand} ${doc.vehicle.model} expire le ${doc.expirationDate.toLocaleDateString('fr-FR')}.`;
 
     const alert = await createAlert({
       title,
@@ -101,9 +107,12 @@ async function checkDocumentExpiry() {
 
   for (const doc of expiredDocs) {
     if (await alertExists(doc.vehicle.userId, 'DOCUMENT_EXPIRY', `Expiré`, { dueDate: doc.expirationDate })) continue;
+    const isCT = doc.type === 'TECHNICAL_INSPECTION';
     await createAlert({
-      title: `Expiré : ${doc.name}`,
-      message: `Le document "${doc.name}" de votre ${doc.vehicle.brand} ${doc.vehicle.model} a expiré le ${doc.expirationDate.toLocaleDateString('fr-FR')}. Pensez à le renouveler.`,
+      title: isCT ? `CT EXPIRÉ : ${doc.vehicle.brand} ${doc.vehicle.model}` : `Expiré : ${doc.name}`,
+      message: isCT
+        ? `Votre contrôle technique a expiré le ${doc.expirationDate.toLocaleDateString('fr-FR')}. Vous risquez une amende de 135€ et une immobilisation du véhicule. Prenez rendez-vous immédiatement.`
+        : `Le document "${doc.name}" de votre ${doc.vehicle.brand} ${doc.vehicle.model} a expiré le ${doc.expirationDate.toLocaleDateString('fr-FR')}. Pensez à le renouveler.`,
       type: 'DOCUMENT_EXPIRY',
       dueDate: doc.expirationDate,
       userId: doc.vehicle.userId,

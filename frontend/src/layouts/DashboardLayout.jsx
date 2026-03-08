@@ -4,6 +4,7 @@ import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import OnboardingTour from '../components/OnboardingTour';
 import QuickActionSheet from '../components/QuickActionSheet';
+import PushPrompt from '../components/PushPrompt';
 import { useAuth } from '../context/AuthContext';
 
 export default function DashboardLayout() {
@@ -47,6 +48,7 @@ export default function DashboardLayout() {
       </div>
 
       {showQuickAction && <QuickActionSheet onClose={() => setShowQuickAction(false)} />}
+      <PushPrompt />
     </div>
   );
 }

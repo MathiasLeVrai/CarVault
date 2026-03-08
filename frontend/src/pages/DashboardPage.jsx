@@ -8,7 +8,7 @@ import Button from '../components/ui/Button';
 import {
   Car, Wallet, CalendarClock, Bell, ChevronRight, TrendingDown,
   ArrowRight, FileText, Activity, Plus, Shield, Wrench, AlertTriangle,
-  Clock, TrendingUp,
+  Clock, TrendingUp, Fuel, Receipt,
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -425,6 +425,64 @@ export default function DashboardPage() {
           </div>
         </Motion.div>
       </div>
+
+      {/* ─── Coût de possession ─── */}
+      {data?.ownershipCosts?.length > 0 && (
+        <Motion.div variants={itemVariants}>
+          <SectionHeader
+            icon={Receipt}
+            title="Coût de possession"
+            action={
+              <button onClick={() => navigate('/expenses')} className="text-xs font-semibold text-ink-muted hover:text-accent transition-colors flex items-center gap-1">
+                Détails <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            }
+          />
+          <div className={`grid gap-3 md:gap-4 ${data.ownershipCosts.length === 1 ? 'grid-cols-1 max-w-lg' : 'grid-cols-1 sm:grid-cols-2'}`}>
+            {data.ownershipCosts.map(oc => (
+              <button
+                key={oc.vehicleId}
+                onClick={() => navigate(`/vehicles/${oc.vehicleId}`)}
+                className="bento-card p-5 text-left hover:scale-[1.01] active:scale-[0.99] transition-all"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-9 h-9 rounded-xl bg-orange/10 flex items-center justify-center">
+                      <Car className="w-4 h-4 text-orange" strokeWidth={2} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-white font-display">{oc.brand} {oc.model}</p>
+                      <p className="text-[10px] text-white/30 font-medium">{oc.monthsOwned} mois de possession</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-end justify-between">
+                  <div>
+                    <p className="text-2xl font-black text-white font-display leading-none">{formatCurrency(oc.monthlyAvg)}</p>
+                    <p className="text-[10px] text-white/30 font-bold uppercase tracking-widest mt-1">/ mois</p>
+                  </div>
+                  <div className="text-right space-y-1">
+                    <div className="flex items-center gap-1.5 justify-end">
+                      <Wrench className="w-3 h-3 text-white/25" />
+                      <span className="text-[11px] text-white/40 font-medium">{formatCurrency(oc.totalExpenses)}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 justify-end">
+                      <Fuel className="w-3 h-3 text-white/25" />
+                      <span className="text-[11px] text-white/40 font-medium">{formatCurrency(oc.totalFuel)}</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-3 pt-3 border-t border-white/5">
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="text-white/30">Total</span>
+                    <span className="text-white/60 font-bold">{formatCurrency(oc.grandTotal)}</span>
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </Motion.div>
+      )}
 
       {/* ─── Badges ─── */}
       <Motion.div variants={itemVariants}>

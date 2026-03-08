@@ -1,17 +1,19 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { vehicleApi, documentApi, expenseApi, mileageApi, shareApi } from '../services/api';
-import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
-import Badge from '../components/ui/Badge';
 import Modal from '../components/ui/Modal';
 import Input from '../components/ui/Input';
 import Select from '../components/ui/Select';
 import StatCard from '../components/ui/StatCard';
-import { ArrowLeft, FileText, Wallet, Plus, Trash2, Gauge, Upload, FileDown, Heart, TrendingDown, ShieldCheck, Wrench, FileCheck, Route, Settings, Share2, Link2, Copy, Check, ExternalLink, Pencil, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { FileText, Wallet, Plus, Trash2, Gauge, Upload, Link2, Copy, Check, ExternalLink, FileDown } from 'lucide-react';
 import FuelTracker from '../components/FuelTracker';
+import VehicleHero from '../components/vehicle/VehicleHero';
+import VehicleHealthCard from '../components/vehicle/VehicleHealthCard';
+import MaintenancePlanCard from '../components/vehicle/MaintenancePlanCard';
+import MileageHistory from '../components/vehicle/MileageHistory';
 import compressImage from '../utils/compressImage';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, ReferenceLine } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { formatCurrency, formatDateShort, documentTypeLabels, expenseCategoryLabels } from '../utils/helpers';
 import { motion as Motion } from 'framer-motion';
 
@@ -31,84 +33,6 @@ const ChartTip = ({ active, payload, label }) => {
     </div>
   );
 };
-
-const getScoreColor = (score) => {
-  if (score >= 80) return '#22c55e';
-  if (score >= 60) return '#eab308';
-  if (score >= 40) return '#f97316';
-  return '#ff2a3f';
-};
-
-const getGradeLabel = (grade) => {
-  const labels = { A: 'Excellent', B: 'Bon', C: 'Moyen', D: 'À améliorer' };
-  return labels[grade] || '';
-};
-
-function ScoreGauge({ score, grade, size = 140 }) {
-  const strokeWidth = 10;
-  const radius = (size - strokeWidth) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const progress = (score / 100) * circumference;
-  const color = getScoreColor(score);
-
-  return (
-    <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
-      <svg width={size} height={size} className="-rotate-90">
-        <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth={strokeWidth} />
-        <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke={color} strokeWidth={strokeWidth}
-          strokeDasharray={circumference} strokeDashoffset={circumference - progress}
-          strokeLinecap="round" className="transition-all duration-1000 ease-out drop-shadow-[0_0_12px_currentColor]" />
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-4xl font-black text-white font-display tracking-tighter">{score}</span>
-        <span className="text-[10px] font-bold uppercase tracking-widest mt-1" style={{ color }}>{getGradeLabel(grade)}</span>
-      </div>
-    </div>
-  );
-}
-
-function SubScoreBar({ icon, label, score, max, color }) {
-  const IconComponent = icon;
-  const pct = max > 0 ? (score / max) * 100 : 0;
-  return (
-    <div className="flex items-center gap-4">
-      <div className="w-10 h-10 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-center shrink-0">
-        <IconComponent className="w-4 h-4 text-white/60" strokeWidth={2} />
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between mb-1.5">
-          <span className="text-xs font-bold text-white uppercase tracking-wider">{label}</span>
-          <span className="text-xs font-bold text-white/50 font-mono">{score}/{max}</span>
-        </div>
-        <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
-          <div className="h-full rounded-full transition-all duration-700 ease-out"
-            style={{ width: `${pct}%`, backgroundColor: color || getScoreColor((score/max)*100),
-              boxShadow: `0 0 12px ${(color || getScoreColor((score/max)*100))}80` }} />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function calcDepreciation(basePrice, purchaseYear, currentMileage) {
-  const currentYear = new Date().getFullYear();
-  const age = Math.max(0, currentYear - purchaseYear);
-  const points = [];
-  let value = Number(basePrice);
-  for (let y = 0; y <= age + 5; y++) {
-    if (y === age && currentMileage) {
-      const expectedKm = age * 15000;
-      const correction = 1 + Math.max(-0.3, Math.min(0.15, -((currentMileage - expectedKm) / 10000) * 0.02));
-      value *= correction;
-    }
-    points.push({ year: purchaseYear + y, value: Math.round(value), isFuture: y > age });
-    if (y === 0) value *= 0.80;
-    else if (y === 1) value *= 0.85;
-    else if (y <= 4) value *= 0.90;
-    else value *= 0.93;
-  }
-  return points;
-}
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -139,8 +63,6 @@ export default function VehicleDetailPage() {
   const [shareLoading, setShareLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [maintenancePlan, setMaintenancePlan] = useState(null);
-  const [editingInterval, setEditingInterval] = useState(null);
-  const [editIntervalValue, setEditIntervalValue] = useState('');
 
   const openEdit = () => {
     setEditForm({ brand: v.brand || '', model: v.model || '', year: String(v.year || ''), mileage: String(v.mileage || ''), licensePlate: v.licensePlate || '', color: v.color || '', fuelType: v.fuelType || 'GASOLINE', purchasePrice: v.purchasePrice ? String(v.purchasePrice) : '' });
@@ -168,33 +90,17 @@ export default function VehicleDetailPage() {
   const delMileage = async (mid) => { if(!confirm('Supprimer ?')) return; await mileageApi.delete(id, mid); load(); };
   const createShareLink = async () => {
     setShareLoading(true);
-    try {
-      const link = await shareApi.create(id, 30);
-      setShareLink(link);
-    } catch (e) { console.error('Share error:', e); }
+    try { const link = await shareApi.create(id, 30); setShareLink(link); }
+    catch (e) { console.error('Share error:', e); }
     finally { setShareLoading(false); }
   };
   const copyShareUrl = () => {
     if (!shareLink) return;
-    const url = `${window.location.origin}/share/${shareLink.token}`;
-    navigator.clipboard.writeText(url);
+    navigator.clipboard.writeText(`${window.location.origin}/share/${shareLink.token}`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
-  const revokeShare = async () => {
-    if (!shareLink) return;
-    await shareApi.revoke(shareLink.id);
-    setShareLink(null);
-  };
-  const saveInterval = async (key, value) => {
-    try {
-      const intervals = { ...(maintenancePlan?.custom || {}), [key]: value === '' ? null : parseInt(value) };
-      await vehicleApi.updateMaintenancePlan(id, intervals);
-      const updated = await vehicleApi.getMaintenancePlan(id);
-      setMaintenancePlan(updated);
-      setEditingInterval(null);
-    } catch { /* ignore */ }
-  };
+  const revokeShare = async () => { if (!shareLink) return; await shareApi.revoke(shareLink.id); setShareLink(null); };
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="relative w-12 h-12"><div className="absolute inset-0 rounded-full border-2 border-white/10 border-t-accent animate-spin" /></div></div>;
   if (!v) return null;
@@ -204,46 +110,17 @@ export default function VehicleDetailPage() {
 
   return (
     <Motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-6 md:space-y-8">
-      {/* Hero Header */}
-      <Motion.div variants={itemVariants} className="relative rounded-3xl overflow-hidden bg-[#121214] border border-white/10 shadow-2xl group">
-        <div className="absolute inset-0 mesh-accent opacity-30 mix-blend-screen pointer-events-none" />
-        {v.photo && (
-          <div className="absolute inset-0">
-            <img src={v.photo} alt={`${v.brand} ${v.model}`} className="w-full h-full object-cover opacity-40 group-hover:scale-105 transition-transform duration-1000 ease-out" />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#09090b] via-[#09090b]/80 to-transparent" />
-          </div>
-        )}
-        <div className="relative z-10 p-6 md:p-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
-          <div className="flex items-start gap-4">
-            <button onClick={() => navigate('/vehicles')} className="w-10 h-10 rounded-xl bg-white/[0.05] border border-white/10 flex items-center justify-center hover:bg-white/10 hover:border-white/20 transition-all shrink-0 backdrop-blur-md">
-              <ArrowLeft className="w-5 h-5 text-white" strokeWidth={2} />
-            </button>
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <span className="px-3 py-1 rounded-lg bg-white/10 backdrop-blur-md border border-white/10 text-xs font-bold text-white font-display tracking-widest">{v.year}</span>
-                {v.licensePlate && <span className="px-3 py-1 rounded-lg bg-black/40 backdrop-blur-md border border-white/10 text-[11px] font-mono font-bold text-white tracking-widest uppercase">{v.licensePlate}</span>}
-              </div>
-              <h1 className="text-4xl md:text-6xl font-black text-white font-display tracking-tight leading-none">
-                {v.brand} <span className="text-white/60">{v.model}</span>
-              </h1>
-            </div>
-          </div>
-          <div className="flex flex-wrap md:flex-nowrap items-center gap-3">
-            <Button variant="outline" onClick={openEdit} className="flex-1 md:flex-none border-white/20 text-white hover:bg-white/10">
-              <Pencil className="w-4 h-4" />Modifier
-            </Button>
-            <Button variant="outline" onClick={() => { setShowShare(true); createShareLink(); }} className="flex-1 md:flex-none border-white/20 text-white hover:bg-white/10">
-              <Share2 className="w-4 h-4" />Partager
-            </Button>
-            <Button variant="outline" onClick={downloadPdf} loading={generatingPdf} className="flex-1 md:flex-none border-white/20 text-white hover:bg-white/10">
-              <FileDown className="w-4 h-4" />PDF
-            </Button>
-            <Button variant="danger" onClick={delVehicle} className="px-3">
-              <Trash2 className="w-4 h-4" />
-            </Button>
-          </div>
-        </div>
-      </Motion.div>
+      {/* Hero */}
+      <VehicleHero
+        vehicle={v}
+        onBack={() => navigate('/vehicles')}
+        onEdit={openEdit}
+        onShare={() => { setShowShare(true); createShareLink(); }}
+        onDownloadPdf={downloadPdf}
+        onDelete={delVehicle}
+        generatingPdf={generatingPdf}
+        variants={itemVariants}
+      />
 
       {/* Stats Bento */}
       <div className={`grid grid-cols-2 ${health?.estimatedValue ? 'md:grid-cols-4' : 'md:grid-cols-3'} gap-4 md:gap-6`}>
@@ -251,24 +128,13 @@ export default function VehicleDetailPage() {
         <Motion.div variants={itemVariants}><StatCard icon={FileText} label="Documents" value={v._count?.documents || 0} color="violet" /></Motion.div>
         <Motion.div variants={itemVariants}><StatCard icon={Wallet} label={`Dépenses ${new Date().getFullYear()}`} value={formatCurrency(v.stats?.totalExpensesYear || 0)} color="default" /></Motion.div>
         {health?.estimatedValue && (
-          <Motion.div variants={itemVariants}><StatCard icon={TrendingDown} label="Valeur estimée" value={formatCurrency(health.estimatedValue)} color="orange" /></Motion.div>
+          <Motion.div variants={itemVariants}><StatCard icon={Wallet} label="Valeur estimée" value={formatCurrency(health.estimatedValue)} color="orange" /></Motion.div>
         )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Health Score */}
-        {health && (
-          <Motion.div variants={itemVariants} className="lg:col-span-1 cv-card-dark p-6 md:p-8 flex flex-col items-center justify-center text-center">
-            <h3 className="text-lg font-bold text-white flex items-center gap-2 font-display mb-8">
-              <Heart className="w-5 h-5 text-accent" strokeWidth={2.5} />Score Santé
-            </h3>
-            <ScoreGauge score={health.score} grade={health.grade} size={160} />
-            <div className="w-full space-y-5 mt-10">
-              <SubScoreBar icon={Wrench} label="Entretien" score={health.breakdown.maintenance.score} max={health.breakdown.maintenance.max} />
-              <SubScoreBar icon={FileCheck} label="Documents" score={health.breakdown.documents.score} max={health.breakdown.documents.max} />
-            </div>
-          </Motion.div>
-        )}
+        <VehicleHealthCard health={health} variants={itemVariants} />
 
         <div className="lg:col-span-2 space-y-6">
           {/* Chart */}
@@ -285,7 +151,7 @@ export default function VehicleDetailPage() {
             </ResponsiveContainer>
           </Motion.div>
 
-          {/* Lists */}
+          {/* Documents & Expenses Lists */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Motion.div variants={itemVariants} className="bento-card p-6">
               <div className="flex items-center justify-between mb-6">
@@ -349,167 +215,21 @@ export default function VehicleDetailPage() {
       </div>
 
       {/* Mileage History */}
-      <Motion.div variants={itemVariants} className="bento-card p-6 md:p-8">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-bold text-white font-display flex items-center gap-2">
-            <Route className="w-5 h-5 text-accent" strokeWidth={2.5} />Historique kilométrage
-          </h3>
-          <Button size="sm" variant="accent" onClick={() => setShowMileage(true)}><Plus className="w-4 h-4" strokeWidth={2.5} />Ajouter</Button>
-        </div>
-        {mileageEntries.length > 0 ? (
-          <div className="space-y-3">
-            {mileageEntries.slice(0, 8).map((entry, i) => {
-              const prev = mileageEntries[i + 1];
-              const diff = prev ? entry.mileage - prev.mileage : null;
-              return (
-                <div key={entry.id} className="flex items-center justify-between p-4 rounded-2xl bg-white/[0.02] border border-white/5 group hover:bg-white/[0.04] hover:border-white/10 transition-all">
-                  <div className="flex items-center gap-4">
-                    <div className="w-3 h-3 rounded-full bg-accent shadow-[0_0_12px_rgba(255,42,63,0.5)] shrink-0" />
-                    <div>
-                      <p className="text-base font-black text-white font-display">{entry.mileage.toLocaleString('fr-FR')} km</p>
-                      {entry.notes && <p className="text-[11px] font-semibold text-white/50 mt-0.5">{entry.notes}</p>}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <p className="text-[11px] font-bold uppercase tracking-widest text-white/40">{new Date(entry.date).toLocaleDateString('fr-FR')}</p>
-                      {diff !== null && <p className="text-[10px] text-lime font-black mt-0.5">+{diff.toLocaleString('fr-FR')} km</p>}
-                    </div>
-                    <button onClick={() => delMileage(entry.id)} className="w-11 h-11 flex items-center justify-center rounded-xl md:opacity-0 md:group-hover:opacity-100 hover:bg-accent/20 text-white/40 hover:text-accent transition-all">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        ) : <p className="text-sm text-ink-muted text-center py-6">Aucune entrée</p>}
-      </Motion.div>
-
-      {/* Valeur & Dépréciation */}
-      {v.msrp && (() => {
-        // Base = prix neuf (MSRP) pour la dépréciation, le prix d'achat n'est PAS le prix neuf
-        const base = v.msrp;
-        const depData = calcDepreciation(base, v.year, v.mileage);
-        const currentYear = new Date().getFullYear();
-        const currentPoint = depData.find(d => d.year === currentYear) || depData[depData.length - 1];
-        const originalValue = depData[0]?.value;
-        const totalLoss = originalValue && currentPoint ? originalValue - currentPoint.value : null;
-        const lossPct = originalValue && totalLoss ? Math.round((totalLoss / originalValue) * 100) : null;
-        const argusUrl = `https://www.largus.fr/cote-auto/`;
-        return (
-          <Motion.div variants={itemVariants} className="bento-card p-6 md:p-8">
-            <div className="flex items-center justify-between mb-5">
-              <h3 className="text-lg font-bold text-white font-display flex items-center gap-2">
-                <TrendingDown className="w-5 h-5 text-orange" strokeWidth={2.5} />Valeur estimée
-              </h3>
-              <a href={argusUrl} target="_blank" rel="noopener noreferrer"
-                className="flex items-center gap-1.5 text-xs font-bold text-white/35 hover:text-white/60 transition-colors">
-                Vérifier sur L'Argus <ExternalLink className="w-3.5 h-3.5" />
-              </a>
-            </div>
-            <div className="flex items-end justify-between mb-6">
-              <div>
-                <p className="text-3xl font-black text-white font-display leading-none">
-                  {formatCurrency(currentPoint?.value || 0)}
-                </p>
-                <p className="text-xs text-white/35 mt-1.5 font-medium">Estimation aujourd'hui</p>
-              </div>
-              {totalLoss !== null && (
-                <div className="text-right">
-                  <p className="text-sm font-bold text-accent">−{formatCurrency(totalLoss)}</p>
-                  <p className="text-[11px] text-white/30 font-medium">dépréciation ({lossPct}%)</p>
-                </div>
-              )}
-            </div>
-            <ResponsiveContainer width="100%" height={160}>
-              <LineChart data={depData} margin={{ top: 4, right: 8, left: -22, bottom: 0 }}>
-                <CartesianGrid stroke="rgba(255,255,255,0.04)" vertical={false} />
-                <XAxis dataKey="year" stroke="#71717a" fontSize={10} fontWeight={600} tickLine={false} axisLine={false} />
-                <YAxis stroke="#71717a" fontSize={10} fontWeight={600} tickLine={false} axisLine={false} tickFormatter={val => `${Math.round(val / 1000)}k€`} />
-                <Tooltip content={({ active, payload, label }) => {
-                  if (!active || !payload?.length) return null;
-                  return (
-                    <div className="bg-bg-alt border border-white/10 rounded-xl px-3 py-2 shadow-xl">
-                      <p className="text-[10px] font-semibold text-white/50">{label}{payload[0]?.payload?.isFuture ? ' (proj.)' : ''}</p>
-                      <p className="text-sm font-bold text-white font-display">{formatCurrency(payload[0].value)}</p>
-                    </div>
-                  );
-                }} cursor={{ stroke: 'rgba(255,255,255,0.1)' }} />
-                <ReferenceLine x={currentYear} stroke="rgba(255,42,63,0.3)" strokeDasharray="3 3" />
-                <Line dataKey="value" stroke="#ff6b00" strokeWidth={2.5} dot={false}
-                  strokeDasharray={(d) => d?.isFuture ? '4 4' : undefined}
-                  activeDot={{ r: 4, fill: '#ff6b00', strokeWidth: 0 }} />
-              </LineChart>
-            </ResponsiveContainer>
-            <p className="text-[10px] text-white/20 text-center mt-2 font-medium">
-              Estimation basée sur le prix neuf (MSRP) — projection approximative
-            </p>
-          </Motion.div>
-        );
-      })()}
+      <MileageHistory
+        entries={mileageEntries}
+        onAdd={() => setShowMileage(true)}
+        onDelete={delMileage}
+        variants={itemVariants}
+      />
 
       {/* Maintenance Plan */}
-      {maintenancePlan?.plan?.length > 0 && (
-        <Motion.div variants={itemVariants} className="bento-card p-6 md:p-8">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center">
-                <Settings className="w-5 h-5 text-violet-400" />
-              </div>
-              <div>
-                <h2 className="text-lg font-bold text-white font-display">Entretien préconisé</h2>
-                <p className="text-xs text-white/40">Basé sur {v.brand} — personnalisable</p>
-              </div>
-            </div>
-          </div>
-          <div className="space-y-3">
-            {maintenancePlan.plan.map((item) => {
-              const statusColors = { ok: '#22c55e', soon: '#f59e0b', overdue: '#ff2a3f' };
-              const statusLabels = { ok: 'OK', soon: 'Bientôt', overdue: 'Dépassé' };
-              const color = statusColors[item.status];
-              const isEditing = editingInterval === item.key;
-
-              return (
-                <div key={item.key} className="bg-white/[0.02] border border-white/5 rounded-xl p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      {item.status === 'overdue' ? (
-                        <AlertTriangle className="w-4 h-4 text-[#ff2a3f]" />
-                      ) : item.status === 'soon' ? (
-                        <AlertTriangle className="w-4 h-4 text-amber-400" />
-                      ) : (
-                        <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                      )}
-                      <span className="text-sm font-bold text-white">{item.label}</span>
-                      {item.isCustom && <span className="text-[9px] bg-violet-500/20 text-violet-300 px-1.5 py-0.5 rounded-full font-bold">Perso</span>}
-                    </div>
-                    <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: `${color}15`, color }}>{statusLabels[item.status]}</span>
-                  </div>
-                  <div className="h-1.5 rounded-full bg-white/5 overflow-hidden mb-2">
-                    <div className="h-full rounded-full transition-all duration-700" style={{ width: `${Math.min(100, item.pct)}%`, backgroundColor: color, boxShadow: `0 0 8px ${color}60` }} />
-                  </div>
-                  <div className="flex items-center justify-between text-[11px] text-white/40">
-                    <span>{item.remaining > 0 ? `${item.remaining.toLocaleString('fr-FR')} km restants` : `Dépassé de ${Math.abs(item.remaining).toLocaleString('fr-FR')} km`}</span>
-                    {isEditing ? (
-                      <div className="flex items-center gap-1">
-                        <input type="number" className="w-20 bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-xs text-white" value={editIntervalValue} onChange={(e) => setEditIntervalValue(e.target.value)} autoFocus />
-                        <button onClick={() => saveInterval(item.key, editIntervalValue)} className="text-emerald-400 hover:text-emerald-300 p-1"><Check className="w-3.5 h-3.5" /></button>
-                        <button onClick={() => setEditingInterval(null)} className="text-white/30 hover:text-white/50 p-1 text-xs">✕</button>
-                      </div>
-                    ) : (
-                      <button onClick={() => { setEditingInterval(item.key); setEditIntervalValue(String(item.intervalKm)); }} className="text-white/30 hover:text-white/50 flex items-center gap-1">
-                        <Pencil className="w-3 h-3" />
-                        <span>tous les {item.intervalKm.toLocaleString('fr-FR')} km</span>
-                      </button>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </Motion.div>
-      )}
+      <MaintenancePlanCard
+        vehicleId={id}
+        brand={v.brand}
+        maintenancePlan={maintenancePlan}
+        setMaintenancePlan={setMaintenancePlan}
+        variants={itemVariants}
+      />
 
       {/* Fuel Tracker */}
       <Motion.div variants={itemVariants} className="bento-card p-6 md:p-8">
@@ -578,54 +298,25 @@ export default function VehicleDetailPage() {
                 <span className="text-xs font-mono text-white/70 truncate flex-1">
                   {window.location.origin}/share/{shareLink.token}
                 </span>
-                <button
-                  onClick={copyShareUrl}
-                  className="p-2 rounded-lg bg-white/5 hover:bg-accent/20 text-white/60 hover:text-accent transition-all shrink-0"
-                >
+                <button onClick={copyShareUrl} className="p-2 rounded-lg bg-white/5 hover:bg-accent/20 text-white/60 hover:text-accent transition-all shrink-0">
                   {copied ? <Check className="w-4 h-4 text-lime" /> : <Copy className="w-4 h-4" />}
                 </button>
               </div>
-
               {shareLink.expiresAt && (
-                <p className="text-[11px] text-ink-muted">
-                  Ce lien expire le {new Date(shareLink.expiresAt).toLocaleDateString('fr-FR')}.
-                </p>
+                <p className="text-[11px] text-ink-muted">Ce lien expire le {new Date(shareLink.expiresAt).toLocaleDateString('fr-FR')}.</p>
               )}
-
               <div className="flex gap-3">
-                <a
-                  href={`/share/${shareLink.token}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-1"
-                >
-                  <Button variant="outline" className="w-full border-white/20 text-white">
-                    <ExternalLink className="w-4 h-4" /> Aperçu
-                  </Button>
+                <a href={`/share/${shareLink.token}`} target="_blank" rel="noopener noreferrer" className="flex-1">
+                  <Button variant="outline" className="w-full border-white/20 text-white"><ExternalLink className="w-4 h-4" /> Aperçu</Button>
                 </a>
-                <a
-                  href={`/api/share/${shareLink.token}/pdf`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-1"
-                >
-                  <Button variant="outline" className="w-full border-white/20 text-white">
-                    <FileDown className="w-4 h-4" /> PDF public
-                  </Button>
+                <a href={`/api/share/${shareLink.token}/pdf`} target="_blank" rel="noopener noreferrer" className="flex-1">
+                  <Button variant="outline" className="w-full border-white/20 text-white"><FileDown className="w-4 h-4" /> PDF public</Button>
                 </a>
               </div>
-
-              <button
-                onClick={revokeShare}
-                className="text-xs font-bold text-accent/70 hover:text-accent transition-colors"
-              >
-                Révoquer ce lien
-              </button>
+              <button onClick={revokeShare} className="text-xs font-bold text-accent/70 hover:text-accent transition-colors">Révoquer ce lien</button>
             </div>
           ) : (
-            <Button variant="accent" onClick={createShareLink} className="w-full">
-              <Link2 className="w-4 h-4" /> Créer un lien de partage
-            </Button>
+            <Button variant="accent" onClick={createShareLink} className="w-full"><Link2 className="w-4 h-4" /> Créer un lien de partage</Button>
           )}
         </div>
       </Modal>
