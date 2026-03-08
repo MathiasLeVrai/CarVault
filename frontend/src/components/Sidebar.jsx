@@ -106,8 +106,8 @@ export default function Sidebar({ onFabPress }) {
       </aside>
 
       {/* Mobile Bottom Tab Bar */}
-      <nav className="md:hidden fixed left-4 right-4 z-50 cv-bottom-nav">
-        <div className="cv-bottom-bar rounded-2xl shadow-2xl">
+      <nav className="md:hidden fixed left-0 right-0 bottom-0 z-50">
+        <div className="cv-bottom-bar cv-bottom-nav shadow-2xl">
           <div className="flex items-center">
             {/* Left 2 items */}
             {navItems.slice(0, 2).map(({ to, icon, label, showBadge }) => {
