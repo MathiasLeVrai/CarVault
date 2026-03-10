@@ -20,7 +20,8 @@ function BadgeIcon({ name, color, unlocked, size = 20 }) {
   return (
     <Icon
       size={size}
-      style={{ color: unlocked ? color : 'rgba(255,255,255,0.2)' }}
+      className={unlocked ? '' : 'text-ink-faint'}
+      style={unlocked ? { color } : undefined}
       strokeWidth={1.8}
     />
   );
@@ -49,14 +50,14 @@ function BadgeDetail({ badge, onClose }) {
           </button>
           <div
             className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4"
-            style={{ background: badge.unlocked ? `${badge.color}20` : 'rgba(255,255,255,0.05)' }}
+            style={{ background: badge.unlocked ? `${badge.color}20` : 'var(--color-bg-elevated)' }}
           >
             <BadgeIcon name={badge.icon} color={badge.color} unlocked={badge.unlocked} size={28} />
           </div>
           <h3 className="text-base font-black text-white font-display">{badge.title}</h3>
           <p className="text-sm text-white/50 mt-1 font-medium">{badge.description}</p>
           <div className="mt-4 py-2 px-4 rounded-xl text-xs font-bold"
-            style={{ background: badge.unlocked ? `${badge.color}15` : 'rgba(255,255,255,0.05)', color: badge.unlocked ? badge.color : 'rgba(255,255,255,0.3)' }}>
+            style={{ background: badge.unlocked ? `${badge.color}15` : 'var(--color-bg-elevated)', color: badge.unlocked ? badge.color : 'var(--color-ink-muted)' }}>
             {badge.unlocked ? '✓ Débloqué' : 'Non débloqué'}
           </div>
         </div>
@@ -86,8 +87,7 @@ export default function BadgesWidget() {
           <p className="text-[11px] text-white/40 mt-0.5">{unlockedCount}/{totalCount} débloqués</p>
         </div>
         {fuelStreak >= 1 && (
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl"
-            style={{ background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.2)' }}>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-400/10 border border-amber-400/20">
             <Zap className="w-3.5 h-3.5 text-amber-400" fill="currentColor" />
             <span className="text-xs font-black text-amber-400">{fuelStreak} mois</span>
           </div>
@@ -117,8 +117,8 @@ export default function BadgesWidget() {
               whileTap={{ scale: 0.9 }}
               className="w-10 h-10 rounded-xl flex items-center justify-center transition-all"
               style={{
-                background: badge.unlocked ? `${badge.color}18` : 'rgba(255,255,255,0.04)',
-                border: `1px solid ${badge.unlocked ? `${badge.color}30` : 'rgba(255,255,255,0.08)'}`,
+                background: badge.unlocked ? `${badge.color}18` : 'var(--color-bg-card)',
+                border: `1px solid ${badge.unlocked ? `${badge.color}30` : 'var(--color-ink-faint)'}`,
                 boxShadow: badge.unlocked ? `0 0 12px ${badge.color}20` : 'none',
               }}
             >

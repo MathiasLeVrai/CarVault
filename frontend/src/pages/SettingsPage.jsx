@@ -71,7 +71,7 @@ function Avatar({ user, size = 80 }) {
         background: isPremium
           ? 'linear-gradient(135deg, rgba(245,158,11,0.25) 0%, rgba(124,92,252,0.25) 100%)'
           : 'linear-gradient(135deg, rgba(255,42,63,0.18) 0%, rgba(124,92,252,0.18) 100%)',
-        border: isPremium ? '2px solid rgba(245,158,11,0.4)' : '2px solid rgba(255,255,255,0.1)',
+        border: isPremium ? '2px solid rgba(245,158,11,0.4)' : '2px solid var(--color-ink-faint)',
       }}
     >
       {isPremium

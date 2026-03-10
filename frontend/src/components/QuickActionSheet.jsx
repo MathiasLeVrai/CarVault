@@ -161,7 +161,7 @@ export default function QuickActionSheet({ onClose }) {
         exit={{ y: '100%' }}
         transition={{ type: 'spring', damping: 30, stiffness: 300 }}
         className="fixed bottom-0 left-0 right-0 z-[160] rounded-t-3xl px-5"
-        style={{ background: 'var(--color-bg-alt)', borderTop: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 -8px 40px rgba(0,0,0,0.5)', paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}
+        style={{ background: 'var(--color-bg-alt)', borderTop: '1px solid var(--color-ink-faint)', boxShadow: '0 -8px 40px rgba(0,0,0,0.15)', paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}
         onClick={e => e.stopPropagation()}
       >
         {/* Handle */}

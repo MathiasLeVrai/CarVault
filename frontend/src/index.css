@@ -652,18 +652,61 @@ html.light .absolute.bg-\[\#121214\] {
   background: #FFFEFB !important;
 }
 
+/* Hardcoded dark backgrounds → light equivalents */
+html.light .bg-\[\#09090b\] { background: #FAF8F3 !important; }
+html.light .bg-\[\#07070a\] { background: #F0EAE0 !important; }
+html.light .bg-\[\#121214\] { background: #FFFEFB !important; }
+html.light .bg-\[\#1a1a1e\] { background: #FFFEFB !important; }
+
 /* Filter button actif */
 html.light .bg-white.text-black {
   background: #1C1916 !important;
   color: #FAF8F3 !important;
 }
 
-/* Badge dark variant */
-html.light .bg-black\/50 {
-  background: rgba(28,25,22,0.08) !important;
-}
+/* bg-black variants */
+html.light .bg-black\/60 { background: rgba(28,25,22,0.4) !important; }
+html.light .bg-black\/50 { background: rgba(28,25,22,0.08) !important; }
+html.light .bg-black\/40 { background: rgba(139,115,85,0.15) !important; }
 
-/* CartesianGrid en mode clair */
+/* Recharts en mode clair */
 html.light .recharts-cartesian-grid line {
   stroke: rgba(139,115,85,0.12) !important;
 }
+html.light .recharts-cursor { fill: rgba(139,115,85,0.06) !important; }
+html.light .recharts-tooltip-wrapper .bg-\[\#121214\] {
+  background: #FFFEFB !important;
+}
+
+/* Select/dropdown option backgrounds */
+html.light option { background: #FFFEFB !important; color: #1C1916 !important; }
+
+/* ─────────────────────────────────────────
+   SHADOW REMAPPING — dark shadows → softer
+   ───────────────────────────────────────── */
+html.light .shadow-2xl { box-shadow: 0 12px 40px rgba(91,65,35,0.12) !important; }
+
+/* ─────────────────────────────────────────
+   SCROLLBAR LIGHT — override dark scrollbar
+   ───────────────────────────────────────── */
+html.light .divide-white\/5 > :not(:last-child) {
+  border-color: rgba(139,115,85,0.1) !important;
+}
+
+/* ─────────────────────────────────────────
+   SHADOW-BLACK remapping
+   ───────────────────────────────────────── */
+html.light .shadow-black\/40 { --tw-shadow-color: rgba(91,65,35,0.12) !important; }
+html.light .shadow-\[0_0_20px_rgba\(255\,42\,63\,0\.3\)\] {
+  box-shadow: 0 0 20px rgba(255,42,63,0.2) !important;
+}
+
+/* ─────────────────────────────────────────
+   FAB / accent elements — keep white text
+   ───────────────────────────────────────── */
+html.light .bg-accent,
+html.light .bg-accent *,
+html.light .bg-lime,
+html.light .bg-lime *,
+html.light .cv-btn-accent,
+html.light .cv-btn-accent * { color: white !important; }

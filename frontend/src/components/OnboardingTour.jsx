@@ -125,7 +125,7 @@ export default function OnboardingTour({ onDone }) {
             style={{
               width: i === slide ? 24 : 8,
               height: 8,
-              background: i === slide ? current.color : 'rgba(255,255,255,0.2)',
+              background: i === slide ? current.color : 'var(--color-ink-faint)',
             }}
           />
         ))}

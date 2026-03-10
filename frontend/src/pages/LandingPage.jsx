@@ -194,7 +194,7 @@ function PreviewScore() {
     <div className="mt-4 flex flex-col items-center gap-2">
       <div className="relative w-20 h-20">
         <svg viewBox="0 0 80 80" className="w-full h-full -rotate-90">
-          <circle cx="40" cy="40" r="32" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="8" />
+          <circle cx="40" cy="40" r="32" fill="none" stroke="var(--color-ink-faint)" opacity="0.4" strokeWidth="8" />
           <circle cx="40" cy="40" r="32" fill="none" stroke="#22c55e" strokeWidth="8"
             strokeDasharray="201" strokeDashoffset="50" strokeLinecap="round" />
         </svg>
@@ -311,7 +311,7 @@ function AppMockup() {
         <div className="flex items-center gap-3 p-3 rounded-2xl bg-lime/[0.06] border border-lime/15 mb-3">
           <div className="relative w-12 h-12 flex-shrink-0">
             <svg viewBox="0 0 48 48" className="w-full h-full -rotate-90">
-              <circle cx="24" cy="24" r="18" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="5" />
+              <circle cx="24" cy="24" r="18" fill="none" stroke="var(--color-ink-faint)" opacity="0.4" strokeWidth="5" />
               <circle cx="24" cy="24" r="18" fill="none" stroke="#22c55e" strokeWidth="5"
                 strokeDasharray="113" strokeDashoffset="28" strokeLinecap="round" />
             </svg>

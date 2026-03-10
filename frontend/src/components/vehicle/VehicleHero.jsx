@@ -4,12 +4,12 @@ import { motion as Motion } from 'framer-motion';
 
 export default function VehicleHero({ vehicle, onBack, onEdit, onShare, onDownloadPdf, onDelete, generatingPdf, variants }) {
   return (
-    <Motion.div variants={variants} className="relative rounded-3xl overflow-hidden bg-[#121214] border border-white/10 shadow-2xl group">
+    <Motion.div variants={variants} className="relative rounded-3xl overflow-hidden bg-bg-alt border border-white/10 shadow-2xl group">
       <div className="absolute inset-0 mesh-accent opacity-30 mix-blend-screen pointer-events-none" />
       {vehicle.photo && (
         <div className="absolute inset-0">
           <img src={vehicle.photo} alt={`${vehicle.brand} ${vehicle.model}`} className="w-full h-full object-cover opacity-40 group-hover:scale-105 transition-transform duration-1000 ease-out" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#09090b] via-[#09090b]/80 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-bg via-bg/80 to-transparent" />
         </div>
       )}
       <div className="relative z-10 p-6 md:p-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
