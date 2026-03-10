@@ -26,12 +26,20 @@ async function alertExists(userId, type, titleContains, options = {}) {
   return prisma.alert.findFirst({ where });
 }
 
-async function createAlert(data) {
+async function createAlert(data, { email, userName, dueDate } = {}) {
   const alert = await prisma.alert.create({ data });
-  // Send push notification
+
+  // Send push notification (best-effort)
   try {
     await pushService.sendToUser(data.userId, data.title, data.message);
   } catch { /* push is best-effort */ }
+
+  // Send email notification
+  if (email && emailService.isConfigured()) {
+    const sent = await emailService.sendAlertEmail(email, userName, data.title, data.message, dueDate || data.dueDate);
+    if (sent) await prisma.alert.update({ where: { id: alert.id }, data: { emailSent: true } });
+  }
+
   return alert;
 }
 
@@ -75,28 +83,20 @@ async function checkDocumentExpiry() {
       ? `Votre contrôle technique expire le ${doc.expirationDate.toLocaleDateString('fr-FR')}. ${daysLeft <= 14 ? 'Prenez rendez-vous rapidement — rouler sans CT valide = 135€ d\'amende.' : 'Pensez à prendre rendez-vous pour éviter l\'amende de 135€.'}`
       : `Le document "${doc.name}" de votre ${doc.vehicle.brand} ${doc.vehicle.model} expire le ${doc.expirationDate.toLocaleDateString('fr-FR')}.`;
 
-    const alert = await createAlert({
+    const user = doc.vehicle.user;
+    await createAlert({
       title,
       message,
       type: 'DOCUMENT_EXPIRY',
       dueDate: doc.expirationDate,
       userId: doc.vehicle.userId,
       emailSent: false,
+    }, {
+      email: user?.notifEmail !== false ? user?.email : null,
+      userName: user?.firstName,
+      dueDate: doc.expirationDate,
     });
     created++;
-
-    // Send email only if user has email notifications enabled
-    const user = doc.vehicle.user;
-    if (emailService.isConfigured() && user?.email && user?.notifEmail !== false) {
-      const sent = await emailService.sendAlertEmail(
-        user.email,
-        user.firstName,
-        title,
-        message,
-        doc.expirationDate,
-      );
-      if (sent) await prisma.alert.update({ where: { id: alert.id }, data: { emailSent: true } });
-    }
   }
 
   // Documents déjà expirés
@@ -134,6 +134,7 @@ async function checkMaintenanceDue() {
 
   const vehicles = await prisma.vehicle.findMany({
     include: {
+      user: { select: { email: true, firstName: true, notifEmail: true } },
       expenses: {
         where: { category: 'MAINTENANCE' },
         orderBy: { date: 'desc' },
@@ -155,6 +156,9 @@ async function checkMaintenanceDue() {
         : `Aucune maintenance enregistrée pour votre ${v.brand} ${v.model}. Planifiez un entretien.`,
       type: 'MAINTENANCE_DUE',
       userId: v.userId,
+    }, {
+      email: v.user?.notifEmail !== false ? v.user?.email : null,
+      userName: v.user?.firstName,
     });
     created++;
   }
@@ -171,6 +175,7 @@ async function checkOilChange() {
 
   const vehicles = await prisma.vehicle.findMany({
     include: {
+      user: { select: { email: true, firstName: true, notifEmail: true } },
       expenses: {
         where: {
           OR: [
@@ -213,6 +218,9 @@ async function checkOilChange() {
         : `Vidange dépassée ! Dernière à ${lastOilKm.toLocaleString('fr-FR')} km, vous êtes à ${v.mileage.toLocaleString('fr-FR')} km (intervalle ${intervals.oilChange.toLocaleString('fr-FR')} km).`,
       type: 'OIL_CHANGE',
       userId: v.userId,
+    }, {
+      email: v.user?.notifEmail !== false ? v.user?.email : null,
+      userName: v.user?.firstName,
     });
     created++;
   }
@@ -251,6 +259,7 @@ async function checkTireSeason() {
 
   const vehicles = await prisma.vehicle.findMany({
     include: {
+      user: { select: { email: true, firstName: true, notifEmail: true } },
       expenses: {
         where: { category: 'TIRES', date: { gte: twoMonthsAgo } },
         take: 1,
@@ -272,6 +281,9 @@ async function checkTireSeason() {
       message: `${seasonMessage} ${v.brand} ${v.model}. Les pneus adaptés améliorent l'adhérence et la sécurité.`,
       type: 'TIRE_SEASON',
       userId: v.userId,
+    }, {
+      email: v.user?.notifEmail !== false ? v.user?.email : null,
+      userName: v.user?.firstName,
     });
     created++;
   }
@@ -288,6 +300,7 @@ async function checkMileageService() {
 
   const vehicles = await prisma.vehicle.findMany({
     include: {
+      user: { select: { email: true, firstName: true, notifEmail: true } },
       expenses: {
         orderBy: { date: 'desc' },
       },
@@ -316,6 +329,9 @@ async function checkMileageService() {
               : `Seuil de ${intervals.brakes.toLocaleString('fr-FR')} km dépassé pour les plaquettes de frein. Faites vérifier vos freins.`,
             type: 'MILEAGE_SERVICE',
             userId: v.userId,
+          }, {
+            email: v.user?.notifEmail !== false ? v.user?.email : null,
+            userName: v.user?.firstName,
           });
           created++;
         }
@@ -340,6 +356,9 @@ async function checkMileageService() {
               : `Seuil de ${intervals.timingBelt.toLocaleString('fr-FR')} km atteint. Le remplacement de la courroie de distribution est urgent.`,
             type: 'MILEAGE_SERVICE',
             userId: v.userId,
+          }, {
+            email: v.user?.notifEmail !== false ? v.user?.email : null,
+            userName: v.user?.firstName,
           });
           created++;
         }
@@ -362,6 +381,9 @@ async function checkMileageService() {
               : `Intervalle de révision de ${intervals.generalService.toLocaleString('fr-FR')} km dépassé. Planifiez une révision pour votre ${v.brand} ${v.model}.`,
             type: 'MILEAGE_SERVICE',
             userId: v.userId,
+          }, {
+            email: v.user?.notifEmail !== false ? v.user?.email : null,
+            userName: v.user?.firstName,
           });
           created++;
         }

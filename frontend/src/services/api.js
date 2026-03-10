@@ -202,6 +202,7 @@ export const pushApi = {
   getVapidKey: () => api.get('/push/vapid-key'),
   subscribe: (subscription) => api.post('/push/subscribe', { subscription }),
   unsubscribe: (endpoint) => api.post('/push/unsubscribe', { endpoint }),
+  test: () => api.post('/push/test'),
 };
 
 export default api;

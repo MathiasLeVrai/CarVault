@@ -7,6 +7,7 @@ if (process.env.SENTRY_DSN) {
     dsn: process.env.SENTRY_DSN,
     environment: process.env.NODE_ENV || 'production',
     tracesSampleRate: 0.2,
+    sendDefaultPii: true,
   });
 }
 
@@ -40,6 +41,7 @@ const pushRoutes = require('./routes/push.routes');
 const { errorHandler } = require('./middleware/error.middleware');
 const { startAlertCron } = require('./cron/alert.cron');
 const { startMonthlyReportCron } = require('./cron/monthly-report.cron');
+const { startWeeklyDigestCron } = require('./cron/weekly-digest.cron');
 
 const app = express();
 app.set('trust proxy', 1);
@@ -126,6 +128,11 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Sentry error handler (must be before custom error handler)
+if (process.env.SENTRY_DSN) {
+  Sentry.setupExpressErrorHandler(app);
+}
+
 // Error handler
 app.use(errorHandler);
 
@@ -142,15 +149,22 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚗 CarVault API running on port ${PORT}`);
   startAlertCron();
   startMonthlyReportCron();
+  startWeeklyDigestCron();
 });
 
 process.on('unhandledRejection', (reason) => {
   console.error('[FATAL] Unhandled promise rejection:', reason);
+  if (process.env.SENTRY_DSN) {
+    try { Sentry.captureException(reason); } catch { /* ignore */ }
+  }
   process.exit(1);
 });
 
 process.on('uncaughtException', (err) => {
   console.error('[FATAL] Uncaught exception:', err);
+  if (process.env.SENTRY_DSN) {
+    try { Sentry.captureException(err); } catch { /* ignore */ }
+  }
   process.exit(1);
 });
 
