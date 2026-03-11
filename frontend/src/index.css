@@ -375,19 +375,9 @@ html, body {
   }
 }
 
-/* Mobile bottom nav — extend background past safe area to avoid black gap */
-@supports (padding-bottom: env(safe-area-inset-bottom)) {
-  .cv-bottom-bar {
-    /* The background extends into the safe area via padding,
-       so there's never a gap between the bar and the screen edge */
-  }
-}
-
-/* Fallback for PWA standalone: force bar to cover the bottom edge */
-@media all and (display-mode: standalone) {
-  .cv-bottom-bar {
-    padding-bottom: env(safe-area-inset-bottom, 0px) !important;
-  }
+/* Mobile bottom nav — extend background into safe area to avoid black gap */
+.cv-bottom-bar {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 /* =========== GRID BACKGROUND =========== */

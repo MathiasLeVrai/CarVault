@@ -296,7 +296,7 @@ export default function MapPage() {
       {/* ── Map + List ── */}
       <div className="flex-1 flex gap-4 px-4 md:px-6 pb-4 md:pb-6 min-h-0">
         {/* Map */}
-        <div className="flex-1 rounded-2xl overflow-hidden border border-white/8 relative">
+        <div className="flex-1 rounded-2xl overflow-hidden border border-white/8 relative z-0">
           <MapContainer
             center={mapCenter}
             zoom={14}
