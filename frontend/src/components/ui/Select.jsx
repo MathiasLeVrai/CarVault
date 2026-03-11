@@ -7,7 +7,7 @@ export default function Select({ label, options, error, className, ...props }) {
       <div className="relative">
         <select
           className={clsx(
-            'cv-input w-full px-4 py-3 text-sm text-ink appearance-none cursor-pointer pr-10',
+            'cv-input w-full px-4 py-3 text-base text-ink appearance-none cursor-pointer pr-10',
             error && 'border-accent focus:border-accent focus:shadow-[0_0_0_3px_rgba(255,42,63,0.15)]',
             className
           )}

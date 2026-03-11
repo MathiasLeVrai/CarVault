@@ -58,7 +58,7 @@ export default function Autocomplete({ label, value, options = [], onChange, pla
         type="button"
         onClick={handleOpen}
         disabled={disabled}
-        className={`cv-input w-full px-4 py-3 text-sm text-left flex items-center justify-between gap-2 bg-white/[0.02] ${
+        className={`cv-input w-full px-4 py-3 text-base text-left flex items-center justify-between gap-2 bg-white/[0.02] ${
           disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
         } ${value ? 'text-white' : 'text-white/40'}`}
       >

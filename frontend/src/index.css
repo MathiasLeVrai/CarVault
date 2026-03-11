@@ -314,7 +314,7 @@ body {
 /* =========== LAYOUT GLASS (Dock / Pill) =========== */
 
 .cv-bottom-bar {
-  background: rgba(18, 18, 20, 0.7);
+  background: rgba(18, 18, 20, 0.92);
   backdrop-filter: saturate(200%) blur(24px);
   -webkit-backdrop-filter: saturate(200%) blur(24px);
   border-top: 1px solid rgba(255, 255, 255, 0.05);
@@ -375,9 +375,19 @@ html, body {
   }
 }
 
-/* Mobile bottom nav — full width, flush with bottom */
-.cv-bottom-nav {
-  padding-bottom: 0;
+/* Mobile bottom nav — extend background past safe area to avoid black gap */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .cv-bottom-bar {
+    /* The background extends into the safe area via padding,
+       so there's never a gap between the bar and the screen edge */
+  }
+}
+
+/* Fallback for PWA standalone: force bar to cover the bottom edge */
+@media all and (display-mode: standalone) {
+  .cv-bottom-bar {
+    padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+  }
 }
 
 /* =========== GRID BACKGROUND =========== */
@@ -540,7 +550,7 @@ html.light .glass-panel {
   box-shadow: 0 12px 32px rgba(91, 65, 35, 0.08);
 }
 html.light .cv-bottom-bar {
-  background: rgba(250, 247, 241, 0.92);
+  background: rgba(250, 247, 241, 0.96);
   backdrop-filter: saturate(180%) blur(24px);
   -webkit-backdrop-filter: saturate(180%) blur(24px);
   border-top: 1px solid rgba(139, 115, 85, 0.12);

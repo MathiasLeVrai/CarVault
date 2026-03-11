@@ -1,4 +1,4 @@
-import { Bell, LogOut, Sun, Moon } from 'lucide-react';
+import { Bell, Sun, Moon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { alertApi } from '../services/api';
 import { useNavigate } from 'react-router-dom';
@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 
 export default function Header() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
   const [alertCount, setAlertCount] = useState(0);
@@ -48,15 +48,26 @@ export default function Header() {
 
         <div className="hidden md:block w-px h-8 bg-white/8 mx-1" />
 
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-linear-to-br from-accent to-accent-warm flex items-center justify-center shadow-lg">
-            <span className="text-xs md:text-sm font-bold text-white">{initials}</span>
-          </div>
-          <div className="hidden lg:block">
+        <button
+          onClick={() => navigate('/settings')}
+          className="flex items-center gap-3 rounded-xl transition-all hover:opacity-80 active:scale-95"
+        >
+          {user?.avatar ? (
+            <img
+              src={user.avatar}
+              alt="avatar"
+              className="w-9 h-9 md:w-10 md:h-10 rounded-xl object-cover shadow-lg border border-white/10"
+            />
+          ) : (
+            <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-linear-to-br from-accent to-accent-warm flex items-center justify-center shadow-lg">
+              <span className="text-xs md:text-sm font-bold text-white">{initials}</span>
+            </div>
+          )}
+          <div className="hidden lg:block text-left">
             <p className="text-sm font-semibold text-white leading-tight">{user?.firstName}</p>
             <p className="text-[11px] text-ink-muted">{user?.email}</p>
           </div>
-        </div>
+        </button>
 
         <button
           onClick={toggleTheme}
@@ -67,13 +78,6 @@ export default function Header() {
             ? <Sun className="w-4 h-4" strokeWidth={2} />
             : <Moon className="w-4 h-4" strokeWidth={2} />
           }
-        </button>
-
-        <button
-          onClick={logout}
-          className="md:hidden w-9 h-9 rounded-xl flex items-center justify-center text-ink-muted hover:text-accent bg-white/3 border border-white/8 transition-colors"
-        >
-          <LogOut className="w-4 h-4" strokeWidth={2} />
         </button>
       </div>
       </div>

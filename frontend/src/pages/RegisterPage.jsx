@@ -119,28 +119,28 @@ export default function RegisterPage() {
               <div className="space-y-2">
                 <label className="block text-sm font-semibold text-white/80">Prénom</label>
                 <input type="text" name="firstName" value={form.firstName} onChange={handleChange}
-                  placeholder="Jean" className="cv-input w-full px-4 py-3 text-sm text-ink" required />
+                  placeholder="Jean" className="cv-input w-full px-4 py-3 text-base text-ink" required />
               </div>
               <div className="space-y-2">
                 <label className="block text-sm font-semibold text-white/80">Nom</label>
                 <input type="text" name="lastName" value={form.lastName} onChange={handleChange}
-                  placeholder="Dupont" className="cv-input w-full px-4 py-3 text-sm text-ink" required />
+                  placeholder="Dupont" className="cv-input w-full px-4 py-3 text-base text-ink" required />
               </div>
             </div>
             <div className="space-y-2">
               <label className="block text-sm font-semibold text-white/80">Email</label>
               <input type="email" name="email" value={form.email} onChange={handleChange}
-                placeholder="nom@exemple.com" className="cv-input w-full px-4 py-3 text-sm text-ink" required />
+                placeholder="nom@exemple.com" className="cv-input w-full px-4 py-3 text-base text-ink" required />
             </div>
             <div className="space-y-2">
               <label className="block text-sm font-semibold text-white/80">Mot de passe</label>
               <input type="password" name="password" value={form.password} onChange={handleChange}
-                placeholder="Min. 6 caractères" className="cv-input w-full px-4 py-3 text-sm text-ink" required />
+                placeholder="Min. 6 caractères" className="cv-input w-full px-4 py-3 text-base text-ink" required />
             </div>
             <div className="space-y-2">
               <label className="block text-sm font-semibold text-white/80">Confirmer</label>
               <input type="password" name="confirmPassword" value={form.confirmPassword} onChange={handleChange}
-                placeholder="••••••••" className="cv-input w-full px-4 py-3 text-sm text-ink" required />
+                placeholder="••••••••" className="cv-input w-full px-4 py-3 text-base text-ink" required />
             </div>
             <Button type="submit" loading={loading} className="w-full mt-2" size="lg" variant="accent">
               Créer mon compte <ArrowRight className="w-4 h-4" />

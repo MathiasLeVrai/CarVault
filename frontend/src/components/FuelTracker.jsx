@@ -83,22 +83,22 @@ function AddFuelForm({ vehicleId, onAdded, onCancel }) {
         <div className="space-y-1.5">
           <label className="text-xs font-semibold text-ink-muted">Date</label>
           <input type="date" value={form.date} onChange={e => set('date', e.target.value)}
-            className="cv-input w-full px-3 py-2.5 text-sm text-white" required />
+            className="cv-input w-full px-3 py-2.5 text-base text-white" required />
         </div>
         <div className="space-y-1.5">
           <label className="text-xs font-semibold text-ink-muted">Kilométrage</label>
           <input type="number" value={form.mileage} onChange={e => set('mileage', e.target.value)}
-            placeholder="85 000" className="cv-input w-full px-3 py-2.5 text-sm text-white" required min="0" />
+            placeholder="85 000" className="cv-input w-full px-3 py-2.5 text-base text-white" required min="0" />
         </div>
         <div className="space-y-1.5">
           <label className="text-xs font-semibold text-ink-muted">Litres</label>
           <input type="number" step="0.01" value={form.liters} onChange={e => set('liters', e.target.value)}
-            placeholder="45.5" className="cv-input w-full px-3 py-2.5 text-sm text-white" required min="0" />
+            placeholder="45.5" className="cv-input w-full px-3 py-2.5 text-base text-white" required min="0" />
         </div>
         <div className="space-y-1.5">
           <label className="text-xs font-semibold text-ink-muted">Prix/litre (€)</label>
           <input type="number" step="0.001" value={form.pricePerLiter} onChange={e => set('pricePerLiter', e.target.value)}
-            placeholder="1.85" className="cv-input w-full px-3 py-2.5 text-sm text-white" required min="0" />
+            placeholder="1.85" className="cv-input w-full px-3 py-2.5 text-base text-white" required min="0" />
         </div>
       </div>
 
@@ -294,9 +294,9 @@ export default function FuelTracker({ vehicleId }) {
                 {/* Delete */}
                 <button
                   onClick={() => handleDelete(entry.id)}
-                  className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-accent/10 text-ink-faint hover:text-accent transition-all"
+                  className="opacity-0 group-hover:opacity-100 p-2.5 -mr-1 rounded-lg hover:bg-accent/10 text-ink-faint hover:text-accent transition-all"
                 >
-                  <Trash2 className="w-3.5 h-3.5" />
+                  <Trash2 className="w-4 h-4" />
                 </button>
               </Motion.div>
             );

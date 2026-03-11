@@ -287,7 +287,7 @@ export default function VehiclesPage() {
               onClick={() => navigate(`/vehicles/${v.id}`)}>
               <div className="aspect-[16/10] bg-[#121214] relative overflow-hidden">
                 {v.photo ? (
-                  <img src={v.photo} alt={`${v.brand} ${v.model}`}
+                  <img src={v.photo} alt={`${v.brand} ${v.model}`} loading="lazy"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" />
                 ) : (
                   <div className="absolute inset-0 flex items-center justify-center mesh-accent opacity-30 group-hover:opacity-50 transition-opacity duration-500">

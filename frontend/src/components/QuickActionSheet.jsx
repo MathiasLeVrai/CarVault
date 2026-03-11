@@ -35,7 +35,7 @@ function CvInput({ type = 'text', ...props }) {
   return (
     <input
       type={type}
-      className="cv-input w-full px-4 py-3 text-sm text-ink"
+      className="cv-input w-full px-4 py-3 text-base text-ink"
       {...props}
     />
   );
@@ -49,7 +49,7 @@ function VehicleSelect({ vehicles, value, onChange }) {
         <select
           value={value}
           onChange={e => onChange(e.target.value)}
-          className="cv-input w-full px-4 py-3 text-sm text-ink appearance-none"
+          className="cv-input w-full px-4 py-3 text-base text-ink appearance-none"
         >
           <option value="">Sélectionner…</option>
           {vehicles.map(v => (
@@ -172,8 +172,8 @@ export default function QuickActionSheet({ onClose }) {
         {/* Header */}
         <div className="flex items-center justify-between py-4">
           <h2 className="text-base font-black text-white font-display">Saisie rapide</h2>
-          <button onClick={onClose} className="w-8 h-8 rounded-xl bg-white/8 flex items-center justify-center">
-            <X className="w-4 h-4 text-white/60" />
+          <button onClick={onClose} className="w-11 h-11 rounded-xl bg-white/8 flex items-center justify-center">
+            <X className="w-5 h-5 text-white/60" />
           </button>
         </div>
 
@@ -248,7 +248,7 @@ export default function QuickActionSheet({ onClose }) {
                     <select
                       value={exp.category}
                       onChange={e => setExp(p => ({ ...p, category: e.target.value }))}
-                      className="cv-input w-full px-4 py-3 text-sm text-ink appearance-none"
+                      className="cv-input w-full px-4 py-3 text-base text-ink appearance-none"
                     >
                       {EXPENSE_CATS.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
                     </select>

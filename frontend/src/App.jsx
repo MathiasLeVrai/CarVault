@@ -1,19 +1,33 @@
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
-import { useEffect } from 'react';
+import { useEffect, lazy, Suspense } from 'react';
 import DashboardLayout from './layouts/DashboardLayout';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import LandingPage from './pages/LandingPage';
 import DashboardPage from './pages/DashboardPage';
-import VehiclesPage from './pages/VehiclesPage';
-import VehicleDetailPage from './pages/VehicleDetailPage';
-import DocumentsPage from './pages/DocumentsPage';
-import ExpensesPage from './pages/ExpensesPage';
-import AlertsPage from './pages/AlertsPage';
-import SettingsPage from './pages/SettingsPage';
-import SharePage from './pages/SharePage';
-import MapPage from './pages/MapPage';
+
+// Lazy-loaded pages (heavy or rarely visited first)
+const MapPage = lazy(() => import('./pages/MapPage'));
+const PricingPage = lazy(() => import('./pages/PricingPage'));
+const SharePage = lazy(() => import('./pages/SharePage'));
+const VehiclesPage = lazy(() => import('./pages/VehiclesPage'));
+const VehicleDetailPage = lazy(() => import('./pages/VehicleDetailPage'));
+const DocumentsPage = lazy(() => import('./pages/DocumentsPage'));
+const ExpensesPage = lazy(() => import('./pages/ExpensesPage'));
+const AlertsPage = lazy(() => import('./pages/AlertsPage'));
+const SettingsPage = lazy(() => import('./pages/SettingsPage'));
+
+function LazyFallback() {
+  return (
+    <div className="flex items-center justify-center h-64">
+      <div className="relative w-10 h-10">
+        <div className="absolute inset-0 rounded-full border-2 border-white/10 border-t-accent animate-spin" />
+      </div>
+    </div>
+  );
+}
+
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
   if (loading) return (
@@ -68,23 +82,26 @@ function LogoutRoute() {
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<LandingRoute />} />
-      <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
-      <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
-      <Route path="/logout" element={<LogoutRoute />} />
-      <Route path="/share/:token" element={<SharePage />} />
-      <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
-        <Route path="dashboard" element={<DashboardPage />} />
-        <Route path="vehicles" element={<VehiclesPage />} />
-        <Route path="vehicles/:id" element={<VehicleDetailPage />} />
-        <Route path="documents" element={<DocumentsPage />} />
-        <Route path="expenses" element={<ExpensesPage />} />
-        <Route path="alerts" element={<AlertsPage />} />
-        <Route path="settings" element={<SettingsPage />} />
-        <Route path="map" element={<MapPage />} />
-      </Route>
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <Suspense fallback={<LazyFallback />}>
+      <Routes>
+        <Route path="/" element={<LandingRoute />} />
+        <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
+        <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
+        <Route path="/logout" element={<LogoutRoute />} />
+        <Route path="/pricing" element={<PricingPage />} />
+        <Route path="/share/:token" element={<SharePage />} />
+        <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
+          <Route path="dashboard" element={<DashboardPage />} />
+          <Route path="vehicles" element={<VehiclesPage />} />
+          <Route path="vehicles/:id" element={<VehicleDetailPage />} />
+          <Route path="documents" element={<DocumentsPage />} />
+          <Route path="expenses" element={<ExpensesPage />} />
+          <Route path="alerts" element={<AlertsPage />} />
+          <Route path="settings" element={<SettingsPage />} />
+          <Route path="map" element={<MapPage />} />
+        </Route>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Suspense>
   );
 }

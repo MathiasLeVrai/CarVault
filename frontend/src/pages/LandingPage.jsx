@@ -110,49 +110,6 @@ const TESTIMONIALS = [
   },
 ];
 
-const PRICING = [
-  {
-    name: 'Gratuit',
-    price: '0€',
-    period: 'pour toujours',
-    cta: 'Commencer gratuitement',
-    to: '/register',
-    accent: false,
-    features: [
-      '1 véhicule',
-      'Documents illimités',
-      'Alertes d\'expiration',
-      'Suivi des entretiens',
-      'Carnet de carburant',
-    ],
-    missing: [
-      'Score de santé /100',
-      'Rapport PDF de revente',
-      'Statistiques avancées',
-      'Véhicules illimités',
-    ],
-  },
-  {
-    name: 'Premium',
-    price: '3€',
-    period: '/mois',
-    cta: 'Essayer Premium',
-    to: '/register',
-    accent: true,
-    badge: 'Le plus populaire',
-    features: [
-      'Véhicules illimités',
-      'Documents illimités',
-      'Alertes d\'expiration',
-      'Suivi des entretiens',
-      'Carnet de carburant',
-      'Score de santé /100',
-      'Rapport PDF de revente',
-      'Statistiques avancées',
-    ],
-    missing: [],
-  },
-];
 
 /* ─── Mini previews ─────────────────────────────────────────── */
 
@@ -395,6 +352,9 @@ export default function LandingPage() {
           <span className="text-lg font-bold font-display tracking-tight">CarVault</span>
         </div>
         <nav className="flex items-center gap-3">
+          <Link to="/pricing" className="px-4 py-2 text-sm font-semibold text-white/50 hover:text-white transition-colors hidden sm:block">
+            Tarifs
+          </Link>
           <Link to="/login" className="px-4 py-2 text-sm font-semibold text-white/50 hover:text-white transition-colors hidden sm:block">
             Se connecter
           </Link>
@@ -693,59 +653,21 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── Pricing ──────────────────────────────────────────── */}
+      {/* ── Pricing teaser ──────────────────────────────────── */}
       <section className="relative z-10 px-6 md:px-12 py-20">
-        <div className="max-w-3xl mx-auto">
-          <Motion.div {...fade()} className="text-center mb-12">
+        <div className="max-w-3xl mx-auto text-center">
+          <Motion.div {...fade()}>
             <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/30 mb-4">Tarifs</p>
-            <h2 className="text-4xl md:text-5xl font-black font-display tracking-tight">
-              Simple. Transparent.
+            <h2 className="text-4xl md:text-5xl font-black font-display tracking-tight mb-4">
+              Gratuit pour commencer.
             </h2>
+            <p className="text-white/40 font-medium text-lg mb-8 max-w-md mx-auto">
+              1 véhicule gratuit, pour toujours. Premium à 3€/mois pour toute la famille.
+            </p>
+            <Link to="/pricing" className="cv-btn-dark px-8 py-4 text-base rounded-xl inline-flex items-center gap-2 justify-center">
+              Voir les tarifs <ArrowRight className="w-4 h-4" />
+            </Link>
           </Motion.div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {PRICING.map((plan, i) => (
-              <Motion.div key={plan.name} {...fade(i * 0.08)}
-                className={`relative ${plan.accent ? 'cv-card-accent' : 'cv-card'} p-8`}
-              >
-                {plan.badge && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="px-4 py-1.5 rounded-full text-xs font-bold bg-accent text-white shadow-[0_0_16px_rgba(255,42,63,0.4)]">
-                      {plan.badge}
-                    </span>
-                  </div>
-                )}
-
-                <div className="mb-6">
-                  <p className="text-sm font-bold text-white/50 mb-2">{plan.name}</p>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-5xl font-black font-display text-white">{plan.price}</span>
-                    <span className="text-sm text-white/35 font-medium">{plan.period}</span>
-                  </div>
-                </div>
-
-                <div className="space-y-2.5 mb-8">
-                  {plan.features.map((f) => (
-                    <div key={f} className="flex items-center gap-2.5">
-                      <Check className="w-4 h-4 text-lime flex-shrink-0" strokeWidth={2.5} />
-                      <span className="text-sm text-white/70 font-medium">{f}</span>
-                    </div>
-                  ))}
-                  {plan.missing.map((f) => (
-                    <div key={f} className="flex items-center gap-2.5">
-                      <X className="w-4 h-4 text-white/15 flex-shrink-0" strokeWidth={2} />
-                      <span className="text-sm text-white/25 font-medium">{f}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <Link to={plan.to}
-                  className={`w-full py-3.5 text-sm rounded-xl inline-flex items-center gap-2 justify-center font-bold transition-all ${plan.accent ? 'cv-btn-accent' : 'cv-btn-dark'}`}>
-                  {plan.cta} <ArrowRight className="w-4 h-4" />
-                </Link>
-              </Motion.div>
-            ))}
-          </div>
         </div>
       </section>
 

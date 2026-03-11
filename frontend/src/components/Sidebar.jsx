@@ -1,28 +1,28 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import {
-  LayoutDashboard, Car, Wallet, Bell, LogOut, Settings, Plus, MapPin,
+  Gauge, Car, Receipt, BellRing, LogOut, SlidersHorizontal, Plus, MapPinned,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { alertApi } from '../services/api';
 
 // Bottom nav: 4 main items + 1 central FAB
 const navItems = [
-  { to: '/dashboard', icon: LayoutDashboard, label: 'Accueil' },
+  { to: '/dashboard', icon: Gauge, label: 'Accueil' },
   { to: '/vehicles', icon: Car, label: 'Véhicules' },
   // [FAB placeholder]
-  { to: '/alerts', icon: Bell, label: 'Alertes', showBadge: true },
-  { to: '/settings', icon: Settings, label: 'Compte' },
+  { to: '/alerts', icon: BellRing, label: 'Alertes', showBadge: true },
+  { to: '/map', icon: MapPinned, label: 'Carte' },
 ];
 
 // Desktop sidebar keeps all items
 const sidebarItems = [
-  { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { to: '/dashboard', icon: Gauge, label: 'Dashboard' },
   { to: '/vehicles', icon: Car, label: 'Véhicules' },
-  { to: '/expenses', icon: Wallet, label: 'Dépenses' },
-  { to: '/map', icon: MapPin, label: 'Carte' },
-  { to: '/alerts', icon: Bell, label: 'Alertes', showBadge: true },
-  { to: '/settings', icon: Settings, label: 'Paramètres' },
+  { to: '/expenses', icon: Receipt, label: 'Dépenses' },
+  { to: '/map', icon: MapPinned, label: 'Carte' },
+  { to: '/alerts', icon: BellRing, label: 'Alertes', showBadge: true },
+  { to: '/settings', icon: SlidersHorizontal, label: 'Paramètres' },
 ];
 
 export default function Sidebar({ onFabPress }) {
@@ -107,8 +107,8 @@ export default function Sidebar({ onFabPress }) {
 
       {/* Mobile Bottom Tab Bar */}
       <nav className="md:hidden fixed left-0 right-0 bottom-0 z-50">
-        <div className="cv-bottom-bar cv-bottom-nav shadow-2xl">
-          <div className="flex items-center pb-[env(safe-area-inset-bottom,0px)]">
+        <div className="cv-bottom-bar shadow-2xl" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+          <div className="flex items-center">
             {/* Left 2 items */}
             {navItems.slice(0, 2).map(({ to, icon, label, showBadge }) => {
               const active = location.pathname === to || location.pathname.startsWith(to + '/');

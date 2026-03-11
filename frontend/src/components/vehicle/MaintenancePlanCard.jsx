@@ -63,13 +63,13 @@ export default function MaintenancePlanCard({ vehicleId, brand, maintenancePlan,
                 <span>{item.remaining > 0 ? `${item.remaining.toLocaleString('fr-FR')} km restants` : `Dépassé de ${Math.abs(item.remaining).toLocaleString('fr-FR')} km`}</span>
                 {isEditing ? (
                   <div className="flex items-center gap-1">
-                    <input type="number" className="w-20 bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-xs text-white" value={editIntervalValue} onChange={(e) => setEditIntervalValue(e.target.value)} autoFocus />
-                    <button onClick={() => saveInterval(item.key, editIntervalValue)} className="text-emerald-400 hover:text-emerald-300 p-1"><Check className="w-3.5 h-3.5" /></button>
-                    <button onClick={() => setEditingInterval(null)} className="text-white/30 hover:text-white/50 p-1 text-xs">✕</button>
+                    <input type="number" className="w-20 bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-base text-white" value={editIntervalValue} onChange={(e) => setEditIntervalValue(e.target.value)} autoFocus />
+                    <button onClick={() => saveInterval(item.key, editIntervalValue)} className="text-emerald-400 hover:text-emerald-300 p-2.5 -mr-1 rounded-lg"><Check className="w-4 h-4" /></button>
+                    <button onClick={() => setEditingInterval(null)} className="text-white/30 hover:text-white/50 p-2.5 -mr-1 rounded-lg text-sm">✕</button>
                   </div>
                 ) : (
-                  <button onClick={() => { setEditingInterval(item.key); setEditIntervalValue(String(item.intervalKm)); }} className="text-white/30 hover:text-white/50 flex items-center gap-1">
-                    <Pencil className="w-3 h-3" />
+                  <button onClick={() => { setEditingInterval(item.key); setEditIntervalValue(String(item.intervalKm)); }} className="text-white/30 hover:text-white/50 flex items-center gap-1.5 py-1 px-2 -mr-2 rounded-lg hover:bg-white/5 transition-colors">
+                    <Pencil className="w-3.5 h-3.5" />
                     <span>tous les {item.intervalKm.toLocaleString('fr-FR')} km</span>
                   </button>
                 )}

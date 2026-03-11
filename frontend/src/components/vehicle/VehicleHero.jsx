@@ -8,7 +8,7 @@ export default function VehicleHero({ vehicle, onBack, onEdit, onShare, onDownlo
       <div className="absolute inset-0 mesh-accent opacity-30 mix-blend-screen pointer-events-none" />
       {vehicle.photo && (
         <div className="absolute inset-0">
-          <img src={vehicle.photo} alt={`${vehicle.brand} ${vehicle.model}`} className="w-full h-full object-cover opacity-40 group-hover:scale-105 transition-transform duration-1000 ease-out" />
+          <img src={vehicle.photo} alt={`${vehicle.brand} ${vehicle.model}`} loading="lazy" className="w-full h-full object-cover opacity-40 group-hover:scale-105 transition-transform duration-1000 ease-out" />
           <div className="absolute inset-0 bg-gradient-to-t from-bg via-bg/80 to-transparent" />
         </div>
       )}
