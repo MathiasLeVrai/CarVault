@@ -241,7 +241,7 @@ class PdfService {
         const color = this._getScoreColor(pct * 100);
 
         doc.rect(50, y, 200, 10).fill(COLORS.lightGray);
-        doc.rect(50, y, barWidth, 10).fill(color);
+        if (barWidth > 0) doc.rect(50, y, barWidth, 10).fill(color);
         doc.fontSize(9).fillColor(COLORS.dark).font('Helvetica-Bold').text(label, 260, y + 0);
         doc.fontSize(9).fillColor(COLORS.muted).font('Helvetica').text(`${score}/${max}`, 380, y + 0);
         y += 20;
@@ -424,9 +424,9 @@ class PdfService {
       const pct = totalAll > 0 ? (total / totalAll * 100).toFixed(1) : 0;
 
       // Barre de progression
-      const barWidth = Math.min((total / totalAll) * 300, 300);
+      const barWidth = totalAll > 0 ? Math.min((total / totalAll) * 300, 300) : 0;
       doc.rect(50, y, 300, 12).fill(COLORS.lightGray);
-      doc.rect(50, y, barWidth, 12).fill(COLORS.dark);
+      if (barWidth > 0) doc.rect(50, y, barWidth, 12).fill(COLORS.dark);
 
       doc.fontSize(9).fillColor(COLORS.dark).font('Helvetica-Bold')
         .text(`${cat}`, 360, y + 1);
