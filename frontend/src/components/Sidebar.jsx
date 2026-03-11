@@ -106,8 +106,8 @@ export default function Sidebar({ onFabPress }) {
       </aside>
 
       {/* Mobile Bottom Tab Bar */}
-      <nav className="md:hidden fixed left-0 right-0 bottom-0 z-50">
-        <div className="cv-bottom-bar shadow-2xl" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+      <nav className="md:hidden fixed left-0 right-0 bottom-0 z-50 cv-bottom-bar shadow-2xl" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+        <div>
           <div className="flex items-center">
             {/* Left 2 items */}
             {navItems.slice(0, 2).map(({ to, icon, label, showBadge }) => {
