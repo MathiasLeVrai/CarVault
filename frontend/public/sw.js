@@ -81,7 +81,14 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Tout le reste (assets statiques JS/CSS/images) : Cache First
+  // Assets statiques JS/CSS : Network First pour toujours avoir la dernière version
+  // (Vite ajoute des hash aux fichiers, donc les requêtes réseau sont rapides)
+  if (url.pathname.match(/\.(js|css)$/)) {
+    event.respondWith(networkFirst(request, STATIC_CACHE));
+    return;
+  }
+
+  // Tout le reste (images, fonts, etc.) : Cache First
   event.respondWith(cacheFirst(request, STATIC_CACHE));
 });
 
