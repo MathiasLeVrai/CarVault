@@ -380,7 +380,7 @@ export default function VehiclesPage() {
           {/* Carte grise en premier — OCR auto-remplit */}
           {!plateFound && !manualMode && (
             <div className="space-y-1.5">
-              <label className="block text-sm font-semibold text-white">Carte grise *</label>
+              <label className="block text-sm font-semibold text-white">Carte grise</label>
               <label className={`flex flex-col items-center gap-2 w-full py-6 border border-dashed rounded-xl cursor-pointer text-sm transition-all ${registrationDoc ? 'bg-lime/5 border-lime/30 text-lime' : 'bg-white/[0.02] border-white/10 text-ink-muted hover:bg-white/[0.04] hover:border-accent/50'}`}>
                 {ocrScanning ? <Loader2 className="w-6 h-6 animate-spin" /> : <Upload className="w-6 h-6" />}
                 <input type="file" accept="image/*,application/pdf" onChange={e => handleRegistrationDoc(e.target.files[0])} className="hidden" />
@@ -487,7 +487,7 @@ export default function VehiclesPage() {
               </label>
               {!registrationDoc && (
                 <div className="space-y-1.5">
-                  <label className="block text-sm font-semibold text-ink">Carte grise *</label>
+                  <label className="block text-sm font-semibold text-ink">Carte grise</label>
                   <label className={`flex items-center justify-center gap-2 w-full py-4 border border-dashed rounded-xl cursor-pointer text-sm transition-all bg-white/[0.02] border-white/10 text-ink-muted hover:bg-white/[0.04] hover:border-accent/50`}>
                     <Upload className="w-5 h-5" />
                     <input type="file" accept="image/*,application/pdf" onChange={e => handleRegistrationDoc(e.target.files[0])} className="hidden" />

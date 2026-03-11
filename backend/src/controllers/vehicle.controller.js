@@ -64,11 +64,8 @@ class VehicleController {
         return res.status(400).json({ error: 'Marque, modèle et année sont requis' });
       }
 
-      // Carte grise obligatoire pour les nouveaux véhicules
+      // Carte grise optionnelle
       const regFile = req.files?.registrationDoc?.[0];
-      if (!regFile) {
-        return res.status(400).json({ error: 'La carte grise est obligatoire pour ajouter un véhicule', code: 'REGISTRATION_REQUIRED' });
-      }
 
       // Vérifier que la plaque n'est pas déjà prise par un autre utilisateur
       if (licensePlate) {
@@ -129,17 +126,19 @@ class VehicleController {
         }
       }
 
-      // Sauvegarder automatiquement la carte grise comme document REGISTRATION
-      const regPath = await storageService.upload(regFile.buffer, regFile.originalname, 'documents');
-      await prisma.document.create({
-        data: {
-          name: 'Carte grise',
-          type: 'REGISTRATION',
-          filePath: regPath,
-          fileName: regFile.originalname,
-          vehicleId: vehicle.id,
-        },
-      });
+      // Sauvegarder automatiquement la carte grise comme document REGISTRATION (si fournie)
+      if (regFile) {
+        const regPath = await storageService.upload(regFile.buffer, regFile.originalname, 'documents');
+        await prisma.document.create({
+          data: {
+            name: 'Carte grise',
+            type: 'REGISTRATION',
+            filePath: regPath,
+            fileName: regFile.originalname,
+            vehicleId: vehicle.id,
+          },
+        });
+      }
 
       res.status(201).json(vehicle);
     } catch (error) {
