@@ -22,7 +22,7 @@ export default function DashboardLayout() {
   }, [user]);
 
   return (
-    <div className="min-h-screen bg-bg relative selection:bg-accent/30 selection:text-white">
+    <div className="min-h-screen min-h-dvh bg-bg relative selection:bg-accent/30 selection:text-white">
       <div className="fixed inset-0 cv-grid-bg pointer-events-none" />
       <div
         className="fixed top-[-20%] left-[-15%] w-[60%] h-[60%] rounded-full pointer-events-none aurora-1"
