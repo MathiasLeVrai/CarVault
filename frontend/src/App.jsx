@@ -2,12 +2,11 @@ import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import { useEffect, lazy, Suspense } from 'react';
 import DashboardLayout from './layouts/DashboardLayout';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import LandingPage from './pages/LandingPage';
-import DashboardPage from './pages/DashboardPage';
-
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const RegisterPage = lazy(() => import('./pages/RegisterPage'));
+const LandingPage = lazy(() => import('./pages/LandingPage'));
 // Lazy-loaded pages (heavy or rarely visited first)
+const DashboardPage = lazy(() => import('./pages/DashboardPage'));
 const MapPage = lazy(() => import('./pages/MapPage'));
 const PricingPage = lazy(() => import('./pages/PricingPage'));
 const SharePage = lazy(() => import('./pages/SharePage'));

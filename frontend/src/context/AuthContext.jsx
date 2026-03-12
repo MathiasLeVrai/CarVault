@@ -5,32 +5,32 @@ import { authApi } from '../services/api';
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  // Optimistic: render immediately from localStorage (no loading spinner)
+  const [user, setUser] = useState(() => {
+    try {
+      const token = localStorage.getItem('carvault_token');
+      const saved = localStorage.getItem('carvault_user');
+      if (token && saved) return JSON.parse(saved);
+    } catch { /* ignore */ }
+    return null;
+  });
+  const loading = false;
 
   useEffect(() => {
     const token = localStorage.getItem('carvault_token');
-    const savedUser = localStorage.getItem('carvault_user');
+    if (!token) return;
 
-    if (token && savedUser) {
-      // On a un token — on tente de valider avec l'API
-      authApi.getProfile()
-        .then(profile => {
-          setUser(profile);
-          localStorage.setItem('carvault_user', JSON.stringify(profile));
-        })
-        .catch(() => {
-          // Token invalide ou expiré — on nettoie tout
-          localStorage.removeItem('carvault_token');
-          localStorage.removeItem('carvault_user');
-          setUser(null);
-        })
-        .finally(() => setLoading(false));
-    } else {
-      // Pas de token — on affiche directement le login
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setLoading(false);
-    }
+    // Background validation — don't block render
+    authApi.getProfile()
+      .then(profile => {
+        setUser(profile);
+        localStorage.setItem('carvault_user', JSON.stringify(profile));
+      })
+      .catch(() => {
+        localStorage.removeItem('carvault_token');
+        localStorage.removeItem('carvault_user');
+        setUser(null);
+      });
   }, []);
 
   const login = async (email, password) => {

@@ -67,8 +67,9 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Stratégie pour les Google Fonts : Cache First
-  if (url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com') {
+  // Stratégie pour les Fonts (Google + FontShare) : Cache First
+  if (url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com'
+    || url.hostname === 'api.fontshare.com' || url.hostname === 'cdn.fontshare.com') {
     event.respondWith(cacheFirst(request, STATIC_CACHE));
     return;
   }
