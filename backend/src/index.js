@@ -138,12 +138,14 @@ app.use(errorHandler);
 
 // --- Production: serve frontend static build ---
 const frontendPath = path.join(__dirname, '../../frontend/dist');
-// Vite hashed assets — cache for 1 year
-app.use('/assets', express.static(path.join(frontendPath, 'assets'), {
-  maxAge: '1y',
-  immutable: true,
+app.use(express.static(frontendPath, {
+  setHeaders(res, filePath) {
+    // Vite hashed assets — cache for 1 year
+    if (filePath.includes('/assets/')) {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    }
+  },
 }));
-app.use(express.static(frontendPath));
 
 // SPA fallback — any non-API route serves index.html
 app.get('*', (req, res) => {

@@ -28,45 +28,15 @@ function LazyFallback() {
 }
 
 function ProtectedRoute({ children }) {
-  const { user, loading } = useAuth();
-  if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-bg">
-      <div className="flex flex-col items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center shadow-[0_0_20px_rgba(230,57,70,0.3)]">
-          <span className="text-sm font-black text-white font-display">CV</span>
-        </div>
-        <span className="text-xs font-semibold text-ink-muted">Chargement...</span>
-      </div>
-    </div>
-  );
+  const { user } = useAuth();
   if (!user) return <Navigate to="/login" replace />;
   return children;
 }
 
 function PublicRoute({ children }) {
-  const { user, loading } = useAuth();
-  if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-bg">
-      <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center shadow-[0_0_20px_rgba(230,57,70,0.3)]">
-        <span className="text-sm font-black text-white font-display">CV</span>
-      </div>
-    </div>
-  );
+  const { user } = useAuth();
   if (user) return <Navigate to="/dashboard" replace />;
   return children;
-}
-
-function LandingRoute() {
-  const { user, loading } = useAuth();
-  if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-bg">
-      <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center shadow-[0_0_20px_rgba(230,57,70,0.3)]">
-        <span className="text-sm font-black text-white font-display">CV</span>
-      </div>
-    </div>
-  );
-  if (user) return <Navigate to="/dashboard" replace />;
-  return <LandingPage />;
 }
 
 function LogoutRoute() {
@@ -83,7 +53,7 @@ export default function App() {
   return (
     <Suspense fallback={<LazyFallback />}>
       <Routes>
-        <Route path="/" element={<LandingRoute />} />
+        <Route path="/" element={<PublicRoute><LandingPage /></PublicRoute>} />
         <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
         <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
         <Route path="/logout" element={<LogoutRoute />} />

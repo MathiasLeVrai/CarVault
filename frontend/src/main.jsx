@@ -5,7 +5,6 @@ import { AuthProvider } from './context/AuthContext'
 import { ThemeProvider } from './context/ThemeContext'
 import { ToastProvider } from './context/ToastContext'
 import ErrorBoundary from './components/ErrorBoundary'
-import { I18nProvider } from './i18n/index'
 import * as Sentry from '@sentry/react'
 import App from './App.jsx'
 import './index.css'
@@ -22,17 +21,15 @@ if (import.meta.env.VITE_SENTRY_DSN) {
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ErrorBoundary>
-      <I18nProvider>
-        <ThemeProvider>
-          <BrowserRouter>
-            <AuthProvider>
-              <ToastProvider>
-                <App />
-              </ToastProvider>
-            </AuthProvider>
-          </BrowserRouter>
-        </ThemeProvider>
-      </I18nProvider>
+      <ThemeProvider>
+        <BrowserRouter>
+          <AuthProvider>
+            <ToastProvider>
+              <App />
+            </ToastProvider>
+          </AuthProvider>
+        </BrowserRouter>
+      </ThemeProvider>
     </ErrorBoundary>
   </StrictMode>,
 )

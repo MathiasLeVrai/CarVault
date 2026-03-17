@@ -19,109 +19,30 @@ Objectif : atteindre "1 véhicule + 1 doc + 1 rappel planifié" en < 5 min.
 
 ---
 
-## MVP — Ce qui est livré
+## Fonctionnalités principales (v2)
 
-| # | Livrable | Statut |
-|---|----------|--------|
-| 1 | Auth (inscription / connexion JWT) | ✅ |
-| 2 | CRUD véhicules + photo + recherche par plaque | ✅ |
-| 3 | Upload documents (assurance, CT, carte grise, facture…) + expiration | ✅ |
-| 4 | Suivi dépenses + graphiques mensuels | ✅ |
-| 5 | Alertes automatiques (cron) avant expiration | ✅ |
-| 6 | Score santé véhicule + valeur estimée | ✅ |
-| 7 | Export PDF "Dossier pour revente" | ✅ |
+Pour un brief produit détaillé, voir `PRODUCT.md`.
 
-## Hors scope (v1)
-
-- Notifications push / email (alertes in-app uniquement pour l'instant)
-- Partage de dossier entre utilisateurs
-- Scan OCR automatique des documents
-- Suivi multi-devises
-
----
-
-## Roadmap — Priorisation
-
-### Next — Activation / Rétention
-> Court terme, fort impact sur l'engagement, effort maîtrisé.
-
-| Feature | Pourquoi | Effort |
-|---------|----------|--------|
-| Notifications email (J-30 / J-7 / J-1) | Rappels hors app = cœur de la rétention | M |
-| Onboarding guidé (3 étapes) | Réduire le temps pour atteindre le "aha moment" | S |
-| Snooze / Silence d'une alerte | Éviter le spam + opt-out partiel | S |
-| Historique kilométrage | Permet de calculer les intervalles entretien | M |
-
-### Later — Différenciation
-> Moyen terme, valeur perçue haute, mais non bloquant pour l'activation.
-
-| Feature | Pourquoi | Effort |
-|---------|----------|--------|
-| Partage de dossier (lien public) | Revente : envoyer le dossier PDF sans compte | M |
-| Dashboard multi-véhicules (vue flotte) | Cible : familles / petites entreprises | L |
-| Rappels personnalisables (délais, canaux) | Rétention long terme + power users | M |
-| Comparaison coût de possession | Différenciation vs apps concurrentes | L |
-
-### Maybe — R&D / Dépendances externes
-> Long terme ou bloqué par des contraintes tierces.
-
-| Feature | Pourquoi Maybe | Effort |
-|---------|---------------|--------|
-| Scan OCR des documents | Qualité OCR variable, coût API élevé | XL |
-| Push notifications (PWA) | Support iOS limité (Safari) | L |
-| Import auto depuis les emails (rappels assurance) | Dépendance Gmail/Outlook API | XL |
-| Marketplace garages partenaires | Modèle business à valider | XL |
-
----
-
-## Spécification Notifications
-
-### Canaux (v1 → v2)
-
-| Canal | v1 (actuel) | v2 (next) |
-|-------|-------------|-----------|
-| In-app (badge + liste alertes) | ✅ | ✅ |
-| Email | ❌ | ✅ |
-| Push navigateur (PWA) | ❌ | Peut-être |
-
-### Règles de déclenchement par défaut
-
-| Délai avant expiration | Alerte déclenchée |
-|------------------------|-------------------|
-| J-30 | 1 notification |
-| J-7 | 1 notification |
-| J-1 | 1 notification |
-| J+0 (expiré) | Badge rouge permanent |
-
-- **Fréquence max :** 1 alerte par document par palier (pas de répétition quotidienne).
-- **Timezone :** celle du serveur (Europe/Paris). Prévu : stockage timezone utilisateur en v2.
-- **Déclencheur :** cron `alert.cron.js` s'exécute toutes les 24h à minuit.
-
-### Opt-out / Anti-spam
-
-- Snooze d'une alerte : **hors scope v1**, prévu en "Next".
-- Désactiver toutes les alertes : supprimer les alertes depuis l'interface (pas encore de toggle global).
-- Anti-spam : une alerte par (document × palier) — unicité vérifiée avant insertion en base.
-
-### Métriques cibles (v2)
-
-- Taux d'activation notifications email : > 60 %
-- Taux d'opt-out : < 15 %
-- Taux d'ouverture email : > 35 %
-
----
+- **Coffre-fort de documents**: upload de tous les documents liés au véhicule (assurance, carte grise, CT, factures, garanties…) avec dates d’expiration.
+- **Rappels intelligents**: rappels configurables (J-30, J-14, J-7, J-1, J+0) par document, avec centre de notifications et préférences utilisateur.
+- **Suivi dépenses & entretien**: catégories de dépenses, kilométrage, carburant, statistiques mensuelles et annuel, coût de possession.
+- **Score santé véhicule**: score /100 (A–D), estimation de valeur et indicateurs de risque.
+- **Dossier revente**: export PDF complet, partage via lien public sécurisé (token, expiration).
+- **Dashboard d’action**: vue synthétique des prochaines actions (docs à renouveler, CT à passer, entretiens à prévoir).
+- **Onboarding guidé**: parcours simple pour créer un compte, ajouter un véhicule et atteindre rapidement le moment "aha".
+- **PWA mobile-first**: installable sur écran d’accueil, fonctionnement hors ligne via Service Worker.
 
 ## Stack technique
 
 | Couche | Techno |
 |--------|--------|
 | Frontend | React 19, Vite 7, Tailwind CSS 4, React Router 7, Recharts |
-| Backend | Node.js, Express 4, Prisma 6, PostgreSQL (NeonDB) |
+| Backend | Node.js, Express 4, Prisma 6, PostgreSQL (NeonDB), Nodemailer, Stripe |
 | Auth | JWT + bcryptjs |
-| Upload | Multer (local → `backend/uploads/`) |
+| Upload | Multer (local en dev → volume Fly.io en prod) |
 | PDF | PDFKit |
-| Alertes | node-cron |
-| Déploiement | Docker multi-stage + Fly.io (région CDG) |
+| Alertes | node-cron (jobs récurrents pour rappels d’expiration) |
+| Déploiement | Docker multi-stage + Fly.io (région CDG) + GitHub Actions (CI/CD) |
 | APIs tierces | RapidAPI (plaque FR), CarAPI (marques/modèles) |
 
 ---

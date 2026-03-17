@@ -8,7 +8,6 @@ import {
   Bell, Mail, Smartphone, Calendar, Check, Settings, Sun, Moon, LogOut, Globe,
   Camera, Pencil, Crown, User as UserIcon, Send,
 } from 'lucide-react';
-import useI18n from '../i18n/useI18n';
 import { motion as Motion } from 'framer-motion';
 
 const containerVariants = {
@@ -224,7 +223,6 @@ export default function SettingsPage() {
   const { user, logout, updateProfile } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const push = usePush();
-  const { lang, setLang } = useI18n();
   const [prefs, setPrefs] = useState({ notifEmail: true, notifPush: false, notifWeekly: true });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -340,32 +338,7 @@ export default function SettingsPage() {
         </div>
       </Motion.div>
 
-      {/* Langue */}
-      <Motion.div variants={itemVariants} className="space-y-3">
-        <div className="flex items-center gap-2.5 mb-2">
-          <div className="w-7 h-7 rounded-lg bg-sky/10 flex items-center justify-center">
-            <Globe className="w-3.5 h-3.5 text-sky" strokeWidth={2.5} />
-          </div>
-          <h2 className="text-sm font-bold text-ink font-display tracking-tight">Langue</h2>
-        </div>
-        <div className="flex gap-3">
-          {[{ code: 'fr', label: 'Français', flag: '🇫🇷' }, { code: 'en', label: 'English', flag: '🇬🇧' }].map(l => (
-            <button
-              key={l.code}
-              onClick={() => setLang(l.code)}
-              className={`flex-1 flex items-center gap-3 p-4 rounded-2xl border transition-all ${
-                lang === l.code
-                  ? 'bg-accent/10 border-accent/30 text-white'
-                  : 'bg-white/[0.02] border-white/5 text-ink-muted hover:bg-white/[0.04]'
-              }`}
-            >
-              <span className="text-xl">{l.flag}</span>
-              <span className="text-sm font-bold">{l.label}</span>
-              {lang === l.code && <Check className="w-4 h-4 text-accent ml-auto" />}
-            </button>
-          ))}
-        </div>
-      </Motion.div>
+      {/* Langue (désactivée pour l'instant, app en français uniquement) */}
 
       {/* Notifications */}
       <Motion.div variants={itemVariants}>
