@@ -63,3 +63,14 @@ if (import.meta.env.PROD && 'serviceWorker' in navigator) {
       });
   });
 }
+
+if (window.matchMedia('(display-mode: standalone)').matches) {
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      requestAnimationFrame(() => {
+        window.scrollTo(0, 1);
+        requestAnimationFrame(() => window.scrollTo(0, 0));
+      });
+    }
+  });
+}

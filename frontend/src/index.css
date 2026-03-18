@@ -254,7 +254,7 @@ p { text-wrap: pretty; }
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-/* PWA standalone: lock viewport, prevent overscroll bounce */
+/* ── PWA standalone: lock viewport, prevent overscroll bounce ── */
 html, body {
   overscroll-behavior: none;
   -webkit-overflow-scrolling: touch;
@@ -262,18 +262,29 @@ html, body {
 
 @media all and (display-mode: standalone) {
   html {
-    height: 100%;
+    /* LE FIX PRINCIPAL : compense le décalage black-translucent */
+    min-height: calc(100% + env(safe-area-inset-top));
     overflow: hidden;
     background-color: var(--color-bg);
   }
   body {
-    height: 100%;
     min-height: 100dvh;
+    /* Fallback si dvh est mal calculé au cold start */
+    min-height: -webkit-fill-available;
     overflow-y: auto;
     overflow-x: hidden;
     background-color: var(--color-bg);
   }
 }
+  
+  #root {
+    height: 100%;
+    width: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch; /* Crucial pour la fluidité sur iOS */
+  }
+
 
 .safe-bottom {
   padding-bottom: var(--safe-bottom);
@@ -298,9 +309,10 @@ html, body {
 /* Mobile bottom nav — extend background well below safe area.
    env(safe-area-inset-bottom) is unreliable in iOS PWA standalone mode (returns 0 intermittently).
    Use a large fixed padding instead — excess is hidden below the screen edge. */
-.cv-bottom-bar {
-  padding-bottom: 40px;
-}
+   .cv-bottom-bar {
+    /* env() quand il marche + fallback 34px (hauteur home indicator iPhone Pro) */
+    padding-bottom: max(env(safe-area-inset-bottom, 34px), 34px);
+  }
 
 /* =========== DOT PATTERN (Aceternity-style) =========== */
 
