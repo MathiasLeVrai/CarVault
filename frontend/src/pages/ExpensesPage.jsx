@@ -80,7 +80,7 @@ export default function ExpensesPage() {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={monthly} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                 <CartesianGrid stroke="rgba(255,255,255,0.05)" vertical={false} />
-                <XAxis dataKey="month" stroke="#71717a" fontSize={11} fontWeight={600} tickLine={false} axisLine={false} />
+                <XAxis dataKey="month" stroke="#71717a" fontSize={10} fontWeight={600} tickLine={false} axisLine={false} interval={0} />
                 <YAxis stroke="#71717a" fontSize={11} fontWeight={600} tickLine={false} axisLine={false} tickFormatter={v=>`${v}€`} />
                 <Tooltip content={<ChartTip />} cursor={{ fill: 'rgba(255,255,255,0.05)' }} />
                 <Bar dataKey="total" fill="#ff2a3f" radius={[6,6,0,0]} maxBarSize={36} />

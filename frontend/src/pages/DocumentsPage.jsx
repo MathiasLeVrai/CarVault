@@ -54,6 +54,7 @@ export default function DocumentsPage() {
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('');
+  const [vehicleFilter, setVehicleFilter] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [sub, setSub] = useState(false);
   const [form, setForm] = useState({ name: '', type: 'INSURANCE', vehicleId: '', expirationDate: '', notes: '' });
@@ -173,7 +174,7 @@ export default function DocumentsPage() {
         </Button>
       </Motion.div>
 
-      {/* Filters */}
+      {/* Type Filters */}
       <Motion.div variants={itemVariants} className="flex gap-2 flex-wrap">
         {typeFilters.map(opt => (
           <button
@@ -190,86 +191,142 @@ export default function DocumentsPage() {
         ))}
       </Motion.div>
 
-      {docs.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {docs.map(doc => {
-            const days = doc.expirationDate ? daysUntil(doc.expirationDate) : null;
-            return (
-              <Motion.div variants={itemVariants} key={doc.id} className="bento-card p-5 flex flex-col justify-between group">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-4 min-w-0">
-                    <div className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                      <FileText className="w-5 h-5 text-white/60" strokeWidth={1.8} />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-base font-bold text-white truncate font-display">{doc.name}</p>
-                      <div className="flex items-center gap-2 mt-1.5">
-                        <Badge variant={documentTypeBadge[doc.type]}>{documentTypeLabels[doc.type]}</Badge>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between pt-4 border-t border-white/5">
-                  <div className="flex flex-col">
-                    {doc.vehicle && (
-                      <span className="text-[11px] font-semibold text-white/50">
-                        {doc.vehicle.brand} {doc.vehicle.model}
-                      </span>
-                    )}
-                    {days !== null && (
-                      <div className="flex items-center gap-2 mt-1">
-                        <Badge variant={days < 0 ? 'danger' : days <= 30 ? 'warning' : 'success'}>
-                          {days < 0 ? 'Expiré' : `${days}j restants`}
-                        </Badge>
-                        <span className="text-[10px] font-bold text-white/30">{formatDateShort(doc.expirationDate)}</span>
-                      </div>
-                    )}
-                    {doc.reminderDays?.length > 0 && days !== null && days > 0 && (
-                      <div className="flex items-center gap-1 mt-1.5">
-                        <Bell className="w-3 h-3 text-lime/60" />
-                        <span className="text-[9px] font-bold text-lime/60 uppercase tracking-wider">
-                          Rappels : {doc.reminderDays.map(d => `J-${d}`).join(', ')}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <a
-                      href={doc.filePath}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={e => e.stopPropagation()}
-                      className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition-all"
-                    >
-                      <ExternalLink className="w-4 h-4" />
-                    </a>
-                    <button
-                      onClick={() => del(doc.id)}
-                      className="p-2 rounded-xl bg-white/5 hover:bg-accent/20 text-white/60 hover:text-accent transition-all"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              </Motion.div>
-            );
-          })}
-        </div>
-      ) : (
-        <Motion.div variants={itemVariants}>
-          <EmptyState
-            icon={FileText}
-            title="Aucun document"
-            description="Centralisez assurances, contrôles techniques, factures."
-            action={
-              vehicles.length > 0
-                ? <Button onClick={openModal} variant="accent"><Plus className="w-4 h-4" />Ajouter</Button>
-                : <p className="text-sm text-ink-muted">Ajoutez d&apos;abord un véhicule</p>
-            }
-          />
+      {/* Vehicle Filters */}
+      {vehicles.length > 1 && (
+        <Motion.div variants={itemVariants} className="flex gap-2 flex-wrap">
+          <button
+            onClick={() => setVehicleFilter('')}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+              vehicleFilter === ''
+                ? 'bg-accent/20 text-accent border border-accent/30'
+                : 'bg-white/[0.02] border border-white/10 text-white/50 hover:bg-white/[0.06] hover:text-white'
+            }`}
+          >
+            Tous les véhicules
+          </button>
+          {vehicles.map(v => (
+            <button
+              key={v.id}
+              onClick={() => setVehicleFilter(v.id)}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                vehicleFilter === v.id
+                  ? 'bg-accent/20 text-accent border border-accent/30'
+                  : 'bg-white/[0.02] border border-white/10 text-white/50 hover:bg-white/[0.06] hover:text-white'
+              }`}
+            >
+              {v.brand} {v.model}
+            </button>
+          ))}
         </Motion.div>
       )}
+
+      {(() => {
+        const filtered = vehicleFilter ? docs.filter(d => d.vehicleId === vehicleFilter || d.vehicle?.id === vehicleFilter) : docs;
+        if (filtered.length === 0) return (
+          <Motion.div variants={itemVariants}>
+            <EmptyState
+              icon={FileText}
+              title="Aucun document"
+              description={vehicleFilter ? "Aucun document pour ce véhicule." : "Centralisez assurances, contrôles techniques, factures."}
+              action={
+                vehicles.length > 0
+                  ? <Button onClick={openModal} variant="accent"><Plus className="w-4 h-4" />Ajouter</Button>
+                  : <p className="text-sm text-ink-muted">Ajoutez d&apos;abord un véhicule</p>
+              }
+            />
+          </Motion.div>
+        );
+
+        // Group by vehicle
+        const grouped = {};
+        filtered.forEach(doc => {
+          const vId = doc.vehicleId || doc.vehicle?.id || 'unknown';
+          if (!grouped[vId]) {
+            grouped[vId] = {
+              vehicle: doc.vehicle,
+              docs: [],
+            };
+          }
+          grouped[vId].docs.push(doc);
+        });
+        const groups = Object.values(grouped);
+
+        return groups.map((group) => (
+          <div key={group.vehicle?.id || 'unknown'}>
+            {!vehicleFilter && groups.length > 1 && group.vehicle && (
+              <Motion.div variants={itemVariants} className="flex items-center gap-3 mb-3">
+                <div className="w-8 h-8 rounded-lg bg-white/[0.03] border border-white/10 flex items-center justify-center">
+                  <FileText className="w-4 h-4 text-white/40" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-white font-display">{group.vehicle.brand} {group.vehicle.model}</p>
+                  <p className="text-[11px] text-white/30">{group.docs.length} doc{group.docs.length > 1 ? 's' : ''}</p>
+                </div>
+              </Motion.div>
+            )}
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mb-6">
+              {group.docs.map(doc => {
+                const days = doc.expirationDate ? daysUntil(doc.expirationDate) : null;
+                return (
+                  <Motion.div variants={itemVariants} key={doc.id} className="bento-card p-5 flex flex-col justify-between group">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center gap-4 min-w-0">
+                        <div className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                          <FileText className="w-5 h-5 text-white/60" strokeWidth={1.8} />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-base font-bold text-white truncate font-display">{doc.name}</p>
+                          <div className="flex items-center gap-2 mt-1.5">
+                            <Badge variant={documentTypeBadge[doc.type]}>{documentTypeLabels[doc.type]}</Badge>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-4 border-t border-white/5">
+                      <div className="flex flex-col">
+                        {days !== null && (
+                          <div className="flex items-center gap-2">
+                            <Badge variant={days < 0 ? 'danger' : days <= 30 ? 'warning' : 'success'}>
+                              {days < 0 ? 'Expiré' : `${days}j restants`}
+                            </Badge>
+                            <span className="text-[10px] font-bold text-white/30">{formatDateShort(doc.expirationDate)}</span>
+                          </div>
+                        )}
+                        {doc.reminderDays?.length > 0 && days !== null && days > 0 && (
+                          <div className="flex items-center gap-1 mt-1.5">
+                            <Bell className="w-3 h-3 text-lime/60" />
+                            <span className="text-[9px] font-bold text-lime/60 uppercase tracking-wider">
+                              Rappels : {doc.reminderDays.map(d => `J-${d}`).join(', ')}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <a
+                          href={doc.filePath}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={e => e.stopPropagation()}
+                          className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition-all"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                        </a>
+                        <button
+                          onClick={() => del(doc.id)}
+                          className="p-2 rounded-xl bg-white/5 hover:bg-accent/20 text-white/60 hover:text-accent transition-all"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </Motion.div>
+                );
+              })}
+            </div>
+          </div>
+        ));
+      })()}
 
       <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Nouveau document">
         <form onSubmit={submit} className="space-y-4">
