@@ -295,21 +295,11 @@ html, body {
   }
 }
 
-/* Mobile bottom nav — extend background well below safe area via pseudo-element.
+/* Mobile bottom nav — extend background well below safe area.
    env(safe-area-inset-bottom) is unreliable in iOS PWA standalone mode (returns 0 intermittently).
-   Instead, we overflow a pseudo-element 100px below the nav — the excess is clipped by the screen edge. */
+   Use a large fixed padding instead — excess is hidden below the screen edge. */
 .cv-bottom-bar {
-  padding-bottom: 0;
-  position: relative;
-}
-.cv-bottom-bar::after {
-  content: '';
-  position: absolute;
-  bottom: -100px;
-  left: 0;
-  right: 0;
-  height: 100px;
-  background: inherit;
+  padding-bottom: 40px;
 }
 
 /* =========== DOT PATTERN (Aceternity-style) =========== */
