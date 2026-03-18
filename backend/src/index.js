@@ -7,12 +7,13 @@ if (process.env.SENTRY_DSN) {
     dsn: process.env.SENTRY_DSN,
     environment: process.env.NODE_ENV || 'production',
     tracesSampleRate: 0.2,
-    sendDefaultPii: true,
+    sendDefaultPii: false,
   });
 }
 
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
 const path = require('path');
 const rateLimit = require('express-rate-limit');
 
@@ -85,6 +86,11 @@ const allowedOrigins = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(',')
   : ['http://localhost:5173', 'http://localhost:5174'];
 
+app.use(helmet({
+  contentSecurityPolicy: false, // CSP géré par Vite/frontend
+  crossOriginEmbedderPolicy: false, // Permet le chargement des images externes (map tiles, etc.)
+}));
+
 app.use(cors({
   origin: (origin, cb) => {
     // Allow requests with no origin (mobile apps, curl, same-origin in prod)
@@ -100,10 +106,14 @@ app.use('/api/subscription/webhook', express.raw({ type: 'application/json' }));
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
-// Serve uploaded files
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+// Serve uploaded files — protected by auth (sauf share links qui passent par l'API)
+const { authenticate } = require('./middleware/auth.middleware');
+app.use('/uploads', authenticate, express.static(path.join(__dirname, '../uploads')));
 
-// API Routes
+// Rate limiting global sur toutes les routes API
+app.use('/api', apiLimiter);
+
+// Rate limiters spécifiques (plus restrictifs, appliqués en plus du global)
 app.use('/api/auth/login', loginLimiter);
 app.use('/api/auth/register', registerLimiter);
 app.use('/api/share', publicLimiter);
@@ -120,7 +130,7 @@ app.use('/api/vehicles/:vehicleId/fuel', fuelRoutes);
 app.use('/api/share', shareRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/subscription', subscriptionRoutes);
-app.use('/api/badges', apiLimiter, badgeRoutes);
+app.use('/api/badges', badgeRoutes);
 app.use('/api/push', pushRoutes);
 
 // Health check

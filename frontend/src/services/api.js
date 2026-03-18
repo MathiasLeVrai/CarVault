@@ -37,7 +37,18 @@ class ApiClient {
     }
 
     const response = await fetch(`${this.baseUrl}${endpoint}`, config);
-    const data = await response.json();
+
+    let data;
+    try {
+      data = await response.json();
+    } catch {
+      if (!response.ok) {
+        const error = new Error(`Erreur serveur (${response.status})`);
+        error.status = response.status;
+        throw error;
+      }
+      return null;
+    }
 
     if (!response.ok) {
       const error = new Error(data.error || 'Une erreur est survenue');

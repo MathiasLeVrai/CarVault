@@ -1,10 +1,11 @@
 const prisma = require('../lib/prisma');
+const { AppError } = require('../middleware/error.middleware');
 
 class FuelService {
   async getAll(vehicleId, userId) {
     // Verify ownership
     const vehicle = await prisma.vehicle.findFirst({ where: { id: vehicleId, userId } });
-    if (!vehicle) throw Object.assign(new Error('Véhicule introuvable'), { status: 404 });
+    if (!vehicle) throw new AppError('Véhicule introuvable', 404);
 
     const entries = await prisma.fuelEntry.findMany({
       where: { vehicleId },
@@ -18,11 +19,11 @@ class FuelService {
 
   async create(vehicleId, userId, data) {
     const vehicle = await prisma.vehicle.findFirst({ where: { id: vehicleId, userId } });
-    if (!vehicle) throw Object.assign(new Error('Véhicule introuvable'), { status: 404 });
+    if (!vehicle) throw new AppError('Véhicule introuvable', 404);
 
     const { date, mileage, liters, pricePerLiter, isFull = true, notes } = data;
     if (!date || !mileage || !liters || !pricePerLiter) {
-      throw Object.assign(new Error('date, mileage, liters et pricePerLiter sont requis'), { status: 400 });
+      throw new AppError('date, mileage, liters et pricePerLiter sont requis', 400);
     }
 
     const totalCost = parseFloat((liters * pricePerLiter).toFixed(2));
@@ -57,7 +58,7 @@ class FuelService {
       include: { vehicle: true },
     });
     if (!entry || entry.vehicle.userId !== userId) {
-      throw Object.assign(new Error('Entrée introuvable'), { status: 404 });
+      throw new AppError('Entrée introuvable', 404);
     }
     await prisma.fuelEntry.delete({ where: { id } });
   }

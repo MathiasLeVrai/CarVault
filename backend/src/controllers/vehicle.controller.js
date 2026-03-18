@@ -148,15 +148,17 @@ class VehicleController {
 
   async update(req, res, next) {
     try {
-      const allowed = ['brand', 'model', 'year', 'mileage', 'licensePlate', 'color', 'fuelType', 'purchasePrice'];
+      const intFields = ['year', 'mileage', 'horsepower', 'doors'];
+      const floatFields = ['purchasePrice', 'msrp', 'engineSize'];
+      const stringFields = ['brand', 'model', 'licensePlate', 'color', 'fuelType', 'transmission', 'bodyType'];
+      const allowed = [...intFields, ...floatFields, ...stringFields];
       const data = {};
 
       for (const key of allowed) {
         if (req.body[key] === undefined) continue;
         const val = req.body[key];
-        if (key === 'year') { const n = parseInt(val); if (!isNaN(n)) data.year = n; }
-        else if (key === 'mileage') { const n = parseInt(val); if (!isNaN(n)) data.mileage = n; }
-        else if (key === 'purchasePrice') { const n = parseFloat(val); data.purchasePrice = isNaN(n) ? null : n; }
+        if (intFields.includes(key)) { const n = parseInt(val); if (!isNaN(n)) data[key] = n; }
+        else if (floatFields.includes(key)) { const n = parseFloat(val); data[key] = isNaN(n) ? null : n; }
         else { data[key] = val === '' ? null : val; }
       }
 

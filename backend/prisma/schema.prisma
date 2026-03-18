@@ -32,6 +32,7 @@ model User {
   bankConnection    BankConnection?
   pushSubscriptions PushSubscription[]
 
+  @@index([stripeSubscriptionId])
   @@map("users")
 }
 
@@ -66,6 +67,7 @@ model Vehicle {
   fuelEntries    FuelEntry[]
   shareLinks     ShareLink[]
 
+  @@index([userId])
   @@map("vehicles")
 }
 
@@ -84,6 +86,8 @@ model Document {
   vehicleId      String
   vehicle        Vehicle      @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
 
+  @@index([vehicleId])
+  @@index([vehicleId, expirationDate])
   @@map("documents")
 }
 
@@ -100,6 +104,7 @@ model Expense {
   vehicleId   String
   vehicle     Vehicle         @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
 
+  @@index([vehicleId, date])
   @@map("expenses")
 }
 
@@ -117,6 +122,8 @@ model Alert {
   userId       String
   user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
+  @@index([userId, isRead])
   @@map("alerts")
 }
 
@@ -130,6 +137,7 @@ model MileageEntry {
   vehicleId String
   vehicle   Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
 
+  @@index([vehicleId])
   @@map("mileage_entries")
 }
 
@@ -218,6 +226,7 @@ model PushSubscription {
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
   @@unique([userId, endpoint])
   @@map("push_subscriptions")
 }
@@ -234,5 +243,6 @@ model ShareLink {
   userId    String
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([vehicleId, userId])
   @@map("share_links")
 }
