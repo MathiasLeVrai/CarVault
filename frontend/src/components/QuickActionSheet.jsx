@@ -108,7 +108,6 @@ export default function QuickActionSheet({ onClose }) {
     }
     if (id === 'document') {
       setView('document');
-      setTimeout(() => fileInputRef.current?.click(), 100);
       return;
     }
     setView(id);
@@ -211,22 +210,6 @@ export default function QuickActionSheet({ onClose }) {
             <X className="w-5 h-5 text-white/60" />
           </button>
         </div>
-
-        {/* Hidden file input for document */}
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*,application/pdf"
-          capture="environment"
-          className="hidden"
-          onChange={e => {
-            const f = e.target.files[0];
-            if (f) {
-              setDocFile(f);
-              setDocForm(p => ({ ...p, name: p.name || f.name.replace(/\.[^.]+$/, '') }));
-            }
-          }}
-        />
 
         {/* Success state */}
         {done ? (
@@ -331,13 +314,33 @@ export default function QuickActionSheet({ onClose }) {
             {/* Document form */}
             {view === 'document' && (
               <>
-                {docFile && (
-                  <div className="flex items-center gap-3 p-3 rounded-xl bg-violet-500/10 border border-violet-500/20">
+                <Field label="Fichier">
+                  <label
+                    className="flex items-center gap-3 p-4 rounded-xl border border-dashed cursor-pointer transition-all hover:bg-white/[0.04] active:scale-[0.98]"
+                    style={{
+                      borderColor: docFile ? 'rgba(124,92,252,0.3)' : 'rgba(255,255,255,0.1)',
+                      background: docFile ? 'rgba(124,92,252,0.06)' : 'rgba(255,255,255,0.02)',
+                    }}
+                  >
                     <Camera className="w-5 h-5 text-violet-400 shrink-0" />
-                    <span className="text-sm font-semibold text-violet-300 truncate">{docFile.name}</span>
-                    <button onClick={() => fileInputRef.current?.click()} className="text-xs font-bold text-white/40 hover:text-white/60 ml-auto shrink-0">Changer</button>
-                  </div>
-                )}
+                    <span className={`text-sm font-semibold truncate ${docFile ? 'text-violet-300' : 'text-white/40'}`}>
+                      {docFile ? docFile.name : 'Photo ou fichier…'}
+                    </span>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*,application/pdf"
+                      className="hidden"
+                      onChange={e => {
+                        const f = e.target.files[0];
+                        if (f) {
+                          setDocFile(f);
+                          setDocForm(p => ({ ...p, name: p.name || f.name.replace(/\.[^.]+$/, '') }));
+                        }
+                      }}
+                    />
+                  </label>
+                </Field>
                 <Field label="Nom du document">
                   <CvInput placeholder="Assurance 2026…" value={docForm.name}
                     onChange={e => setDocForm(p => ({ ...p, name: e.target.value }))} />
