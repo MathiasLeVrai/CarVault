@@ -22,7 +22,7 @@ const itemVariants = {
 function Toggle({ checked, onChange, label, description, icon, color = 'accent' }) {
   const IconComponent = icon;
   return (
-    <div className="flex items-center justify-between p-5 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-all">
+    <div className="flex items-center justify-between p-5 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-[background,border-color]">
       <div className="flex items-center gap-4">
         <div className={`w-10 h-10 rounded-xl bg-${color}/10 border border-${color}/20 flex items-center justify-center shrink-0`}>
           <IconComponent className={`w-5 h-5 text-${color}`} strokeWidth={2} />
@@ -127,7 +127,7 @@ function ProfileCard({ user, updateProfile, onSaved }) {
           <button
             onClick={() => fileRef.current?.click()}
             disabled={uploading}
-            className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-accent flex items-center justify-center shadow-lg shadow-accent/30 transition-transform active:scale-90"
+            className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-accent flex items-center justify-center shadow-lg shadow-accent/30 transition-transform active:scale-[0.96]"
           >
             <Camera className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
           </button>

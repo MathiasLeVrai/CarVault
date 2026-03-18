@@ -234,7 +234,7 @@ export default function QuickActionSheet({ onClose }) {
                     <span className="text-sm font-semibold text-white/70">Plein complet</span>
                   </label>
                   {fuelTotal && (
-                    <span className="text-sm font-black text-white font-display">{fuelTotal} €</span>
+                    <span className="text-sm font-black text-white font-display tabular-nums">{fuelTotal} €</span>
                   )}
                 </div>
               </>

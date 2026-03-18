@@ -5,9 +5,15 @@ const ThemeContext = createContext();
 
 export function ThemeProvider({ children }) {
   const [theme, setTheme] = useState(() => {
+    // One-time migration: force light as new default
+    const migrated = localStorage.getItem('carvault_theme_v2');
+    if (!migrated) {
+      localStorage.removeItem('carvault_theme');
+      localStorage.setItem('carvault_theme_v2', '1');
+    }
     const stored = localStorage.getItem('carvault_theme');
     if (stored) return stored;
-    return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    return 'light';
   });
 
   useEffect(() => {

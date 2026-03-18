@@ -290,13 +290,13 @@ export default function VehiclesPage() {
                   <img src={v.photo} alt={`${v.brand} ${v.model}`} loading="lazy"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" />
                 ) : (
-                  <div className="absolute inset-0 flex items-center justify-center mesh-accent opacity-30 group-hover:opacity-50 transition-opacity duration-500">
+                  <div className="absolute inset-0 flex items-center justify-center opacity-30 group-hover:opacity-50 transition-opacity duration-500">
                     <Car className="w-16 h-16 text-white/20 drop-shadow-2xl" strokeWidth={1} />
                   </div>
                 )}
                 {/* Overlay gradient */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60" />
-                <div className="absolute top-4 right-4 px-3 py-1 rounded-xl bg-black/40 backdrop-blur-md border border-white/10 text-white text-xs font-bold font-display">
+                <div className="absolute top-4 right-4 px-3 py-1 rounded-xl bg-black/40 border border-white/10 text-white text-xs font-bold font-display">
                   {v.year}
                 </div>
               </div>

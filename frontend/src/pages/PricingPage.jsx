@@ -76,11 +76,6 @@ export default function PricingPage() {
     <div className="min-h-screen bg-bg text-ink overflow-x-hidden">
       {/* Background */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] rounded-full aurora-1"
-          style={{ background: 'radial-gradient(circle at center, rgba(255,42,63,0.1) 0%, transparent 65%)', filter: 'blur(90px)' }} />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full aurora-2"
-          style={{ background: 'radial-gradient(circle at center, rgba(124,92,252,0.08) 0%, transparent 65%)', filter: 'blur(100px)' }} />
-        <div className="absolute cv-grid-bg inset-0 opacity-30" />
       </div>
 
       {/* Navbar */}
@@ -105,7 +100,7 @@ export default function PricingPage() {
       <section className="relative z-10 px-6 md:px-12 pt-20 pb-8 md:pt-28 md:pb-12">
         <div className="max-w-3xl mx-auto text-center">
           <Motion.div {...fade()}>
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.04] border border-white/10 backdrop-blur-md mb-8 text-sm font-semibold text-ink-muted">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.04] border border-white/10 mb-8 text-sm font-semibold text-ink-muted">
               <Zap className="w-3.5 h-3.5 text-accent" />
               Simple, transparent, sans engagement
             </div>
@@ -236,7 +231,7 @@ export default function PricingPage() {
         <div className="max-w-2xl mx-auto text-center">
           <Motion.div {...fade()}>
             <div className="cv-card-accent p-12 md:p-16 relative overflow-hidden">
-              <div className="absolute inset-0 mesh-accent opacity-50" />
+
               <div className="relative z-10">
                 <div className="w-14 h-14 rounded-2xl bg-accent/20 border border-accent/30 flex items-center justify-center mx-auto mb-6">
                   <Shield className="w-7 h-7 text-accent" />

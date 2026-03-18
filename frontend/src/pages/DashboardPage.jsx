@@ -82,7 +82,7 @@ function ActionCard({ card, onClick }) {
     <Motion.button
       variants={itemVariants}
       onClick={onClick}
-      className={`bento-card p-5 text-left w-full border ${config.borderColor} bg-gradient-to-br ${config.gradient} hover:scale-[1.02] active:scale-[0.98] transition-all group`}
+      className={`bento-card p-5 text-left w-full border ${config.borderColor} bg-gradient-to-br ${config.gradient} hover:scale-[1.02] active:scale-[0.96] transition-[transform,background,border-color] group`}
     >
       <div className="flex items-start justify-between mb-3">
         <div className={`w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center`}>
@@ -378,13 +378,13 @@ export default function DashboardPage() {
 
         {/* Health Score */}
         <Motion.div variants={itemVariants} className="cv-card-dark p-5 md:p-6 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-[300px] h-[300px] mesh-accent opacity-30 pointer-events-none" />
+
           <div className="relative z-10">
             <SectionHeader icon={Activity} title="Score Santé Global" />
 
             <div className="mt-6 space-y-5">
               <div>
-                <div className="text-5xl md:text-6xl font-black font-display tracking-tighter text-white">
+                <div className="text-5xl md:text-6xl font-black font-display tracking-tighter text-white tabular-nums">
                   {healthScore !== null ? healthScore : '—'}
                   <span className="text-xl text-white/25 ml-1 font-bold">/100</span>
                 </div>
@@ -442,7 +442,7 @@ export default function DashboardPage() {
               <button
                 key={oc.vehicleId}
                 onClick={() => navigate(`/vehicles/${oc.vehicleId}`)}
-                className="bento-card p-5 text-left hover:scale-[1.01] active:scale-[0.99] transition-all"
+                className="bento-card p-5 text-left hover:scale-[1.01] active:scale-[0.96] transition-[transform,background,border-color]"
               >
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2.5">
@@ -457,7 +457,7 @@ export default function DashboardPage() {
                 </div>
                 <div className="flex items-end justify-between">
                   <div>
-                    <p className="text-2xl font-black text-white font-display leading-none">{formatCurrency(oc.monthlyAvg)}</p>
+                    <p className="text-2xl font-black text-white font-display leading-none tabular-nums">{formatCurrency(oc.monthlyAvg)}</p>
                     <p className="text-[10px] text-white/30 font-bold uppercase tracking-widest mt-1">/ mois</p>
                   </div>
                   <div className="text-right space-y-1">

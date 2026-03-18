@@ -140,7 +140,7 @@ export default function ExpensesPage() {
                     <Wallet className="w-5 h-5" style={{color: expenseCategoryColors[exp.category]||'#71717a'}} strokeWidth={2} />
                   </div>
                   <div>
-                    <p className="text-2xl font-black text-white font-display tracking-tight">{formatCurrency(exp.amount)}</p>
+                    <p className="text-2xl font-black text-white font-display tracking-tight tabular-nums">{formatCurrency(exp.amount)}</p>
                     <div className="mt-1">
                       <span className="text-[9px] font-bold uppercase tracking-widest text-white/50" style={{color: expenseCategoryColors[exp.category]||'#71717a'}}>{expenseCategoryLabels[exp.category]}</span>
                     </div>

@@ -4,9 +4,6 @@ import { motion as Motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { ArrowRight } from 'lucide-react';
 import Button from '../components/ui/Button';
-import { SplitText, CyclingWord, StatChip } from '../components/ui/AnimatedHero';
-
-const CYCLING_WORDS = ['simplifié.', 'sécurisé.', 'sous contrôle.', 'en ordre.', 'toujours prêt.'];
 
 const STATS = [
   { value: '2 400+', label: 'utilisateurs' },
@@ -32,55 +29,50 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-bg flex">
       {/* Left — Visual */}
-      <div className="hidden lg:flex lg:w-1/2 bg-[#07070a] relative overflow-hidden items-center justify-center p-16 border-r border-white/5">
-        {/* Grid */}
-        <div className="absolute inset-0 cv-grid-bg opacity-100" />
-
-        {/* Animated aurora orbs */}
-        <div
-          className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full aurora-1"
-          style={{ background: 'radial-gradient(circle at center, rgba(255,42,63,0.18) 0%, transparent 65%)', filter: 'blur(70px)' }}
-        />
-        <div
-          className="absolute bottom-[-15%] right-[-5%] w-[55%] h-[55%] rounded-full aurora-2"
-          style={{ background: 'radial-gradient(circle at center, rgba(124,92,252,0.14) 0%, transparent 65%)', filter: 'blur(80px)' }}
-        />
-        <div
-          className="absolute top-[40%] right-[20%] w-[35%] h-[35%] rounded-full aurora-3"
-          style={{ background: 'radial-gradient(circle at center, rgba(255,107,0,0.1) 0%, transparent 70%)', filter: 'blur(60px)' }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-[#07070a]/60" />
-
+      <div className="hidden lg:flex lg:w-1/2 bg-bg-alt relative overflow-hidden items-center justify-center p-16 border-r border-white/5">
         <div className="relative z-10 max-w-md w-full">
-          {/* Brand pill */}
+          {/* Brand */}
           <Motion.div
             initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.04] border border-white/10 mb-10 backdrop-blur-md"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/[0.04] border border-white/10 mb-10"
           >
             <span className="text-sm font-black text-accent font-display">CV</span>
             <span className="text-sm font-bold text-white/70">CarVault</span>
           </Motion.div>
 
           {/* Headline */}
-          <h2 className="text-5xl font-black text-white leading-[1.15] mb-10 font-display tracking-tight">
-            <div><SplitText text="Votre garage," delay={0.15} /></div>
-            <div><CyclingWord words={CYCLING_WORDS} className="text-accent" /></div>
-          </h2>
+          <Motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+            className="text-5xl font-black text-white leading-[1.15] mb-10 font-display tracking-tight"
+          >
+            Votre garage,<br />
+            <span className="text-accent">simplifié.</span>
+          </Motion.h2>
 
           {/* Divider */}
           <Motion.div
             className="cv-divider mb-10"
             initial={{ scaleX: 0, originX: 0 }}
             animate={{ scaleX: 1 }}
-            transition={{ delay: 1.2, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ delay: 0.5, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           />
 
           {/* Stats */}
           <div className="flex gap-10">
             {STATS.map((s, i) => (
-              <StatChip key={s.label} value={s.value} label={s.label} delay={1.3 + i * 0.1} />
+              <Motion.div
+                key={s.label}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 + i * 0.1, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+              >
+                <p className="text-2xl font-black text-white font-display tabular-nums">{s.value}</p>
+                <p className="text-xs text-white/40 font-medium mt-1">{s.label}</p>
+              </Motion.div>
             ))}
           </div>
         </div>
@@ -88,11 +80,10 @@ export default function LoginPage() {
 
       {/* Right — Form */}
       <div className="flex-1 flex items-center justify-center p-8 relative">
-        <div className="absolute inset-0 mesh-accent opacity-20 pointer-events-none" />
         <div className="w-full max-w-[400px] relative z-10">
           {/* Mobile brand */}
           <div className="lg:hidden mb-10">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.03] border border-white/10 backdrop-blur-md">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/[0.03] border border-white/10">
               <span className="text-sm font-black text-accent font-display">CV</span>
               <span className="text-sm font-bold text-white">CarVault</span>
             </div>
@@ -102,7 +93,7 @@ export default function LoginPage() {
           <p className="text-ink-muted mb-8 font-medium">Accédez à votre espace</p>
 
           {error && (
-            <div className="bg-accent/10 border border-accent/20 p-4 mb-6 rounded-xl backdrop-blur-md">
+            <div className="bg-accent/10 border border-accent/20 p-4 mb-6 rounded-lg">
               <p className="text-sm font-semibold text-accent">{error}</p>
             </div>
           )}

@@ -194,7 +194,8 @@ class VehicleController {
 
         // Trouver la dernière dépense correspondante
         const lastExpense = findLastExpenseForType(vehicle.expenses, key);
-        const lastKm = lastExpense?.mileage || 0;
+        // Si aucune dépense trouvée, on considère l'entretien à jour au km actuel
+        const lastKm = lastExpense ? lastExpense.mileage : vehicle.mileage;
         const lastDate = lastExpense?.date || null;
         const kmSinceLast = vehicle.mileage - lastKm;
         const nextAtKm = lastKm + intervalKm;

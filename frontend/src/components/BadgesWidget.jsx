@@ -114,8 +114,8 @@ export default function BadgesWidget() {
             className="flex flex-col items-center gap-1.5 group"
           >
             <Motion.div
-              whileTap={{ scale: 0.9 }}
-              className="w-10 h-10 rounded-xl flex items-center justify-center transition-all"
+              whileTap={{ scale: 0.96 }}
+              className="w-10 h-10 rounded-xl flex items-center justify-center transition-[background,border-color,box-shadow]"
               style={{
                 background: badge.unlocked ? `${badge.color}18` : 'var(--color-bg-card)',
                 border: `1px solid ${badge.unlocked ? `${badge.color}30` : 'var(--color-ink-faint)'}`,
@@ -128,7 +128,7 @@ export default function BadgesWidget() {
         ))}
       </div>
 
-      <AnimatePresence>
+      <AnimatePresence initial={false}>
         {selected && <BadgeDetail badge={selected} onClose={() => setSelected(null)} />}
       </AnimatePresence>
     </div>

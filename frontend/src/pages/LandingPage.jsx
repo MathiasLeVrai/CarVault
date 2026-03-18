@@ -334,14 +334,6 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-bg text-white overflow-x-hidden">
 
-      {/* Background */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] rounded-full aurora-1"
-          style={{ background: 'radial-gradient(circle at center, rgba(255,42,63,0.1) 0%, transparent 65%)', filter: 'blur(90px)' }} />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full aurora-2"
-          style={{ background: 'radial-gradient(circle at center, rgba(124,92,252,0.08) 0%, transparent 65%)', filter: 'blur(100px)' }} />
-        <div className="absolute cv-grid-bg inset-0 opacity-30" />
-      </div>
 
       {/* ── Navbar ───────────────────────────────────────────── */}
       <header className="relative z-10 flex items-center justify-between px-6 md:px-12 py-5 border-b border-white/[0.05]">
@@ -374,7 +366,7 @@ export default function LandingPage() {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.04] border border-white/10 backdrop-blur-md mb-8 text-sm font-semibold text-white/50"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.04] border border-white/10 mb-8 text-sm font-semibold text-white/50"
             >
               <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
               Le coffre-fort numérique de votre voiture
@@ -676,7 +668,6 @@ export default function LandingPage() {
         <div className="max-w-2xl mx-auto text-center">
           <Motion.div {...fade()}>
             <div className="cv-card-accent p-12 md:p-16 relative overflow-hidden">
-              <div className="absolute inset-0 mesh-accent opacity-50" />
               <div className="relative z-10">
                 <div className="w-14 h-14 rounded-2xl bg-accent/20 border border-accent/30 flex items-center justify-center mx-auto mb-6">
                   <Shield className="w-7 h-7 text-accent" />

@@ -87,7 +87,7 @@ export default function SharePage() {
 
         {/* Vehicle Hero */}
         <div className="bento-card p-6 md:p-8 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-[300px] h-[300px] mesh-accent opacity-20 pointer-events-none" />
+
           <div className="relative z-10">
             <div className="flex items-center gap-3 mb-3">
               <span className="px-3 py-1 rounded-lg bg-white/10 border border-white/10 text-xs font-bold text-white font-display">{vehicle.year}</span>
