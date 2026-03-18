@@ -261,17 +261,21 @@ html, body {
 }
 
 @media all and (display-mode: standalone) {
-  html {
-    height: 100%;
+  html, body {
+    position: fixed;
+    inset: 0; /* Remplace top/left/right/bottom: 0 */
+    width: 100%;
+    height: 100dvh;
     overflow: hidden;
     background-color: var(--color-bg);
   }
-  body {
+  
+  #root {
     height: 100%;
-    min-height: 100dvh;
+    width: 100%;
     overflow-y: auto;
     overflow-x: hidden;
-    background-color: var(--color-bg);
+    -webkit-overflow-scrolling: touch; /* Crucial pour la fluidité sur iOS */
   }
 }
 
@@ -298,9 +302,12 @@ html, body {
 /* Mobile bottom nav — extend background well below safe area.
    env(safe-area-inset-bottom) is unreliable in iOS PWA standalone mode (returns 0 intermittently).
    Use a large fixed padding instead — excess is hidden below the screen edge. */
-.cv-bottom-bar {
-  padding-bottom: 40px;
-}
+   .cv-bottom-bar {
+    background: rgba(18, 18, 20, 0.95);
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    /* Garantit au moins 24px, ou la safe-area si elle est plus grande */
+    padding-bottom: max(24px, env(safe-area-inset-bottom));
+  }
 
 /* =========== DOT PATTERN (Aceternity-style) =========== */
 

@@ -4,7 +4,7 @@
   "description": "Centre de gestion intelligent de véhicule",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0c0c0e",
+  "background_color": "#09090b",
   "theme_color": "#1a1a1a",
   "orientation": "portrait-primary",
   "icons": [
