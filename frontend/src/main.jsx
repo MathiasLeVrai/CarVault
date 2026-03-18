@@ -34,21 +34,6 @@ createRoot(document.getElementById('root')).render(
   </StrictMode>,
 )
 
-// ===== iOS PWA viewport fix =====
-// When iOS restores a standalone PWA from background, the viewport can be
-// mis-sized, leaving a gap at the bottom. Force a re-layout on visibility change.
-if (window.matchMedia('(display-mode: standalone)').matches) {
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') {
-      window.scrollTo(0, window.scrollY);
-      document.documentElement.style.height = '100%';
-      requestAnimationFrame(() => {
-        document.documentElement.style.height = '';
-      });
-    }
-  });
-}
-
 // ===== Enregistrement du Service Worker (PWA — prod uniquement) =====
 if (import.meta.env.PROD && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -64,6 +49,8 @@ if (import.meta.env.PROD && 'serviceWorker' in navigator) {
   });
 }
 
+// ===== iOS PWA viewport fix =====
+// Force recalcul viewport au retour du background (évite décalage / gap sur iOS standalone).
 if (window.matchMedia('(display-mode: standalone)').matches) {
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
