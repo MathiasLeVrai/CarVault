@@ -285,7 +285,7 @@ html, body {
 /* PWA safe area — main content responsive */
 .main-content-top {
   margin-top: calc(4rem + var(--safe-top));
-  padding-bottom: max(7rem, calc(var(--safe-bottom) + 5.5rem));
+  padding-bottom: calc(var(--safe-bottom) + 5rem);
 }
 @media (min-width: 768px) {
   .main-content-top {
