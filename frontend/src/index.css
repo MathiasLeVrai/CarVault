@@ -271,6 +271,21 @@ html, body {
     min-height: 100dvh;
     overflow-y: auto;
     overflow-x: hidden;
+    background-color: var(--color-bg);
+  }
+  /* Fill safe area below bottom nav with matching background */
+  body::after {
+    content: '';
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: env(safe-area-inset-bottom, 0px);
+    background: rgba(18, 18, 20, 0.95);
+    z-index: 49;
+  }
+  html.light body::after {
+    background: rgba(255, 255, 255, 0.95);
   }
 }
 
