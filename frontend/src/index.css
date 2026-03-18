@@ -273,20 +273,6 @@ html, body {
     overflow-x: hidden;
     background-color: var(--color-bg);
   }
-  /* Fill safe area below bottom nav with matching background */
-  body::after {
-    content: '';
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: env(safe-area-inset-bottom, 0px);
-    background: rgba(18, 18, 20, 0.95);
-    z-index: 49;
-  }
-  html.light body::after {
-    background: rgba(255, 255, 255, 0.95);
-  }
 }
 
 .safe-bottom {
@@ -300,7 +286,7 @@ html, body {
 /* PWA safe area — main content responsive */
 .main-content-top {
   margin-top: calc(4rem + var(--safe-top));
-  padding-bottom: calc(var(--safe-bottom) + 5rem);
+  padding-bottom: 6rem;
 }
 @media (min-width: 768px) {
   .main-content-top {
@@ -309,9 +295,21 @@ html, body {
   }
 }
 
-/* Mobile bottom nav — extend background into safe area to avoid black gap */
+/* Mobile bottom nav — extend background well below safe area via pseudo-element.
+   env(safe-area-inset-bottom) is unreliable in iOS PWA standalone mode (returns 0 intermittently).
+   Instead, we overflow a pseudo-element 100px below the nav — the excess is clipped by the screen edge. */
 .cv-bottom-bar {
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-bottom: 0;
+  position: relative;
+}
+.cv-bottom-bar::after {
+  content: '';
+  position: absolute;
+  bottom: -100px;
+  left: 0;
+  right: 0;
+  height: 100px;
+  background: inherit;
 }
 
 /* =========== DOT PATTERN (Aceternity-style) =========== */
