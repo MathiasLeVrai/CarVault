@@ -63,8 +63,8 @@ class DashboardService {
     `;
 
     const monthNames = [
-      'Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin',
-      'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc',
+      'J', 'F', 'M', 'A', 'M', 'J',
+      'J', 'A', 'S', 'O', 'N', 'D',
     ];
 
     const formattedMonthly = Array.from({ length: 12 }, (_, i) => {
