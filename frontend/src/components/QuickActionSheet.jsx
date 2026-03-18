@@ -1,13 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
-import { X, Fuel, Wallet, Gauge, CheckCircle2, ChevronDown } from 'lucide-react';
-import { vehicleApi, fuelApi, expenseApi, mileageApi } from '../services/api';
+import { X, Fuel, Receipt, Camera, Car, CheckCircle2, ChevronDown, ArrowLeft } from 'lucide-react';
+import { vehicleApi, fuelApi, expenseApi, documentApi } from '../services/api';
 import { useToast } from '../context/ToastContext';
 
-const TABS = [
-  { id: 'fuel',     label: 'Plein',    icon: Fuel,   color: '#38bdf8' },
-  { id: 'expense',  label: 'Dépense',  icon: Wallet, color: '#f59e0b' },
-  { id: 'mileage',  label: 'Km',       icon: Gauge,  color: '#22c55e' },
+const ACTIONS = [
+  { id: 'fuel',     label: 'Plein',     icon: Fuel,    color: '#38bdf8', bg: 'rgba(56,189,248,0.08)', border: 'rgba(56,189,248,0.15)' },
+  { id: 'expense',  label: 'Dépense',   icon: Receipt, color: '#f59e0b', bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.15)' },
+  { id: 'document', label: 'Document',  icon: Camera,  color: '#7c5cfc', bg: 'rgba(124,92,252,0.08)', border: 'rgba(124,92,252,0.15)' },
+  { id: 'vehicle',  label: 'Véhicule',  icon: Car,     color: '#22c55e', bg: 'rgba(34,197,94,0.08)',  border: 'rgba(34,197,94,0.15)' },
 ];
 
 const EXPENSE_CATS = [
@@ -65,25 +67,31 @@ function VehicleSelect({ vehicles, value, onChange }) {
 }
 
 export default function QuickActionSheet({ onClose }) {
-  const [tab, setTab] = useState('fuel');
+  const navigate = useNavigate();
+  const [view, setView] = useState('grid'); // 'grid' | 'fuel' | 'expense' | 'document'
   const [vehicles, setVehicles] = useState([]);
   const [vehicleId, setVehicleId] = useState('');
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
   const toast = useToast();
+  const fileInputRef = useRef(null);
 
   // Fuel form
   const [fuel, setFuel] = useState({ mileage: '', liters: '', pricePerLiter: '', isFull: true });
   // Expense form
   const [exp, setExp] = useState({ amount: '', category: 'MAINTENANCE', description: '' });
-  // Mileage form
-  const [km, setKm] = useState({ mileage: '', notes: '' });
+  // Document form
+  const [docForm, setDocForm] = useState({ name: '', type: 'INVOICE', vehicleId: '' });
+  const [docFile, setDocFile] = useState(null);
 
   useEffect(() => {
     vehicleApi.getAll()
       .then(list => {
         setVehicles(list);
-        if (list.length === 1) setVehicleId(String(list[0].id));
+        if (list.length === 1) {
+          setVehicleId(String(list[0].id));
+          setDocForm(p => ({ ...p, vehicleId: String(list[0].id) }));
+        }
       })
       .catch(() => {});
   }, []);
@@ -92,12 +100,26 @@ export default function QuickActionSheet({ onClose }) {
     ? (parseFloat(fuel.liters) * parseFloat(fuel.pricePerLiter)).toFixed(2)
     : null;
 
+  const handleAction = (id) => {
+    if (id === 'vehicle') {
+      onClose();
+      navigate('/vehicles?add=true');
+      return;
+    }
+    if (id === 'document') {
+      setView('document');
+      setTimeout(() => fileInputRef.current?.click(), 100);
+      return;
+    }
+    setView(id);
+  };
+
   const canSubmit = () => {
     const vid = vehicleId || (vehicles.length === 1 ? String(vehicles[0].id) : '');
     if (!vid) return false;
-    if (tab === 'fuel') return fuel.mileage && fuel.liters && fuel.pricePerLiter;
-    if (tab === 'expense') return exp.amount && exp.category;
-    if (tab === 'mileage') return km.mileage;
+    if (view === 'fuel') return fuel.mileage && fuel.liters && fuel.pricePerLiter;
+    if (view === 'expense') return exp.amount && exp.category;
+    if (view === 'document') return docFile && docForm.name;
     return false;
   };
 
@@ -106,7 +128,7 @@ export default function QuickActionSheet({ onClose }) {
     const vid = vehicleId || String(vehicles[0].id);
     setLoading(true);
     try {
-      if (tab === 'fuel') {
+      if (view === 'fuel') {
         await fuelApi.create(vid, {
           mileage: parseInt(fuel.mileage),
           liters: parseFloat(fuel.liters),
@@ -115,7 +137,8 @@ export default function QuickActionSheet({ onClose }) {
           isFull: fuel.isFull,
           date: new Date().toISOString(),
         });
-      } else if (tab === 'expense') {
+        toast.success('Plein enregistré');
+      } else if (view === 'expense') {
         await expenseApi.create({
           vehicleId: parseInt(vid),
           amount: parseFloat(exp.amount),
@@ -123,16 +146,17 @@ export default function QuickActionSheet({ onClose }) {
           description: exp.description || undefined,
           date: new Date().toISOString(),
         });
-      } else if (tab === 'mileage') {
-        await mileageApi.create(vid, {
-          mileage: parseInt(km.mileage),
-          notes: km.notes || undefined,
-          date: new Date().toISOString(),
-        });
+        toast.success('Dépense enregistrée');
+      } else if (view === 'document') {
+        const fd = new FormData();
+        fd.append('name', docForm.name);
+        fd.append('type', docForm.type);
+        fd.append('vehicleId', docForm.vehicleId || vid);
+        fd.append('file', docFile);
+        await documentApi.create(fd);
+        toast.success('Document ajouté');
       }
       setDone(true);
-      const labels = { fuel: 'Plein enregistré', expense: 'Dépense enregistrée', mileage: 'Kilométrage mis à jour' };
-      toast.success(labels[tab] || 'Enregistré !');
       setTimeout(onClose, 1200);
     } catch (err) {
       toast.error(err.message || 'Erreur lors de l\'enregistrement');
@@ -140,6 +164,8 @@ export default function QuickActionSheet({ onClose }) {
       setLoading(false);
     }
   };
+
+  const formTitle = { fuel: 'Nouveau plein', expense: 'Nouvelle dépense', document: 'Nouveau document' }[view];
 
   return (
     <AnimatePresence>
@@ -171,28 +197,36 @@ export default function QuickActionSheet({ onClose }) {
 
         {/* Header */}
         <div className="flex items-center justify-between py-4">
-          <h2 className="text-base font-black text-white font-display">Saisie rapide</h2>
+          <div className="flex items-center gap-3">
+            {view !== 'grid' && (
+              <button onClick={() => { setView('grid'); setDone(false); }} className="w-9 h-9 rounded-xl bg-white/8 flex items-center justify-center">
+                <ArrowLeft className="w-4 h-4 text-white/60" />
+              </button>
+            )}
+            <h2 className="text-base font-black text-white font-display">
+              {view === 'grid' ? 'Actions rapides' : formTitle}
+            </h2>
+          </div>
           <button onClick={onClose} className="w-11 h-11 rounded-xl bg-white/8 flex items-center justify-center">
             <X className="w-5 h-5 text-white/60" />
           </button>
         </div>
 
-        {/* Tab switcher */}
-        <div className="flex gap-2 p-1 rounded-2xl bg-white/[0.04] border border-white/8 mb-5">
-          {TABS.map(t => (
-            <button
-              key={t.id}
-              onClick={() => setTab(t.id)}
-              className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all ${
-                tab === t.id ? 'bg-white/10 text-white' : 'text-white/35 hover:text-white/60'
-              }`}
-              style={tab === t.id ? { color: t.color } : {}}
-            >
-              <t.icon className="w-4 h-4" />
-              {t.label}
-            </button>
-          ))}
-        </div>
+        {/* Hidden file input for document */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*,application/pdf"
+          capture="environment"
+          className="hidden"
+          onChange={e => {
+            const f = e.target.files[0];
+            if (f) {
+              setDocFile(f);
+              setDocForm(p => ({ ...p, name: p.name || f.name.replace(/\.[^.]+$/, '') }));
+            }
+          }}
+        />
 
         {/* Success state */}
         {done ? (
@@ -202,12 +236,40 @@ export default function QuickActionSheet({ onClose }) {
             </Motion.div>
             <p className="text-base font-bold text-white">Enregistré !</p>
           </div>
+
+        /* Grid view */
+        ) : view === 'grid' ? (
+          <div className="grid grid-cols-2 gap-3 pb-4">
+            {ACTIONS.map((action, i) => (
+              <Motion.button
+                key={action.id}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05, type: 'spring', stiffness: 300, damping: 28 }}
+                onClick={() => handleAction(action.id)}
+                className="flex flex-col items-center gap-3 py-6 rounded-2xl border transition-all active:scale-95"
+                style={{ background: action.bg, borderColor: action.border }}
+              >
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: `${action.color}15` }}>
+                  <action.icon className="w-6 h-6" style={{ color: action.color }} />
+                </div>
+                <span className="text-sm font-bold text-white">{action.label}</span>
+              </Motion.button>
+            ))}
+          </div>
+
+        /* Form views */
         ) : (
-          <div className="space-y-4">
+          <Motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 28 }}
+            className="space-y-4 pb-2"
+          >
             <VehicleSelect vehicles={vehicles} value={vehicleId} onChange={setVehicleId} />
 
-            {/* ── Fuel form ── */}
-            {tab === 'fuel' && (
+            {/* Fuel form */}
+            {view === 'fuel' && (
               <>
                 <div className="grid grid-cols-2 gap-3">
                   <Field label="Km actuel">
@@ -240,8 +302,8 @@ export default function QuickActionSheet({ onClose }) {
               </>
             )}
 
-            {/* ── Expense form ── */}
-            {tab === 'expense' && (
+            {/* Expense form */}
+            {view === 'expense' && (
               <>
                 <Field label="Catégorie">
                   <div className="relative">
@@ -266,17 +328,55 @@ export default function QuickActionSheet({ onClose }) {
               </>
             )}
 
-            {/* ── Mileage form ── */}
-            {tab === 'mileage' && (
+            {/* Document form */}
+            {view === 'document' && (
               <>
-                <Field label="Kilométrage actuel">
-                  <CvInput type="number" placeholder="45 230" value={km.mileage}
-                    onChange={e => setKm(p => ({ ...p, mileage: e.target.value }))} />
+                {docFile && (
+                  <div className="flex items-center gap-3 p-3 rounded-xl bg-violet-500/10 border border-violet-500/20">
+                    <Camera className="w-5 h-5 text-violet-400 shrink-0" />
+                    <span className="text-sm font-semibold text-violet-300 truncate">{docFile.name}</span>
+                    <button onClick={() => fileInputRef.current?.click()} className="text-xs font-bold text-white/40 hover:text-white/60 ml-auto shrink-0">Changer</button>
+                  </div>
+                )}
+                <Field label="Nom du document">
+                  <CvInput placeholder="Assurance 2026…" value={docForm.name}
+                    onChange={e => setDocForm(p => ({ ...p, name: e.target.value }))} />
                 </Field>
-                <Field label="Notes (optionnel)">
-                  <CvInput placeholder="Retour de vacances…" value={km.notes}
-                    onChange={e => setKm(p => ({ ...p, notes: e.target.value }))} />
+                <Field label="Type">
+                  <div className="relative">
+                    <select
+                      value={docForm.type}
+                      onChange={e => setDocForm(p => ({ ...p, type: e.target.value }))}
+                      className="cv-input w-full px-4 py-3 text-base text-ink appearance-none"
+                    >
+                      <option value="INSURANCE">Assurance</option>
+                      <option value="TECHNICAL_INSPECTION">Contrôle technique</option>
+                      <option value="INVOICE">Facture</option>
+                      <option value="WARRANTY">Garantie</option>
+                      <option value="REGISTRATION">Carte grise</option>
+                      <option value="OTHER">Autre</option>
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
+                  </div>
                 </Field>
+                {vehicles.length > 1 && (
+                  <Field label="Véhicule">
+                    <div className="relative">
+                      <select
+                        value={docForm.vehicleId}
+                        onChange={e => setDocForm(p => ({ ...p, vehicleId: e.target.value }))}
+                        className="cv-input w-full px-4 py-3 text-base text-ink appearance-none"
+                      >
+                        {vehicles.map(v => (
+                          <option key={v.id} value={v.id}>
+                            {v.brand} {v.model}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
+                    </div>
+                  </Field>
+                )}
               </>
             )}
 
@@ -287,7 +387,7 @@ export default function QuickActionSheet({ onClose }) {
             >
               {loading ? 'Enregistrement…' : 'Enregistrer'}
             </button>
-          </div>
+          </Motion.div>
         )}
       </Motion.div>
     </AnimatePresence>

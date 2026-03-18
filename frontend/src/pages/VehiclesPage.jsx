@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { vehicleApi, brandApi } from '../services/api';
 import compressImage from '../utils/compressImage';
 import { useToast } from '../context/ToastContext';
@@ -48,10 +48,19 @@ const itemVariants = {
 
 export default function VehiclesPage() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { showToast } = useToast();
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+
+  // Open modal if navigated with ?add=true (from QuickActionSheet)
+  useEffect(() => {
+    if (searchParams.get('add') === 'true') {
+      setShowModal(true);
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
   const [submitting, setSubmitting] = useState(false);
 
   // Plate lookup
