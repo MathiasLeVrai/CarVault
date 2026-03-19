@@ -1,17 +1,15 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { useEffect, useState } from 'react';
 import {
-  Gauge, Car, Receipt, BellRing, LogOut, SlidersHorizontal, Plus, MapPinned,
+  Gauge, Car, Receipt, FileText, LogOut, SlidersHorizontal, Plus, MapPinned,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { alertApi } from '../services/api';
 
 // Bottom nav: 4 main items + 1 central FAB
 const navItems = [
   { to: '/dashboard', icon: Gauge, label: 'Accueil' },
   { to: '/vehicles', icon: Car, label: 'Véhicules' },
   // [FAB placeholder]
-  { to: '/alerts', icon: BellRing, label: 'Alertes', showBadge: true },
+  { to: '/documents', icon: FileText, label: 'Documents' },
   { to: '/map', icon: MapPinned, label: 'Carte' },
 ];
 
@@ -21,33 +19,13 @@ const sidebarItems = [
   { to: '/vehicles', icon: Car, label: 'Véhicules' },
   { to: '/expenses', icon: Receipt, label: 'Dépenses' },
   { to: '/map', icon: MapPinned, label: 'Carte' },
-  { to: '/alerts', icon: BellRing, label: 'Alertes', showBadge: true },
+  { to: '/documents', icon: FileText, label: 'Documents' },
   { to: '/settings', icon: SlidersHorizontal, label: 'Paramètres' },
 ];
 
 export default function Sidebar({ onFabPress }) {
   const { logout } = useAuth();
   const location = useLocation();
-  const [alertCount, setAlertCount] = useState(0);
-
-  const loadAlertCount = async () => {
-    try {
-      const { count } = await alertApi.countUnread();
-      setAlertCount(count);
-    } catch { /* ignore */ }
-  };
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    loadAlertCount();
-    const interval = setInterval(loadAlertCount, 60_000);
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    if (!location.pathname.startsWith('/alerts')) return;
-    return () => { loadAlertCount(); };
-  }, [location.pathname]);
 
   return (
     <>
@@ -63,7 +41,7 @@ export default function Sidebar({ onFabPress }) {
         </div>
 
         <nav className="flex-1 space-y-1.5 mt-4">
-          {sidebarItems.map(({ to, icon, label, showBadge }) => {
+          {sidebarItems.map(({ to, icon, label }) => {
             const active = location.pathname === to || location.pathname.startsWith(to + '/');
             const IconComponent = icon;
             return (
@@ -84,11 +62,6 @@ export default function Sidebar({ onFabPress }) {
                   strokeWidth={active ? 2.5 : 2}
                 />
                 <span className="flex-1">{label}</span>
-                {showBadge && alertCount > 0 && (
-                  <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-accent text-white text-[10px] font-bold shadow-[0_0_10px_rgba(255,42,63,0.35)]">
-                    {alertCount > 99 ? '99+' : alertCount}
-                  </span>
-                )}
               </NavLink>
             );
           })}
@@ -110,7 +83,7 @@ export default function Sidebar({ onFabPress }) {
         <div>
           <div className="flex items-center">
             {/* Left 2 items */}
-            {navItems.slice(0, 2).map(({ to, icon, label, showBadge }) => {
+            {navItems.slice(0, 2).map(({ to, icon, label }) => {
               const active = location.pathname === to || location.pathname.startsWith(to + '/');
               const IconComponent = icon;
               return (
@@ -121,14 +94,7 @@ export default function Sidebar({ onFabPress }) {
                     active ? 'text-white' : 'text-ink-muted hover:text-white'
                   }`}
                 >
-                  <div className="relative">
-                    <IconComponent className="w-5 h-5" strokeWidth={active ? 2.5 : 2} color={active ? '#ff2a3f' : 'currentColor'} />
-                    {showBadge && alertCount > 0 && (
-                      <span className="absolute -top-1 -right-1.5 min-w-[16px] h-4 px-1 rounded-full bg-accent text-white text-[9px] font-bold flex items-center justify-center shadow-[0_0_8px_rgba(255,42,63,0.4)]">
-                        {alertCount > 9 ? '9+' : alertCount}
-                      </span>
-                    )}
-                  </div>
+                  <IconComponent className="w-5 h-5" strokeWidth={active ? 2.5 : 2} color={active ? '#ff2a3f' : 'currentColor'} />
                   {active && <span className="text-[10px] font-semibold mt-1 animate-pop">{label}</span>}
                 </NavLink>
               );
@@ -146,7 +112,7 @@ export default function Sidebar({ onFabPress }) {
             </div>
 
             {/* Right 2 items */}
-            {navItems.slice(2).map(({ to, icon, label, showBadge }) => {
+            {navItems.slice(2).map(({ to, icon, label }) => {
               const active = location.pathname === to || location.pathname.startsWith(to + '/');
               const IconComponent = icon;
               return (
@@ -157,14 +123,7 @@ export default function Sidebar({ onFabPress }) {
                     active ? 'text-white' : 'text-ink-muted hover:text-white'
                   }`}
                 >
-                  <div className="relative">
-                    <IconComponent className="w-5 h-5" strokeWidth={active ? 2.5 : 2} color={active ? '#ff2a3f' : 'currentColor'} />
-                    {showBadge && alertCount > 0 && (
-                      <span className="absolute -top-1 -right-1.5 min-w-[16px] h-4 px-1 rounded-full bg-accent text-white text-[9px] font-bold flex items-center justify-center shadow-[0_0_8px_rgba(255,42,63,0.4)]">
-                        {alertCount > 9 ? '9+' : alertCount}
-                      </span>
-                    )}
-                  </div>
+                  <IconComponent className="w-5 h-5" strokeWidth={active ? 2.5 : 2} color={active ? '#ff2a3f' : 'currentColor'} />
                   {active && <span className="text-[10px] font-semibold mt-1 animate-pop">{label}</span>}
                 </NavLink>
               );

@@ -7,7 +7,7 @@ import { useToast } from '../context/ToastContext';
 
 const ACTIONS = [
   { id: 'fuel',     label: 'Plein',     icon: Fuel,    color: '#38bdf8', bg: 'rgba(56,189,248,0.08)', border: 'rgba(56,189,248,0.15)' },
-  { id: 'expense',  label: 'Dépense',   icon: Receipt, color: '#f59e0b', bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.15)' },
+  { id: 'expense',  label: 'Dépenses',   icon: Receipt, color: '#f59e0b', bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.15)' },
   { id: 'document', label: 'Document',  icon: Camera,  color: '#7c5cfc', bg: 'rgba(124,92,252,0.08)', border: 'rgba(124,92,252,0.15)' },
   { id: 'vehicle',  label: 'Véhicule',  icon: Car,     color: '#22c55e', bg: 'rgba(34,197,94,0.08)',  border: 'rgba(34,197,94,0.15)' },
 ];

@@ -36,7 +36,7 @@ export default function Header() {
       <div className="flex items-center gap-3">
         <button
           onClick={() => navigate('/alerts')}
-          className="hidden md:flex relative w-10 h-10 rounded-xl items-center justify-center bg-white/3 border border-white/8 hover:bg-white/6 transition-all text-ink-light hover:text-accent"
+          className="flex relative w-10 h-10 rounded-xl items-center justify-center bg-white/3 border border-white/8 hover:bg-white/6 transition-all text-ink-light hover:text-accent"
         >
           <Bell className="w-[18px] h-[18px]" strokeWidth={2} />
           {alertCount > 0 && (
