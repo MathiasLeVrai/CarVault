@@ -1,19 +1,33 @@
 import { Bell, Sun, Moon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { alertApi } from '../services/api';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 
 export default function Header() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const { theme, toggleTheme } = useTheme();
   const [alertCount, setAlertCount] = useState(0);
 
-  useEffect(() => {
+  const loadAlertCount = () => {
     alertApi.countUnread().then(d => setAlertCount(d.count)).catch(() => {});
+  };
+
+  // Poll every 60s
+  useEffect(() => {
+    loadAlertCount();
+    const interval = setInterval(loadAlertCount, 60_000);
+    return () => clearInterval(interval);
   }, []);
+
+  // Refresh count when leaving /alerts page
+  useEffect(() => {
+    if (!location.pathname.startsWith('/alerts')) return;
+    return () => { loadAlertCount(); };
+  }, [location.pathname]);
 
   const initials = user
     ? `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase()

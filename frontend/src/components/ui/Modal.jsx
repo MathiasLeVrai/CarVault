@@ -5,12 +5,10 @@ export default function Modal({ isOpen, onClose, title, children }) {
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
-      document.body.style.touchAction = 'none';
       const onKey = (e) => { if (e.key === 'Escape') onClose(); };
       window.addEventListener('keydown', onKey);
       return () => {
         document.body.style.overflow = '';
-        document.body.style.touchAction = '';
         window.removeEventListener('keydown', onKey);
       };
     }
@@ -29,7 +27,7 @@ export default function Modal({ isOpen, onClose, title, children }) {
             <X className="w-4 h-4" strokeWidth={2.5} />
           </button>
         </div>
-        <div className="px-6 md:px-8 py-6 overflow-y-auto overscroll-contain bg-transparent safe-bottom" style={{ touchAction: 'pan-y' }}>{children}</div>
+        <div className="px-6 md:px-8 py-6 overflow-y-auto overscroll-contain bg-transparent safe-bottom" style={{ WebkitOverflowScrolling: 'touch' }}>{children}</div>
       </div>
     </div>
   );

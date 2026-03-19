@@ -42,9 +42,17 @@
 * {
   scrollbar-width: none;
   -ms-overflow-style: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
 }
 *::-webkit-scrollbar {
   display: none;
+}
+
+input, textarea, [contenteditable] {
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 body {
@@ -203,6 +211,30 @@ p { text-wrap: pretty; }
 .cv-btn-ghost:hover {
   color: var(--color-ink);
   background: rgba(255,255,255,0.05);
+}
+
+/* =========== TOUCH DEVICES — disable sticky hover =========== */
+@media (hover: none) {
+  .cv-btn-dark:hover {
+    background: rgba(255,255,255,0.05);
+    border-color: rgba(255,255,255,0.1);
+  }
+  .cv-btn-outline:hover {
+    background: transparent;
+    border-color: rgba(255,255,255,0.15);
+  }
+  .cv-btn-ghost:hover {
+    color: var(--color-ink-light);
+    background: transparent;
+  }
+  .cv-btn-danger:hover {
+    background: rgba(255,42,63,0.08);
+    border-color: rgba(255,42,63,0.15);
+  }
+  .cv-card:hover, .bento-card:hover {
+    border-color: rgba(255,255,255,0.08);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  }
 }
 
 /* =========== BADGE =========== */
@@ -659,3 +691,25 @@ html.light .bg-lime,
 html.light .bg-lime *,
 html.light .cv-btn-accent,
 html.light .cv-btn-accent * { color: white !important; }
+
+/* ─────────────────────────────────────────
+   TOUCH DEVICES — light mode hover reset
+   ───────────────────────────────────────── */
+@media (hover: none) {
+  html.light .cv-btn-dark:hover {
+    background: #f4f4f5;
+    border-color: #e4e4e7;
+  }
+  html.light .cv-btn-outline:hover {
+    background: transparent;
+    border-color: #d4d4d8;
+  }
+  html.light .cv-btn-ghost:hover {
+    color: #52525b;
+    background: transparent;
+  }
+  html.light .cv-card:hover, html.light .bento-card:hover {
+    border-color: #e4e4e7;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+}

@@ -70,12 +70,10 @@ export default function DocumentsPage() {
   useEffect(() => {
     if (!viewingDoc) return;
     document.body.style.overflow = 'hidden';
-    document.body.style.touchAction = 'none';
     const onKey = (e) => { if (e.key === 'Escape') setViewingDoc(null); };
     window.addEventListener('keydown', onKey);
     return () => {
       document.body.style.overflow = '';
-      document.body.style.touchAction = '';
       window.removeEventListener('keydown', onKey);
     };
   }, [viewingDoc]);

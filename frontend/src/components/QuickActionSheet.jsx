@@ -79,11 +79,7 @@ export default function QuickActionSheet({ onClose }) {
   // Lock body scroll while sheet is open
   useEffect(() => {
     document.body.style.overflow = 'hidden';
-    document.body.style.touchAction = 'none';
-    return () => {
-      document.body.style.overflow = '';
-      document.body.style.touchAction = '';
-    };
+    return () => { document.body.style.overflow = ''; };
   }, []);
 
   // Fuel form
@@ -196,7 +192,7 @@ export default function QuickActionSheet({ onClose }) {
         exit={{ y: '100%' }}
         transition={{ type: 'spring', damping: 30, stiffness: 300 }}
         className="fixed bottom-0 left-0 right-0 z-160 rounded-t-3xl px-5 max-h-[85dvh] overflow-y-auto overscroll-contain"
-        style={{ background: 'var(--color-bg-alt)', borderTop: '1px solid var(--color-ink-faint)', boxShadow: '0 -8px 40px rgba(0,0,0,0.15)', paddingBottom: 'max(24px, env(safe-area-inset-bottom))', touchAction: 'pan-y' }}
+        style={{ background: 'var(--color-bg-alt)', borderTop: '1px solid var(--color-ink-faint)', boxShadow: '0 -8px 40px rgba(0,0,0,0.15)', paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}
         onClick={e => e.stopPropagation()}
       >
         {/* Handle */}
@@ -327,7 +323,7 @@ export default function QuickActionSheet({ onClose }) {
                 <Field label="Fichier">
                   <label
                     className={`flex items-center gap-3 p-4 rounded-xl border border-dashed cursor-pointer transition-all hover:bg-white/4 active:scale-[0.98] ${
-                      docFile ? 'border-violet/30 bg-violet/[0.06]' : 'border-white/10 bg-white/[0.02]'
+                      docFile ? 'border-violet/30 bg-violet/6' : 'border-white/10 bg-white/2'
                     }`}
                   >
                     <Camera className="w-5 h-5 text-violet-400 shrink-0" />
