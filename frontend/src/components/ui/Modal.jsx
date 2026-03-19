@@ -6,15 +6,15 @@ export default function Modal({ isOpen, onClose, title, children }) {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
       document.body.style.touchAction = 'none';
-    } else {
-      document.body.style.overflow = '';
-      document.body.style.touchAction = '';
+      const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+      window.addEventListener('keydown', onKey);
+      return () => {
+        document.body.style.overflow = '';
+        document.body.style.touchAction = '';
+        window.removeEventListener('keydown', onKey);
+      };
     }
-    return () => {
-      document.body.style.overflow = '';
-      document.body.style.touchAction = '';
-    };
-  }, [isOpen]);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 

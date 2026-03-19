@@ -184,7 +184,7 @@ export default function QuickActionSheet({ onClose }) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[150] bg-black/60 backdrop-blur-sm"
+        className="fixed inset-0 z-150 bg-black/60 backdrop-blur-sm"
         onClick={onClose}
       />
 
@@ -195,7 +195,7 @@ export default function QuickActionSheet({ onClose }) {
         animate={{ y: 0 }}
         exit={{ y: '100%' }}
         transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-        className="fixed bottom-0 left-0 right-0 z-[160] rounded-t-3xl px-5 max-h-[85dvh] overflow-y-auto overscroll-contain"
+        className="fixed bottom-0 left-0 right-0 z-160 rounded-t-3xl px-5 max-h-[85dvh] overflow-y-auto overscroll-contain"
         style={{ background: 'var(--color-bg-alt)', borderTop: '1px solid var(--color-ink-faint)', boxShadow: '0 -8px 40px rgba(0,0,0,0.15)', paddingBottom: 'max(24px, env(safe-area-inset-bottom))', touchAction: 'pan-y' }}
         onClick={e => e.stopPropagation()}
       >
@@ -326,11 +326,9 @@ export default function QuickActionSheet({ onClose }) {
               <>
                 <Field label="Fichier">
                   <label
-                    className="flex items-center gap-3 p-4 rounded-xl border border-dashed cursor-pointer transition-all hover:bg-white/[0.04] active:scale-[0.98]"
-                    style={{
-                      borderColor: docFile ? 'rgba(124,92,252,0.3)' : 'rgba(255,255,255,0.1)',
-                      background: docFile ? 'rgba(124,92,252,0.06)' : 'rgba(255,255,255,0.02)',
-                    }}
+                    className={`flex items-center gap-3 p-4 rounded-xl border border-dashed cursor-pointer transition-all hover:bg-white/4 active:scale-[0.98] ${
+                      docFile ? 'border-violet/30 bg-violet/[0.06]' : 'border-white/10 bg-white/[0.02]'
+                    }`}
                   >
                     <Camera className="w-5 h-5 text-violet-400 shrink-0" />
                     <span className={`text-sm font-semibold truncate ${docFile ? 'text-violet-300' : 'text-white/40'}`}>

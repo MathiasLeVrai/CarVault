@@ -9,7 +9,7 @@ import Select from '../components/ui/Select';
 import EmptyState from '../components/ui/EmptyState';
 import { FileText, Plus, Trash2, Upload, Eye, Camera, Sparkles, Bell, X, Download } from 'lucide-react';
 import { formatDateShort, daysUntil, documentTypeLabels, documentTypeBadge } from '../utils/helpers';
-import { motion as Motion } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 
 const typeFilters = [
   { value: '', label: 'Tous' },
@@ -65,6 +65,20 @@ export default function DocumentsPage() {
   const [viewingDoc, setViewingDoc] = useState(null);
   const fileInputRef = useRef(null);
   const cameraInputRef = useRef(null);
+
+  // Lock scroll & handle Escape when viewing a document
+  useEffect(() => {
+    if (!viewingDoc) return;
+    document.body.style.overflow = 'hidden';
+    document.body.style.touchAction = 'none';
+    const onKey = (e) => { if (e.key === 'Escape') setViewingDoc(null); };
+    window.addEventListener('keydown', onKey);
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.touchAction = '';
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [viewingDoc]);
 
   useEffect(() => { load(); }, [filter]);
 
@@ -453,72 +467,77 @@ export default function DocumentsPage() {
       </Modal>
 
       {/* Document Viewer Lightbox — portaled to body to sit above header */}
-      {viewingDoc && createPortal((() => {
-        const isImage = /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(viewingDoc.filePath) ||
-          viewingDoc.filePath.match(/\.(jpg|jpeg|png|gif|webp|svg)/i);
-        const isPdf = /\.pdf$/i.test(viewingDoc.filePath) || viewingDoc.filePath.includes('.pdf');
+      {createPortal(
+        <AnimatePresence>
+          {viewingDoc && (() => {
+            const isImage = /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(viewingDoc.filePath);
+            const isPdf = /\.pdf$/i.test(viewingDoc.filePath) || viewingDoc.filePath.includes('.pdf');
 
-        return (
-          <Motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-black/95 flex flex-col"
-            style={{ paddingTop: 'var(--safe-top)', paddingBottom: 'var(--safe-bottom)' }}
-          >
-            {/* Header bar */}
-            <div className="flex items-center justify-between px-4 py-3 shrink-0">
-              <button
-                onClick={() => setViewingDoc(null)}
-                className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 text-white text-sm font-semibold active:scale-95 transition-transform"
+            return (
+              <Motion.div
+                key="doc-viewer"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[100] flex flex-col"
+                style={{ paddingTop: 'var(--safe-top)', paddingBottom: 'var(--safe-bottom)', background: 'var(--color-bg)' }}
               >
-                <X className="w-4 h-4" />
-                Fermer
-              </button>
-              <p className="text-sm font-bold text-white truncate mx-4 flex-1 text-center font-display">
-                {viewingDoc.name}
-              </p>
-              <a
-                href={viewingDoc.filePath}
-                download
-                className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 text-white text-sm font-semibold active:scale-95 transition-transform"
-              >
-                <Download className="w-4 h-4" />
-              </a>
-            </div>
-
-            {/* Content */}
-            <div className="flex-1 flex items-center justify-center overflow-hidden px-4 pb-4">
-              {isImage ? (
-                <img
-                  src={viewingDoc.filePath}
-                  alt={viewingDoc.name}
-                  className="max-w-full max-h-full object-contain rounded-xl select-none"
-                  draggable={false}
-                />
-              ) : isPdf ? (
-                <iframe
-                  src={viewingDoc.filePath}
-                  title={viewingDoc.name}
-                  className="w-full h-full rounded-xl bg-white"
-                />
-              ) : (
-                <div className="flex flex-col items-center gap-4 text-center">
-                  <FileText className="w-16 h-16 text-white/30" />
-                  <p className="text-white/60 text-sm">Aperçu non disponible pour ce type de fichier.</p>
+                {/* Header bar */}
+                <div className="flex items-center justify-between px-4 py-3 shrink-0" style={{ borderBottom: '1px solid var(--color-ink-faint)' }}>
+                  <button
+                    onClick={() => setViewingDoc(null)}
+                    className="flex items-center gap-2 px-3 py-2 rounded-xl cv-btn-dark text-sm font-semibold active:scale-95 transition-transform"
+                  >
+                    <X className="w-4 h-4" />
+                    Fermer
+                  </button>
+                  <p className="text-sm font-bold truncate mx-4 flex-1 text-center font-display" style={{ color: 'var(--color-ink)' }}>
+                    {viewingDoc.name}
+                  </p>
                   <a
                     href={viewingDoc.filePath}
                     download
-                    className="px-4 py-2 rounded-xl bg-accent text-white text-sm font-bold"
+                    className="flex items-center gap-2 px-3 py-2 rounded-xl cv-btn-dark text-sm font-semibold active:scale-95 transition-transform"
                   >
-                    Télécharger
+                    <Download className="w-4 h-4" />
                   </a>
                 </div>
-              )}
-            </div>
-          </Motion.div>
-        );
-      })(), document.body)}
+
+                {/* Content */}
+                <div className="flex-1 flex items-center justify-center overflow-hidden px-4 pb-4" style={{ background: 'var(--color-bg)' }}>
+                  {isImage ? (
+                    <img
+                      src={viewingDoc.filePath}
+                      alt={viewingDoc.name}
+                      className="max-w-full max-h-full object-contain rounded-xl select-none"
+                      draggable={false}
+                    />
+                  ) : isPdf ? (
+                    <iframe
+                      src={viewingDoc.filePath}
+                      title={viewingDoc.name}
+                      className="w-full h-full rounded-xl bg-white"
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center gap-4 text-center">
+                      <FileText className="w-16 h-16" style={{ color: 'var(--color-ink-muted)' }} />
+                      <p className="text-sm" style={{ color: 'var(--color-ink-muted)' }}>Aperçu non disponible pour ce type de fichier.</p>
+                      <a
+                        href={viewingDoc.filePath}
+                        download
+                        className="px-4 py-2 rounded-xl bg-accent text-white text-sm font-bold"
+                      >
+                        Télécharger
+                      </a>
+                    </div>
+                  )}
+                </div>
+              </Motion.div>
+            );
+          })()}
+        </AnimatePresence>,
+        document.body
+      )}
     </Motion.div>
   );
 }
