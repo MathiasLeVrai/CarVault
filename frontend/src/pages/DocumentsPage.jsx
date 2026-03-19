@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { documentApi, vehicleApi } from '../services/api';
 import Button from '../components/ui/Button';
 import Badge from '../components/ui/Badge';
@@ -451,8 +452,8 @@ export default function DocumentsPage() {
         </form>
       </Modal>
 
-      {/* Document Viewer Lightbox */}
-      {viewingDoc && (() => {
+      {/* Document Viewer Lightbox — portaled to body to sit above header */}
+      {viewingDoc && createPortal((() => {
         const isImage = /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(viewingDoc.filePath) ||
           viewingDoc.filePath.match(/\.(jpg|jpeg|png|gif|webp|svg)/i);
         const isPdf = /\.pdf$/i.test(viewingDoc.filePath) || viewingDoc.filePath.includes('.pdf');
@@ -517,7 +518,7 @@ export default function DocumentsPage() {
             </div>
           </Motion.div>
         );
-      })()}
+      })(), document.body)}
     </Motion.div>
   );
 }
