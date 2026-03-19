@@ -6,7 +6,7 @@ import Modal from '../components/ui/Modal';
 import Input from '../components/ui/Input';
 import Select from '../components/ui/Select';
 import EmptyState from '../components/ui/EmptyState';
-import { FileText, Plus, Trash2, Upload, ExternalLink, Camera, Sparkles, Bell } from 'lucide-react';
+import { FileText, Plus, Trash2, Upload, Eye, Camera, Sparkles, Bell, X, Download } from 'lucide-react';
 import { formatDateShort, daysUntil, documentTypeLabels, documentTypeBadge } from '../utils/helpers';
 import { motion as Motion } from 'framer-motion';
 
@@ -61,6 +61,7 @@ export default function DocumentsPage() {
   const [file, setFile] = useState(null);
   const [reminders, setReminders] = useState([30, 7]);
   const [autoDetected, setAutoDetected] = useState(false);
+  const [viewingDoc, setViewingDoc] = useState(null);
   const fileInputRef = useRef(null);
   const cameraInputRef = useRef(null);
 
@@ -303,15 +304,12 @@ export default function DocumentsPage() {
                         )}
                       </div>
                       <div className="flex items-center gap-1">
-                        <a
-                          href={doc.filePath}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={e => e.stopPropagation()}
+                        <button
+                          onClick={() => setViewingDoc(doc)}
                           className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition-all"
                         >
-                          <ExternalLink className="w-4 h-4" />
-                        </a>
+                          <Eye className="w-4 h-4" />
+                        </button>
                         <button
                           onClick={() => del(doc.id)}
                           className="p-2 rounded-xl bg-white/5 hover:bg-accent/20 text-white/60 hover:text-accent transition-all"
@@ -452,6 +450,74 @@ export default function DocumentsPage() {
           </div>
         </form>
       </Modal>
+
+      {/* Document Viewer Lightbox */}
+      {viewingDoc && (() => {
+        const isImage = /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(viewingDoc.filePath) ||
+          viewingDoc.filePath.match(/\.(jpg|jpeg|png|gif|webp|svg)/i);
+        const isPdf = /\.pdf$/i.test(viewingDoc.filePath) || viewingDoc.filePath.includes('.pdf');
+
+        return (
+          <Motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-black/95 flex flex-col"
+            style={{ paddingTop: 'var(--safe-top)', paddingBottom: 'var(--safe-bottom)' }}
+          >
+            {/* Header bar */}
+            <div className="flex items-center justify-between px-4 py-3 shrink-0">
+              <button
+                onClick={() => setViewingDoc(null)}
+                className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 text-white text-sm font-semibold active:scale-95 transition-transform"
+              >
+                <X className="w-4 h-4" />
+                Fermer
+              </button>
+              <p className="text-sm font-bold text-white truncate mx-4 flex-1 text-center font-display">
+                {viewingDoc.name}
+              </p>
+              <a
+                href={viewingDoc.filePath}
+                download
+                className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 text-white text-sm font-semibold active:scale-95 transition-transform"
+              >
+                <Download className="w-4 h-4" />
+              </a>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 flex items-center justify-center overflow-hidden px-4 pb-4">
+              {isImage ? (
+                <img
+                  src={viewingDoc.filePath}
+                  alt={viewingDoc.name}
+                  className="max-w-full max-h-full object-contain rounded-xl select-none"
+                  draggable={false}
+                />
+              ) : isPdf ? (
+                <iframe
+                  src={viewingDoc.filePath}
+                  title={viewingDoc.name}
+                  className="w-full h-full rounded-xl bg-white"
+                />
+              ) : (
+                <div className="flex flex-col items-center gap-4 text-center">
+                  <FileText className="w-16 h-16 text-white/30" />
+                  <p className="text-white/60 text-sm">Aperçu non disponible pour ce type de fichier.</p>
+                  <a
+                    href={viewingDoc.filePath}
+                    download
+                    className="px-4 py-2 rounded-xl bg-accent text-white text-sm font-bold"
+                  >
+                    Télécharger
+                  </a>
+                </div>
+              )}
+            </div>
+          </Motion.div>
+        );
+      })()}
     </Motion.div>
   );
 }
