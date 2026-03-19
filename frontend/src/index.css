@@ -238,6 +238,8 @@ p { text-wrap: pretty; }
 
 .cv-bottom-bar {
   background: rgba(18, 18, 20, 0.95);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
   border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
@@ -305,9 +307,6 @@ html, body {
 
 /* Mobile bottom nav — safe area pour home indicator iOS */
 .cv-bottom-bar {
-  background: rgba(18, 18, 20, 0.95);
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-  /* env() quand il marche + fallback 34px (hauteur home indicator iPhone Pro) */
   padding-bottom: max(env(safe-area-inset-bottom, 34px), 34px);
 }
 
@@ -447,10 +446,17 @@ html.light .glass-panel {
 }
 
 html.light .cv-bottom-bar {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
   border-top: 1px solid #e4e4e7;
+}
+
+html.light .cv-header-glass {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border-bottom: 1px solid #e4e4e7;
 }
 
 html.light .cv-dot-bg {
@@ -514,6 +520,7 @@ html.light .cv-btn-danger:hover {
 html.light .cv-divider        { background: #e4e4e7; }
 html.light .cv-progress-track { background: #e4e4e7; }
 html.light .cv-nav-active      { background: #f4f4f5; color: #09090b !important; }
+html.light .cv-filter-active   { background: #f4f4f5; border-color: #d4d4d8; color: #09090b; }
 html.light .cv-badge           { border-color: #e4e4e7; }
 
 html.light .glow-ring {
@@ -597,6 +604,8 @@ html.light .bg-white.text-black {
 }
 
 /* bg-black variants */
+html.light .bg-black\/95 { background: rgba(255,255,255,0.97) !important; }
+html.light .bg-black\/70 { background: rgba(9,9,11,0.5) !important; }
 html.light .bg-black\/60 { background: rgba(9,9,11,0.4) !important; }
 html.light .bg-black\/50 { background: rgba(9,9,11,0.06) !important; }
 html.light .bg-black\/40 { background: rgba(9,9,11,0.06) !important; }
@@ -620,6 +629,18 @@ html.light .shadow-2xl { box-shadow: 0 8px 24px rgba(0,0,0,0.06) !important; }
 html.light .shadow-black\/40 { --tw-shadow-color: rgba(0,0,0,0.06) !important; }
 html.light .shadow-\[0_0_20px_rgba\(255\,42\,63\,0\.3\)\] {
   box-shadow: 0 0 12px rgba(255,42,63,0.1) !important;
+}
+html.light .shadow-\[0_0_20px_rgba\(255\,255\,255\,0\.3\)\] {
+  box-shadow: 0 2px 8px rgba(9,9,11,0.1) !important;
+}
+html.light .shadow-\[0_0_24px_rgba\(255\,42\,63\,0\.45\)\] {
+  box-shadow: 0 0 16px rgba(255,42,63,0.15) !important;
+}
+html.light .shadow-\[0_0_10px_rgba\(255\,42\,63\,0\.4\)\] {
+  box-shadow: 0 0 8px rgba(255,42,63,0.12) !important;
+}
+html.light .shadow-\[0_0_8px_rgba\(255\,42\,63\,0\.4\)\] {
+  box-shadow: 0 0 6px rgba(255,42,63,0.1) !important;
 }
 
 /* ─────────────────────────────────────────
