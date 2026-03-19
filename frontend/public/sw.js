@@ -6,6 +6,7 @@
 const CACHE_VERSION = 'carvault-v2';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const API_CACHE = `${CACHE_VERSION}-api`;
+const UPLOADS_CACHE = `${CACHE_VERSION}-uploads`;
 
 // Ressources à pré-cacher (shell de l'app)
 const PRECACHE_URLS = [
@@ -34,7 +35,7 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((keys) => {
       return Promise.all(
         keys
-          .filter((key) => key.startsWith('carvault-') && key !== STATIC_CACHE && key !== API_CACHE)
+          .filter((key) => key.startsWith('carvault-') && key !== STATIC_CACHE && key !== API_CACHE && key !== UPLOADS_CACHE)
           .map((key) => {
             console.log('[SW] Suppression ancien cache:', key);
             return caches.delete(key);
@@ -60,8 +61,11 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Les uploads nécessitent un token d'auth — ne pas intercepter
-  if (url.pathname.startsWith('/uploads/')) return;
+  // Uploads (avatars, photos, documents) : Cache First
+  if (url.pathname.startsWith('/uploads/')) {
+    event.respondWith(cacheFirst(request, UPLOADS_CACHE));
+    return;
+  }
 
   // Stratégie pour les Fonts (Google + FontShare) : Cache First
   if (url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com'

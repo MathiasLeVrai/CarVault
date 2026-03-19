@@ -6,29 +6,9 @@ import Modal from '../components/ui/Modal';
 import Input from '../components/ui/Input';
 import Select from '../components/ui/Select';
 import EmptyState from '../components/ui/EmptyState';
-import { FileText, Plus, Trash2, Upload, ExternalLink, Camera, Sparkles, Bell, Loader2 } from 'lucide-react';
+import { FileText, Plus, Trash2, Upload, ExternalLink, Camera, Sparkles, Bell } from 'lucide-react';
 import { formatDateShort, daysUntil, documentTypeLabels, documentTypeBadge } from '../utils/helpers';
 import { motion as Motion } from 'framer-motion';
-
-/** Fetch a document file with auth headers and open it in a new tab */
-async function openDocument(filePath) {
-  // Full URLs (R2/S3) can be opened directly
-  if (filePath.startsWith('http')) {
-    window.open(filePath, '_blank');
-    return;
-  }
-  // Local uploads need auth token
-  const token = localStorage.getItem('carvault_token');
-  const res = await fetch(filePath, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  if (!res.ok) throw new Error('Impossible d\'ouvrir le document');
-  const blob = await res.blob();
-  const url = URL.createObjectURL(blob);
-  window.open(url, '_blank');
-  // Revoke after a delay to allow the tab to load
-  setTimeout(() => URL.revokeObjectURL(url), 60_000);
-}
 
 const typeFilters = [
   { value: '', label: 'Tous' },
@@ -81,7 +61,6 @@ export default function DocumentsPage() {
   const [file, setFile] = useState(null);
   const [reminders, setReminders] = useState([30, 7]);
   const [autoDetected, setAutoDetected] = useState(false);
-  const [openingDoc, setOpeningDoc] = useState(null);
   const fileInputRef = useRef(null);
   const cameraInputRef = useRef(null);
 
@@ -324,20 +303,15 @@ export default function DocumentsPage() {
                         )}
                       </div>
                       <div className="flex items-center gap-1">
-                        <button
-                          onClick={async () => {
-                            setOpeningDoc(doc.id);
-                            try { await openDocument(doc.filePath); }
-                            catch { /* ignore */ }
-                            finally { setOpeningDoc(null); }
-                          }}
-                          disabled={openingDoc === doc.id}
-                          className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition-all disabled:opacity-50"
+                        <a
+                          href={doc.filePath}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={e => e.stopPropagation()}
+                          className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition-all"
                         >
-                          {openingDoc === doc.id
-                            ? <Loader2 className="w-4 h-4 animate-spin" />
-                            : <ExternalLink className="w-4 h-4" />}
-                        </button>
+                          <ExternalLink className="w-4 h-4" />
+                        </a>
                         <button
                           onClick={() => del(doc.id)}
                           className="p-2 rounded-xl bg-white/5 hover:bg-accent/20 text-white/60 hover:text-accent transition-all"

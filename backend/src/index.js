@@ -106,9 +106,8 @@ app.use('/api/subscription/webhook', express.raw({ type: 'application/json' }));
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
-// Serve uploaded files — protected by auth (sauf share links qui passent par l'API)
-const { authenticate } = require('./middleware/auth.middleware');
-app.use('/uploads', authenticate, express.static(path.join(__dirname, '../uploads')));
+// Serve uploaded files (UUID filenames — unguessable, consistent with R2 public URLs in prod)
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Rate limiting global sur toutes les routes API
 app.use('/api', apiLimiter);
