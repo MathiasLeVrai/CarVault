@@ -36,25 +36,4 @@ router.post('/unsubscribe', async (req, res, next) => {
   }
 });
 
-// Test push notification
-router.post('/test', async (req, res, next) => {
-  try {
-    if (!pushService.isConfigured()) {
-      return res.status(503).json({ error: 'Push non configuré (VAPID keys manquantes)' });
-    }
-    const sent = await pushService.sendToUser(
-      req.userId,
-      'CarVault — Test',
-      'Les notifications push fonctionnent correctement !',
-      '/settings',
-    );
-    if (sent === 0) {
-      return res.status(404).json({ error: 'Aucun appareil enregistré. Activez les notifications push d\'abord.' });
-    }
-    res.json({ ok: true, sent });
-  } catch (error) {
-    next(error);
-  }
-});
-
 module.exports = router;

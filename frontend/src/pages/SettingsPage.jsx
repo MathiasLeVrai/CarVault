@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import { notificationApi, pushApi } from '../services/api';
+import { notificationApi } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import usePush from '../hooks/usePush';
 import BadgesWidget from '../components/BadgesWidget';
 import {
   Bell, Mail, Smartphone, Calendar, Check, Settings, Sun, Moon, LogOut, Globe,
-  Camera, Pencil, Crown, User as UserIcon, Send,
+  Camera, Pencil, Crown, User as UserIcon,
 } from 'lucide-react';
 import { motion as Motion } from 'framer-motion';
 
@@ -227,8 +227,6 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [testPush, setTestPush] = useState({ loading: false, result: null });
-
   useEffect(() => {
     notificationApi.getPreferences()
       .then(setPrefs)
@@ -381,32 +379,6 @@ export default function SettingsPage() {
                 }
               }}
             />
-            {push.subscribed && (
-              <button
-                onClick={async () => {
-                  setTestPush({ loading: true, result: null });
-                  try {
-                    await pushApi.test();
-                    setTestPush({ loading: false, result: 'success' });
-                  } catch (err) {
-                    setTestPush({ loading: false, result: err.message });
-                  }
-                  setTimeout(() => setTestPush({ loading: false, result: null }), 4000);
-                }}
-                disabled={testPush.loading}
-                className="flex items-center justify-center gap-2.5 w-full p-4 rounded-2xl bg-violet/10 border border-violet/20 text-violet text-sm font-bold transition-all hover:bg-violet/15 active:scale-[0.98] disabled:opacity-60"
-              >
-                {testPush.loading ? (
-                  <><div className="w-4 h-4 border-2 border-violet/30 border-t-violet rounded-full animate-spin" /> Envoi en cours…</>
-                ) : testPush.result === 'success' ? (
-                  <><Check className="w-4 h-4" /> Notification envoyée !</>
-                ) : testPush.result ? (
-                  <span className="text-accent">{testPush.result}</span>
-                ) : (
-                  <><Send className="w-4 h-4" /> Tester les notifications push</>
-                )}
-              </button>
-            )}
           </>
         )}
       </Motion.div>
