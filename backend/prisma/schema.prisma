@@ -147,6 +147,7 @@ enum DocumentType {
   INVOICE
   WARRANTY
   REGISTRATION
+  ACCIDENT_REPORT
   OTHER
 }
 

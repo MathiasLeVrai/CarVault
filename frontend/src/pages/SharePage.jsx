@@ -149,7 +149,7 @@ export default function SharePage() {
                     <div>
                       <p className="text-sm font-bold text-white">{doc.name}</p>
                       <div className="flex items-center gap-2 mt-1">
-                        <span className="text-[10px] font-bold text-white/50 uppercase tracking-wider">{documentTypeLabels[doc.type]}</span>
+                        <span className="text-[10px] font-bold text-white/50 uppercase tracking-wider">{doc.type === 'OTHER' ? doc.name : documentTypeLabels[doc.type]}</span>
                         {doc.expirationDate && (
                           <Badge variant={expired ? 'danger' : 'success'}>
                             {expired ? 'Expiré' : `Exp: ${formatDateShort(doc.expirationDate)}`}

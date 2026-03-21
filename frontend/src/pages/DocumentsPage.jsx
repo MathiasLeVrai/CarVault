@@ -13,20 +13,16 @@ import { motion as Motion, AnimatePresence } from 'framer-motion';
 
 const typeFilters = [
   { value: '', label: 'Tous' },
-  { value: 'INSURANCE', label: 'Assurance' },
   { value: 'TECHNICAL_INSPECTION', label: 'Contrôle tech.' },
-  { value: 'INVOICE', label: 'Facture' },
-  { value: 'WARRANTY', label: 'Garantie' },
+  { value: 'INSURANCE', label: 'Assurance' },
   { value: 'REGISTRATION', label: 'Carte grise' },
+  { value: 'INVOICE', label: 'Facture' },
+  { value: 'ACCIDENT_REPORT', label: 'Constat' },
   { value: 'OTHER', label: 'Autre' },
 ];
 const typeForm = typeFilters.filter(o => o.value);
 
-const EXPIRATION_SUGGESTIONS = {
-  INSURANCE: { days: 365, label: '+1 an' },
-  TECHNICAL_INSPECTION: { days: 730, label: '+2 ans' },
-  WARRANTY: { days: 730, label: '+2 ans' },
-};
+const TYPES_WITH_EXPIRATION = ['TECHNICAL_INSPECTION', 'INSURANCE'];
 
 const REMINDER_OPTIONS = [
   { value: 30, label: 'J-30' },
@@ -44,11 +40,6 @@ const itemVariants = {
   show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 100 } },
 };
 
-function formatFutureDate(days) {
-  const d = new Date();
-  d.setDate(d.getDate() + days);
-  return d.toISOString().split('T')[0];
-}
 
 export default function DocumentsPage() {
   const [docs, setDocs] = useState([]);
@@ -58,7 +49,8 @@ export default function DocumentsPage() {
   const [vehicleFilter, setVehicleFilter] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [sub, setSub] = useState(false);
-  const [form, setForm] = useState({ name: '', type: 'INSURANCE', vehicleId: '', expirationDate: '', notes: '' });
+  const [form, setForm] = useState({ name: '', type: 'TECHNICAL_INSPECTION', vehicleId: '', expirationDate: '', notes: '' });
+  const [hasExpiration, setHasExpiration] = useState(false);
   const [file, setFile] = useState(null);
   const [reminders, setReminders] = useState([30, 7]);
   const [autoDetected, setAutoDetected] = useState(false);
@@ -106,24 +98,15 @@ export default function DocumentsPage() {
           type: result.detectedType,
           name: prev.name || documentTypeLabels[result.detectedType] || '',
         }));
-        if (result.suggestedExpirationDays && !form.expirationDate) {
-          setForm(prev => ({
-            ...prev,
-            expirationDate: formatFutureDate(result.suggestedExpirationDays),
-          }));
-        }
         setAutoDetected(true);
       }
     } catch { /* ignore */ }
   }, [form.expirationDate]);
 
   const handleTypeChange = useCallback((type) => {
-    setForm(prev => ({ ...prev, type }));
-    const suggestion = EXPIRATION_SUGGESTIONS[type];
-    if (suggestion && !form.expirationDate) {
-      setForm(prev => ({ ...prev, expirationDate: formatFutureDate(suggestion.days) }));
-    }
-  }, [form.expirationDate]);
+    setForm(prev => ({ ...prev, type, expirationDate: '' }));
+    setHasExpiration(false);
+  }, []);
 
   const toggleReminder = (days) => {
     setReminders(prev =>
@@ -133,10 +116,11 @@ export default function DocumentsPage() {
 
   const openModal = () => {
     if (!vehicles.length) return;
-    setForm({ name: '', type: 'INSURANCE', vehicleId: vehicles[0].id, expirationDate: '', notes: '' });
+    setForm({ name: '', type: 'TECHNICAL_INSPECTION', vehicleId: vehicles[0].id, expirationDate: '', notes: '' });
     setFile(null);
     setReminders([30, 7]);
     setAutoDetected(false);
+    setHasExpiration(false);
     setShowModal(true);
   };
 
@@ -291,7 +275,7 @@ export default function DocumentsPage() {
                         <div className="min-w-0">
                           <p className="text-base font-bold text-white truncate font-display">{doc.name}</p>
                           <div className="flex items-center gap-2 mt-1.5">
-                            <Badge variant={documentTypeBadge[doc.type]}>{documentTypeLabels[doc.type]}</Badge>
+                            <Badge variant={documentTypeBadge[doc.type]}>{doc.type === 'OTHER' ? doc.name : documentTypeLabels[doc.type]}</Badge>
                           </div>
                         </div>
                       </div>
@@ -381,46 +365,61 @@ export default function DocumentsPage() {
             )}
           </div>
 
-          <Input
-            label="Nom *"
-            placeholder="Assurance 2026"
-            value={form.name}
-            onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
-            required
-          />
           <Select
             label="Véhicule *"
             options={vehicles.map(v => ({ value: v.id, label: `${v.brand} ${v.model} (${v.year})` }))}
             value={form.vehicleId}
             onChange={e => setForm(p => ({ ...p, vehicleId: e.target.value }))}
           />
-          <div>
-            <Select
-              label="Type *"
-              options={typeForm}
-              value={form.type}
-              onChange={e => handleTypeChange(e.target.value)}
-            />
-            {EXPIRATION_SUGGESTIONS[form.type] && !form.expirationDate && (
-              <button
-                type="button"
-                onClick={() => setForm(p => ({
-                  ...p,
-                  expirationDate: formatFutureDate(EXPIRATION_SUGGESTIONS[form.type].days),
-                }))}
-                className="mt-1.5 text-[11px] font-bold text-accent hover:text-white transition-colors"
-              >
-                Suggestion : {EXPIRATION_SUGGESTIONS[form.type].label} →
-              </button>
-            )}
-          </div>
+          <Select
+            label="Type *"
+            options={typeForm}
+            value={form.type}
+            onChange={e => handleTypeChange(e.target.value)}
+          />
 
           <Input
-            label="Date d'expiration"
-            type="date"
-            value={form.expirationDate}
-            onChange={e => setForm(p => ({ ...p, expirationDate: e.target.value }))}
+            label={form.type === 'OTHER' ? 'Nom du document *' : 'Nom *'}
+            placeholder={form.type === 'OTHER' ? 'Ex: Garantie Norauto' : 'Assurance 2026'}
+            value={form.name}
+            onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
+            required
           />
+
+          {/* Expiration date — only for CT, Assurance, or optionally for Autre */}
+          {TYPES_WITH_EXPIRATION.includes(form.type) && (
+            <Input
+              label="Date d'expiration"
+              type="date"
+              value={form.expirationDate}
+              onChange={e => setForm(p => ({ ...p, expirationDate: e.target.value }))}
+            />
+          )}
+
+          {form.type === 'OTHER' && (
+            <div className="space-y-2">
+              <label className="flex items-center gap-3 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={hasExpiration}
+                  onChange={e => {
+                    setHasExpiration(e.target.checked);
+                    if (!e.target.checked) setForm(p => ({ ...p, expirationDate: '' }));
+                  }}
+                  className="w-4 h-4 rounded border-2 border-white/20 bg-transparent accent-lime"
+                />
+                <span className="text-sm font-semibold text-white">Ce document a une date d&apos;expiration</span>
+              </label>
+              {hasExpiration && (
+                <Input
+                  label="Date d'expiration"
+                  type="date"
+                  value={form.expirationDate}
+                  onChange={e => setForm(p => ({ ...p, expirationDate: e.target.value }))}
+                />
+              )}
+            </div>
+          )}
 
           {/* Reminder config */}
           {form.expirationDate && (

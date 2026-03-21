@@ -34,11 +34,12 @@ export function formatDateShort(date) {
  * Labels pour les types de documents
  */
 export const documentTypeLabels = {
-  INSURANCE: 'Assurance',
   TECHNICAL_INSPECTION: 'Contrôle technique',
-  INVOICE: 'Facture',
-  WARRANTY: 'Garantie',
+  INSURANCE: 'Assurance',
   REGISTRATION: 'Carte grise',
+  INVOICE: 'Facture',
+  ACCIDENT_REPORT: 'Constat amiable',
+  WARRANTY: 'Garantie',
   OTHER: 'Autre',
 };
 
@@ -46,11 +47,12 @@ export const documentTypeLabels = {
  * Variantes de badge pour les types de documents
  */
 export const documentTypeBadge = {
-  INSURANCE: 'sky',
   TECHNICAL_INSPECTION: 'orange',
-  INVOICE: 'default',
-  WARRANTY: 'lime',
+  INSURANCE: 'sky',
   REGISTRATION: 'violet',
+  INVOICE: 'default',
+  ACCIDENT_REPORT: 'danger',
+  WARRANTY: 'lime',
   OTHER: 'dark',
 };
 

@@ -1,0 +1,593 @@
+openapi: 3.0.3
+info:
+  title: CarVault API
+  description: |
+    API REST de CarVault — gestion de véhicules, documents, dépenses, alertes, abonnement Stripe, push Web.
+    Les routes protégées exigent un header `Authorization: Bearer <JWT>`.
+  version: 1.0.0
+  contact:
+    name: CarVault
+
+servers:
+  - url: http://localhost:3001
+    description: Développement local
+  - url: https://carvault.fly.dev
+    description: Production (exemple)
+
+tags:
+  - name: Health
+  - name: Auth
+  - name: Vehicles
+  - name: Documents
+  - name: Expenses
+  - name: Alerts
+  - name: Dashboard
+  - name: Brands
+  - name: Mileage
+  - name: Fuel
+  - name: Share
+  - name: Notifications
+  - name: Subscription
+  - name: Badges
+  - name: Push
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+        statusCode:
+          type: integer
+
+security:
+  - bearerAuth: []
+
+paths:
+  /api/health:
+    get:
+      tags: [Health]
+      summary: Santé du serveur
+      security: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  timestamp:
+                    type: string
+                    format: date-time
+
+  /api/auth/register:
+    post:
+      tags: [Auth]
+      summary: Inscription
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password, firstName, lastName]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string }
+                firstName: { type: string }
+                lastName: { type: string }
+      responses:
+        '201':
+          description: Compte créé + JWT
+        '409':
+          description: Email déjà utilisé
+
+  /api/auth/login:
+    post:
+      tags: [Auth]
+      summary: Connexion
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string }
+                password: { type: string }
+      responses:
+        '200':
+          description: JWT + utilisateur
+        '401':
+          description: Identifiants invalides
+
+  /api/auth/profile:
+    get:
+      tags: [Auth]
+      summary: Profil utilisateur
+    patch:
+      tags: [Auth]
+      summary: Mise à jour profil (multipart possible pour avatar)
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                firstName: { type: string }
+                lastName: { type: string }
+                avatar:
+                  type: string
+                  format: binary
+
+  /api/vehicles:
+    get:
+      tags: [Vehicles]
+      summary: Liste des véhicules
+    post:
+      tags: [Vehicles]
+      summary: Créer un véhicule (multipart — photo, carte grise optionnelle)
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                brand: { type: string }
+                model: { type: string }
+                year: { type: integer }
+                mileage: { type: integer }
+                licensePlate: { type: string }
+                photo:
+                  type: string
+                  format: binary
+
+  /api/vehicles/{id}:
+    get:
+      tags: [Vehicles]
+      summary: Détail véhicule
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+    put:
+      tags: [Vehicles]
+      summary: Modifier un véhicule
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+    delete:
+      tags: [Vehicles]
+      summary: Supprimer un véhicule
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+
+  /api/vehicles/{id}/pdf:
+    get:
+      tags: [Vehicles]
+      summary: Export PDF dossier revente
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Fichier PDF
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+
+  /api/vehicles/{id}/health:
+    get:
+      tags: [Vehicles]
+      summary: Score santé véhicule
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+
+  /api/vehicles/{id}/maintenance:
+    get:
+      tags: [Vehicles]
+      summary: Plan d'entretien
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+    put:
+      tags: [Vehicles]
+      summary: Mettre à jour la config d'entretien
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+
+  /api/documents:
+    get:
+      tags: [Documents]
+      summary: Liste des documents (filtre optionnel ?type=)
+    post:
+      tags: [Documents]
+      summary: Upload document (multipart)
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                type: { type: string }
+                vehicleId: { type: string }
+                expirationDate: { type: string }
+                file:
+                  type: string
+                  format: binary
+
+  /api/documents/detect-type:
+    get:
+      tags: [Documents]
+      summary: Détection du type de document (query params selon implémentation)
+
+  /api/documents/vehicle/{vehicleId}:
+    get:
+      tags: [Documents]
+      summary: Documents d'un véhicule
+      parameters:
+        - in: path
+          name: vehicleId
+          required: true
+          schema: { type: string, format: uuid }
+
+  /api/documents/{id}:
+    delete:
+      tags: [Documents]
+      summary: Supprimer un document
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+
+  /api/expenses:
+    get:
+      tags: [Expenses]
+      summary: Liste des dépenses
+    post:
+      tags: [Expenses]
+      summary: Créer une dépense
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+
+  /api/expenses/stats:
+    get:
+      tags: [Expenses]
+      summary: Statistiques dépenses
+
+  /api/expenses/vehicle/{vehicleId}:
+    get:
+      tags: [Expenses]
+      summary: Dépenses par véhicule
+      parameters:
+        - in: path
+          name: vehicleId
+          required: true
+          schema: { type: string, format: uuid }
+
+  /api/expenses/{id}:
+    delete:
+      tags: [Expenses]
+      summary: Supprimer une dépense
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+
+  /api/alerts:
+    get:
+      tags: [Alerts]
+      summary: Liste des alertes
+
+  /api/alerts/count:
+    get:
+      tags: [Alerts]
+      summary: Nombre d'alertes non lues
+
+  /api/alerts/check:
+    post:
+      tags: [Alerts]
+      summary: Vérifier les expirations (manuel)
+
+  /api/alerts/read-all:
+    put:
+      tags: [Alerts]
+      summary: Tout marquer comme lu
+
+  /api/alerts/{id}/read:
+    put:
+      tags: [Alerts]
+      summary: Marquer une alerte comme lue
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+
+  /api/alerts/{id}/snooze:
+    put:
+      tags: [Alerts]
+      summary: Reporter une alerte
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+
+  /api/alerts/{id}:
+    delete:
+      tags: [Alerts]
+      summary: Supprimer une alerte
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+
+  /api/dashboard:
+    get:
+      tags: [Dashboard]
+      summary: Données agrégées dashboard
+
+  /api/brands/plate/{plate}:
+    get:
+      tags: [Brands]
+      summary: Infos véhicule par plaque (FR)
+      security: []
+      parameters:
+        - in: path
+          name: plate
+          required: true
+          schema: { type: string }
+
+  /api/brands:
+    get:
+      tags: [Brands]
+      summary: Liste des marques
+      security: []
+
+  /api/brands/search:
+    get:
+      tags: [Brands]
+      summary: Recherche marque/modèle
+      security: []
+
+  /api/brands/trims:
+    get:
+      tags: [Brands]
+      summary: Trims CarAPI
+      security: []
+
+  /api/brands/trims/{id}:
+    get:
+      tags: [Brands]
+      summary: Détail trim
+      security: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+
+  /api/brands/{brand}/models:
+    get:
+      tags: [Brands]
+      summary: Modèles pour une marque
+      security: []
+      parameters:
+        - in: path
+          name: brand
+          required: true
+          schema: { type: string }
+
+  /api/vehicles/{vehicleId}/mileage:
+    get:
+      tags: [Mileage]
+      summary: Historique kilométrage
+      parameters:
+        - in: path
+          name: vehicleId
+          required: true
+          schema: { type: string, format: uuid }
+    post:
+      tags: [Mileage]
+      summary: Ajouter une entrée kilométrage
+      parameters:
+        - in: path
+          name: vehicleId
+          required: true
+          schema: { type: string, format: uuid }
+
+  /api/vehicles/{vehicleId}/mileage/{id}:
+    delete:
+      tags: [Mileage]
+      summary: Supprimer une entrée
+      parameters:
+        - in: path
+          name: vehicleId
+          required: true
+          schema: { type: string, format: uuid }
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+
+  /api/vehicles/{vehicleId}/fuel:
+    get:
+      tags: [Fuel]
+      summary: Historique carburant
+      parameters:
+        - in: path
+          name: vehicleId
+          required: true
+          schema: { type: string, format: uuid }
+    post:
+      tags: [Fuel]
+      summary: Ajouter un plein
+      parameters:
+        - in: path
+          name: vehicleId
+          required: true
+          schema: { type: string, format: uuid }
+
+  /api/vehicles/{vehicleId}/fuel/{id}:
+    delete:
+      tags: [Fuel]
+      summary: Supprimer une entrée carburant
+      parameters:
+        - in: path
+          name: vehicleId
+          required: true
+          schema: { type: string, format: uuid }
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+
+  /api/share:
+    post:
+      tags: [Share]
+      summary: Créer un lien de partage
+
+  /api/share/vehicle/{vehicleId}:
+    get:
+      tags: [Share]
+      summary: Liens de partage pour un véhicule
+      parameters:
+        - in: path
+          name: vehicleId
+          required: true
+          schema: { type: string, format: uuid }
+
+  /api/share/link/{id}:
+    delete:
+      tags: [Share]
+      summary: Révoquer un lien
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+
+  /api/share/{token}:
+    get:
+      tags: [Share]
+      summary: Page publique véhicule (token)
+      security: []
+      parameters:
+        - in: path
+          name: token
+          required: true
+          schema: { type: string }
+
+  /api/share/{token}/pdf:
+    get:
+      tags: [Share]
+      summary: PDF public (token)
+      security: []
+      parameters:
+        - in: path
+          name: token
+          required: true
+          schema: { type: string }
+
+  /api/notifications/preferences:
+    get:
+      tags: [Notifications]
+      summary: Préférences notifications
+    put:
+      tags: [Notifications]
+      summary: Mettre à jour les préférences
+
+  /api/subscription/status:
+    get:
+      tags: [Subscription]
+      summary: Statut abonnement Stripe
+
+  /api/subscription/checkout:
+    post:
+      tags: [Subscription]
+      summary: Créer session Stripe Checkout
+
+  /api/subscription/portal:
+    post:
+      tags: [Subscription]
+      summary: Portail client Stripe
+
+  /api/subscription/webhook:
+    post:
+      tags: [Subscription]
+      summary: Webhook Stripe (raw body, signature)
+      security: []
+
+  /api/badges:
+    get:
+      tags: [Badges]
+      summary: Badges utilisateur
+
+  /api/push/vapid-key:
+    get:
+      tags: [Push]
+      summary: Clé publique VAPID (Web Push)
+
+  /api/push/subscribe:
+    post:
+      tags: [Push]
+      summary: Enregistrer une subscription push
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                subscription:
+                  type: object
+
+  /api/push/unsubscribe:
+    post:
+      tags: [Push]
+      summary: Désinscrire un endpoint push
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                endpoint: { type: string }

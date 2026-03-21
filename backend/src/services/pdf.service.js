@@ -4,8 +4,9 @@ const fs = require('fs');
 
 // Labels français
 const DOC_TYPES = {
-  INSURANCE: 'Assurance', TECHNICAL_INSPECTION: 'Contrôle technique',
-  INVOICE: 'Facture', WARRANTY: 'Garantie', REGISTRATION: 'Carte grise', OTHER: 'Autre',
+  TECHNICAL_INSPECTION: 'Contrôle technique', INSURANCE: 'Assurance',
+  REGISTRATION: 'Carte grise', INVOICE: 'Facture', ACCIDENT_REPORT: 'Constat amiable',
+  WARRANTY: 'Garantie', OTHER: 'Autre',
 };
 const EXP_CATS = {
   MAINTENANCE: 'Entretien / Révision', OIL_CHANGE: 'Vidange', BRAKES: 'Freins / Plaquettes',

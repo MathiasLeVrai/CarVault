@@ -10,10 +10,10 @@ import Select from '../components/ui/Select';
 import Autocomplete from '../components/ui/Autocomplete';
 import EmptyState from '../components/ui/EmptyState';
 import PlateScanModal from '../components/PlateScanModal';
-import { Car, Plus, FileText, ArrowUpRight, Gauge, Zap, Search, CheckCircle2, ScanLine, Upload, Loader2 } from 'lucide-react';
+import { Car, Plus, FileText, ArrowUpRight, Gauge, Zap, Search, CheckCircle2, ScanLine } from 'lucide-react';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
 import PremiumModal from '../components/PremiumModal';
-import parseCarteGrise from '../utils/parseCarteGrise';
+
 
 const fuelOpts = [
   { value: 'GASOLINE', label: 'Essence' },
@@ -78,10 +78,7 @@ export default function VehiclesPage() {
     horsepower: '', engineSize: '', transmission: '', bodyType: '', doors: '',
   });
   const [photo, setPhoto] = useState(null);
-  const [registrationDoc, setRegistrationDoc] = useState(null);
   const [maintenanceUpToDate, setMaintenanceUpToDate] = useState(false);
-
-  const [ocrScanning, setOcrScanning] = useState(false);
 
   const [brands, setBrands] = useState([]);
   const [models, setModels] = useState([]);
@@ -187,62 +184,10 @@ export default function VehiclesPage() {
 
   const resetForm = () => {
     setForm({ brand: '', model: '', year: '', mileage: '', licensePlate: '', color: '', fuelType: 'GASOLINE', purchasePrice: '', carapiTrimId: '', msrp: '', horsepower: '', engineSize: '', transmission: '', bodyType: '', doors: '' });
-    setPhoto(null); setRegistrationDoc(null); setMaintenanceUpToDate(false); setModels([]); setTrims([]);
+    setPhoto(null); setMaintenanceUpToDate(false); setModels([]); setTrims([]);
     setPlateInput(''); setPlateFound(false); setPlateError(''); setManualMode(false);
   };
 
-  const handleRegistrationDoc = async (file) => {
-    setRegistrationDoc(file);
-    if (!file || !file.type.startsWith('image/')) return;
-
-    setOcrScanning(true);
-    try {
-      const result = await parseCarteGrise(file);
-      if (!result) return;
-
-      // Auto-fill detected fields (don't overwrite existing plate-lookup data)
-      setForm(p => ({
-        ...p,
-        licensePlate: p.licensePlate || result.licensePlate || '',
-        brand: p.brand || result.brand || '',
-        model: p.model || result.model || '',
-        year: p.year || result.year || '',
-        fuelType: result.fuelType || p.fuelType,
-      }));
-
-      // If we found a plate and no plate lookup was done yet, auto-trigger it
-      if (result.licensePlate && !plateFound && !plateInput) {
-        setPlateInput(result.licensePlate);
-        try {
-          const data = await brandApi.lookupPlate(result.licensePlate);
-          setForm(p => ({
-            ...p,
-            brand: data.brand || p.brand,
-            model: data.model || p.model,
-            year: data.year ? String(data.year) : p.year,
-            licensePlate: data.licensePlate || result.licensePlate,
-            color: data.color || p.color,
-            fuelType: data.fuelType || p.fuelType,
-            horsepower: data.horsepower ? String(data.horsepower) : p.horsepower,
-            engineSize: data.engineSize ? String(data.engineSize) : p.engineSize,
-            transmission: data.transmission || p.transmission,
-            bodyType: data.bodyType || p.bodyType,
-            doors: data.doors ? String(data.doors) : p.doors,
-          }));
-          setPlateFound(true);
-        } catch { /* plate lookup failed, OCR data is still applied */ }
-      }
-
-      if (result.brand || result.model || result.licensePlate) {
-        showToast('Carte grise analysée — vérifiez les infos', 'success');
-        if (!plateFound && !manualMode) setManualMode(true);
-      }
-    } catch {
-      // OCR failed silently — user can still fill manually
-    } finally {
-      setOcrScanning(false);
-    }
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault(); setSubmitting(true);
@@ -250,7 +195,7 @@ export default function VehiclesPage() {
       const fd = new FormData();
       Object.entries(form).forEach(([k, v]) => { if (v) fd.append(k, v); });
       if (photo) fd.append('photo', await compressImage(photo));
-      if (registrationDoc) fd.append('registrationDoc', registrationDoc);
+
       if (maintenanceUpToDate) fd.append('maintenanceUpToDate', 'true');
       await vehicleApi.create(fd);
       setShowModal(false); resetForm(); loadVehicles();
@@ -260,8 +205,6 @@ export default function VehiclesPage() {
         setShowPremium(true);
       } else if (err.code === 'PLATE_TAKEN') {
         showToast('Ce véhicule est déjà enregistré par un autre utilisateur', 'error');
-      } else if (err.code === 'REGISTRATION_REQUIRED') {
-        showToast('La carte grise est obligatoire', 'error');
       } else {
         showToast(err.message || 'Erreur lors de l\'ajout', 'error');
       }
@@ -386,34 +329,8 @@ export default function VehiclesPage() {
       {/* Modal */}
       <Modal isOpen={showModal} onClose={() => { setShowModal(false); resetForm(); }} title="Nouveau véhicule">
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Carte grise en premier — OCR auto-remplit */}
-          {!plateFound && !manualMode && (
-            <div className="space-y-1.5">
-              <label className="block text-sm font-semibold text-white">Carte grise</label>
-              <label className={`flex flex-col items-center gap-2 w-full py-6 border border-dashed rounded-xl cursor-pointer text-sm transition-all ${registrationDoc ? 'bg-lime/5 border-lime/30 text-lime' : 'bg-white/[0.02] border-white/10 text-ink-muted hover:bg-white/[0.04] hover:border-accent/50'}`}>
-                {ocrScanning ? <Loader2 className="w-6 h-6 animate-spin" /> : <Upload className="w-6 h-6" />}
-                <input type="file" accept="image/*,application/pdf" onChange={e => handleRegistrationDoc(e.target.files[0])} className="hidden" />
-                {ocrScanning ? (
-                  <span className="font-semibold">Analyse de la carte grise...</span>
-                ) : registrationDoc ? (
-                  <span className="font-semibold">{registrationDoc.name}</span>
-                ) : (
-                  <>
-                    <span className="font-semibold">Photographiez votre carte grise</span>
-                    <span className="text-[11px] text-white/30">Les informations seront extraites automatiquement</span>
-                  </>
-                )}
-              </label>
-            </div>
-          )}
-
           {!manualMode && !plateFound && (
             <div className="space-y-4">
-              <div className="flex items-center gap-4 py-1">
-                <div className="flex-1 h-px bg-white/5" />
-                <span className="text-xs text-ink-muted font-bold uppercase tracking-widest">ou entrez la plaque</span>
-                <div className="flex-1 h-px bg-white/5" />
-              </div>
               <div className="flex gap-2">
                 <div className="flex-1">
                   <Input placeholder="AB-123-CD" value={plateInput}
@@ -494,26 +411,6 @@ export default function VehiclesPage() {
                   <p className="text-[11px] text-ink-muted mt-0.5">Cochez si la vidange, révision, etc. sont récents</p>
                 </div>
               </label>
-              {!registrationDoc && (
-                <div className="space-y-1.5">
-                  <label className="block text-sm font-semibold text-ink">Carte grise</label>
-                  <label className={`flex items-center justify-center gap-2 w-full py-4 border border-dashed rounded-xl cursor-pointer text-sm transition-all bg-white/[0.02] border-white/10 text-ink-muted hover:bg-white/[0.04] hover:border-accent/50`}>
-                    <Upload className="w-5 h-5" />
-                    <input type="file" accept="image/*,application/pdf" onChange={e => handleRegistrationDoc(e.target.files[0])} className="hidden" />
-                    Photo ou scan de la carte grise
-                  </label>
-                </div>
-              )}
-              {registrationDoc && (
-                <div className="flex items-center gap-2 p-3 rounded-xl bg-lime/5 border border-lime/20 text-sm">
-                  <CheckCircle2 className="w-4 h-4 text-lime shrink-0" />
-                  <span className="text-lime font-semibold flex-1 truncate">{registrationDoc.name}</span>
-                  <label className="text-[11px] text-white/40 hover:text-white cursor-pointer transition-colors">
-                    <input type="file" accept="image/*,application/pdf" onChange={e => handleRegistrationDoc(e.target.files[0])} className="hidden" />
-                    Changer
-                  </label>
-                </div>
-              )}
               <div className="space-y-1.5">
                 <label className="block text-sm font-semibold text-ink">Photo</label>
                 <label className="flex items-center justify-center gap-2 w-full py-4 bg-white/[0.02] border border-white/10 border-dashed rounded-xl cursor-pointer text-sm text-ink-muted hover:bg-white/[0.04] hover:border-accent/50 transition-all">

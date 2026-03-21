@@ -137,6 +137,25 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Swagger UI — documentation OpenAPI (désactiver avec SWAGGER_ENABLED=false)
+if (process.env.SWAGGER_ENABLED !== 'false') {
+  const swaggerUi = require('swagger-ui-express');
+  const YAML = require('yamljs');
+  const openapiPath = path.join(__dirname, 'docs/openapi.yaml');
+  const openapiDocument = YAML.load(openapiPath);
+  app.use(
+    '/api/docs',
+    swaggerUi.serve,
+    swaggerUi.setup(openapiDocument, {
+      customCss: '.swagger-ui .topbar { display: none }',
+      customSiteTitle: 'CarVault API',
+    }),
+  );
+  app.get('/api/docs.json', (_req, res) => {
+    res.json(openapiDocument);
+  });
+}
+
 // Sentry error handler (must be before custom error handler)
 if (process.env.SENTRY_DSN) {
   Sentry.setupExpressErrorHandler(app);

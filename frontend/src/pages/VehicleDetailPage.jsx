@@ -20,7 +20,7 @@ import { motion as Motion } from 'framer-motion';
 const fuelOpts = [{ value: 'GASOLINE', label: 'Essence' },{ value: 'DIESEL', label: 'Diesel' },{ value: 'HYBRID', label: 'Hybride' },{ value: 'ELECTRIC', label: 'Électrique' },{ value: 'LPG', label: 'GPL' },{ value: 'OTHER', label: 'Autre' }];
 const currentYear = new Date().getFullYear();
 const yearOpts = Array.from({ length: currentYear + 1 - 1990 + 1 }, (_, i) => { const y = currentYear + 1 - i; return { value: String(y), label: String(y) }; });
-const docTypeOpts = [{ value: 'INSURANCE', label: 'Assurance' },{ value: 'TECHNICAL_INSPECTION', label: 'Contrôle technique' },{ value: 'INVOICE', label: 'Facture' },{ value: 'WARRANTY', label: 'Garantie' },{ value: 'REGISTRATION', label: 'Carte grise' },{ value: 'OTHER', label: 'Autre' }];
+const docTypeOpts = [{ value: 'TECHNICAL_INSPECTION', label: 'Contrôle technique' },{ value: 'INSURANCE', label: 'Assurance' },{ value: 'REGISTRATION', label: 'Carte grise' },{ value: 'INVOICE', label: 'Facture' },{ value: 'ACCIDENT_REPORT', label: 'Constat amiable' },{ value: 'OTHER', label: 'Autre' }];
 const expCatOpts = [{ value: 'MAINTENANCE', label: 'Entretien / Révision' },{ value: 'OIL_CHANGE', label: 'Vidange' },{ value: 'BRAKES', label: 'Freins / Plaquettes' },{ value: 'TIRES', label: 'Pneus' },{ value: 'BODYWORK', label: 'Carrosserie' },{ value: 'TECHNICAL_INSPECTION', label: 'Contrôle technique' },{ value: 'PARKING', label: 'Stationnement' },{ value: 'TOLL', label: 'Péage' },{ value: 'OTHER', label: 'Autre' }];
 const monthNames = ['J','F','M','A','M','J','J','A','S','O','N','D'];
 
@@ -168,7 +168,7 @@ export default function VehicleDetailPage() {
                       <div className="min-w-0">
                         <p className="text-sm font-bold text-white truncate">{d.name}</p>
                         <div className="flex items-center gap-2 mt-1">
-                          <span className="text-[9px] font-bold uppercase tracking-widest text-white/50">{documentTypeLabels[d.type]}</span>
+                          <span className="text-[9px] font-bold uppercase tracking-widest text-white/50">{d.type === 'OTHER' ? d.name : documentTypeLabels[d.type]}</span>
                           {d.expirationDate && <span className="text-[9px] font-bold text-accent">EXP: {formatDateShort(d.expirationDate)}</span>}
                         </div>
                       </div>

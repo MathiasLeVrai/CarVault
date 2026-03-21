@@ -2,20 +2,21 @@ const documentService = require('../services/document.service');
 const storageService = require('../services/storage.service');
 
 const EXPIRATION_DEFAULTS = {
-  INSURANCE: 365,
   TECHNICAL_INSPECTION: 730,
-  WARRANTY: 730,
+  INSURANCE: 365,
   REGISTRATION: null,
   INVOICE: null,
+  ACCIDENT_REPORT: null,
+  WARRANTY: null,
   OTHER: null,
 };
 
 const TYPE_KEYWORDS = {
-  INSURANCE: ['assurance', 'insurance', 'maaf', 'maif', 'matmut', 'axa', 'allianz', 'groupama'],
   TECHNICAL_INSPECTION: ['controle', 'technique', 'ct', 'inspection', 'dekra', 'autovision', 'securitest'],
-  INVOICE: ['facture', 'invoice', 'devis', 'receipt'],
-  WARRANTY: ['garantie', 'warranty'],
+  INSURANCE: ['assurance', 'insurance', 'maaf', 'maif', 'matmut', 'axa', 'allianz', 'groupama'],
   REGISTRATION: ['carte grise', 'certificat', 'immatriculation', 'registration'],
+  INVOICE: ['facture', 'invoice', 'devis', 'receipt'],
+  ACCIDENT_REPORT: ['constat', 'accident', 'amiable', 'sinistre'],
 };
 
 function detectDocumentType(filename) {

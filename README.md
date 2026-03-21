@@ -77,6 +77,9 @@ npm run dev
 **Frontend :** http://localhost:5173  
 **API :** http://localhost:3001
 
+**Documentation Swagger (OpenAPI 3)** : http://localhost:3001/api/docs — JSON brut : http://localhost:3001/api/docs.json  
+Désactivation : `SWAGGER_ENABLED=false` dans `backend/.env`.
+
 > Le frontend proxifie automatiquement `/api` et `/uploads` vers le backend via Vite (voir `vite.config.js`).
 
 ---

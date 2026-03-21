@@ -356,11 +356,11 @@ export default function QuickActionSheet({ onClose }) {
                       onChange={e => setDocForm(p => ({ ...p, type: e.target.value }))}
                       className="cv-input w-full px-4 py-3 text-base text-ink appearance-none"
                     >
-                      <option value="INSURANCE">Assurance</option>
                       <option value="TECHNICAL_INSPECTION">Contrôle technique</option>
-                      <option value="INVOICE">Facture</option>
-                      <option value="WARRANTY">Garantie</option>
+                      <option value="INSURANCE">Assurance</option>
                       <option value="REGISTRATION">Carte grise</option>
+                      <option value="INVOICE">Facture</option>
+                      <option value="ACCIDENT_REPORT">Constat amiable</option>
                       <option value="OTHER">Autre</option>
                     </select>
                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
