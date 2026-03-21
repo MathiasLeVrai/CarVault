@@ -87,8 +87,9 @@ export default function QuickActionSheet({ onClose }) {
   // Expense form
   const [exp, setExp] = useState({ amount: '', category: 'MAINTENANCE', description: '' });
   // Document form
-  const [docForm, setDocForm] = useState({ name: '', type: 'INVOICE', vehicleId: '' });
+  const [docForm, setDocForm] = useState({ name: '', type: 'INSURANCE', vehicleId: '', expirationDate: '' });
   const [docFile, setDocFile] = useState(null);
+  const [docHasExpiration, setDocHasExpiration] = useState(false);
 
   useEffect(() => {
     vehicleApi.getAll()
@@ -157,6 +158,7 @@ export default function QuickActionSheet({ onClose }) {
         fd.append('name', docForm.name);
         fd.append('type', docForm.type);
         fd.append('vehicleId', docForm.vehicleId || vid);
+        if (docForm.expirationDate) fd.append('expirationDate', docForm.expirationDate);
         fd.append('file', docFile);
         await documentApi.create(fd);
         toast.success('Document ajouté');
@@ -345,15 +347,15 @@ export default function QuickActionSheet({ onClose }) {
                     />
                   </label>
                 </Field>
-                <Field label="Nom du document">
-                  <CvInput placeholder="Assurance 2026…" value={docForm.name}
-                    onChange={e => setDocForm(p => ({ ...p, name: e.target.value }))} />
-                </Field>
                 <Field label="Type">
                   <div className="relative">
                     <select
                       value={docForm.type}
-                      onChange={e => setDocForm(p => ({ ...p, type: e.target.value }))}
+                      onChange={e => {
+                        const t = e.target.value;
+                        setDocForm(p => ({ ...p, type: t, expirationDate: '' }));
+                        setDocHasExpiration(false);
+                      }}
                       className="cv-input w-full px-4 py-3 text-base text-ink appearance-none"
                     >
                       <option value="TECHNICAL_INSPECTION">Contrôle technique</option>
@@ -366,6 +368,38 @@ export default function QuickActionSheet({ onClose }) {
                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
                   </div>
                 </Field>
+                <Field label={docForm.type === 'OTHER' ? 'Nom du document' : 'Nom'}>
+                  <CvInput placeholder={docForm.type === 'OTHER' ? 'Ex: Garantie Norauto' : 'Assurance 2026…'} value={docForm.name}
+                    onChange={e => setDocForm(p => ({ ...p, name: e.target.value }))} />
+                </Field>
+                {(docForm.type === 'TECHNICAL_INSPECTION' || docForm.type === 'INSURANCE') && (
+                  <Field label="Date d'expiration">
+                    <CvInput type="date" value={docForm.expirationDate}
+                      onChange={e => setDocForm(p => ({ ...p, expirationDate: e.target.value }))} />
+                  </Field>
+                )}
+                {docForm.type === 'OTHER' && (
+                  <>
+                    <label className="flex items-center gap-3 cursor-pointer select-none px-1">
+                      <input
+                        type="checkbox"
+                        checked={docHasExpiration}
+                        onChange={e => {
+                          setDocHasExpiration(e.target.checked);
+                          if (!e.target.checked) setDocForm(p => ({ ...p, expirationDate: '' }));
+                        }}
+                        className="w-4 h-4 rounded border-2 border-white/20 bg-transparent accent-lime"
+                      />
+                      <span className="text-sm font-semibold text-white">Ce document a une date d&apos;expiration</span>
+                    </label>
+                    {docHasExpiration && (
+                      <Field label="Date d'expiration">
+                        <CvInput type="date" value={docForm.expirationDate}
+                          onChange={e => setDocForm(p => ({ ...p, expirationDate: e.target.value }))} />
+                      </Field>
+                    )}
+                  </>
+                )}
                 {vehicles.length > 1 && (
                   <Field label="Véhicule">
                     <div className="relative">
