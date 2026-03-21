@@ -257,7 +257,9 @@ export default function QuickActionSheet({ onClose }) {
             transition={{ type: 'spring', stiffness: 300, damping: 28 }}
             className="space-y-4 pb-2"
           >
-            <VehicleSelect vehicles={vehicles} value={vehicleId} onChange={setVehicleId} />
+            {view !== 'document' && (
+              <VehicleSelect vehicles={vehicles} value={vehicleId} onChange={setVehicleId} />
+            )}
 
             {/* Fuel form */}
             {view === 'fuel' && (
@@ -400,24 +402,22 @@ export default function QuickActionSheet({ onClose }) {
                     )}
                   </>
                 )}
-                {vehicles.length > 1 && (
-                  <Field label="Véhicule">
-                    <div className="relative">
-                      <select
-                        value={docForm.vehicleId}
-                        onChange={e => setDocForm(p => ({ ...p, vehicleId: e.target.value }))}
-                        className="cv-input w-full px-4 py-3 text-base text-ink appearance-none"
-                      >
-                        {vehicles.map(v => (
-                          <option key={v.id} value={v.id}>
-                            {v.brand} {v.model}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
+                <Field label="Véhicule">
+                  <div className="relative">
+                    <select
+                      value={docForm.vehicleId}
+                      onChange={e => setDocForm(p => ({ ...p, vehicleId: e.target.value }))}
+                      className="cv-input w-full px-4 py-3 text-base text-ink appearance-none"
+                    >
+                      {vehicles.map(v => (
+                        <option key={v.id} value={v.id}>
+                          {v.brand} {v.model}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
                     </div>
                   </Field>
-                )}
               </>
             )}
 
