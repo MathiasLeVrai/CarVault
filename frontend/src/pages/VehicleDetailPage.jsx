@@ -12,6 +12,7 @@ import VehicleHero from '../components/vehicle/VehicleHero';
 import VehicleHealthCard from '../components/vehicle/VehicleHealthCard';
 import MaintenancePlanCard from '../components/vehicle/MaintenancePlanCard';
 import MileageHistory from '../components/vehicle/MileageHistory';
+import VehicleValuation from '../components/vehicle/VehicleValuation';
 import compressImage from '../utils/compressImage';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { formatCurrency, formatDateShort, documentTypeLabels, expenseCategoryLabels } from '../utils/helpers';
@@ -135,6 +136,9 @@ export default function VehicleDetailPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Health Score */}
         <VehicleHealthCard health={health} variants={itemVariants} />
+
+        {/* Valeur estimée */}
+        <VehicleValuation vehicleId={v.id} variants={itemVariants} />
 
         <div className="lg:col-span-2 space-y-6">
           {/* Chart */}

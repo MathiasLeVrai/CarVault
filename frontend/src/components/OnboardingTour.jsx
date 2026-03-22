@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
-import { Car, FileText, Bell, BarChart2, MapPin, ArrowRight, X } from 'lucide-react';
+import { Car, Sparkles, ArrowRight, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const SLIDES = [
@@ -9,35 +9,14 @@ const SLIDES = [
     color: '#ff2a3f',
     bg: 'rgba(255,42,63,0.12)',
     title: 'Bienvenue dans CarVault',
-    subtitle: 'Ton garage numérique, dans ta poche. Tout ce qui concerne tes véhicules, en un seul endroit.',
+    subtitle: 'Ton garage numérique. Documents, dépenses, alertes CT, carburant — tout en un seul endroit.',
   },
   {
-    icon: FileText,
-    color: '#7c5cfc',
-    bg: 'rgba(124,92,252,0.12)',
-    title: 'Documents en sécurité',
-    subtitle: 'Assurance, carte grise, contrôle technique… Retrouve tout en 2 secondes, même sans connexion.',
-  },
-  {
-    icon: Bell,
-    color: '#38bdf8',
-    bg: 'rgba(56,189,248,0.12)',
-    title: 'Zéro amende',
-    subtitle: 'On te prévient J-30, J-7 et J-1 avant chaque expiration. L\'amende CT est à 135€ — autant l\'éviter.',
-  },
-  {
-    icon: BarChart2,
+    icon: Sparkles,
     color: '#22c55e',
     bg: 'rgba(34,197,94,0.12)',
-    title: 'Dépenses & Carburant',
-    subtitle: 'Suis ton budget auto, enregistre chaque plein, et consulte le prix à la pompe autour de toi en temps réel.',
-  },
-  {
-    icon: MapPin,
-    color: '#f59e0b',
-    bg: 'rgba(245,158,11,0.12)',
-    title: 'Tout est prêt !',
-    subtitle: 'Commence par ajouter ton premier véhicule. Ça prend moins de 30 secondes.',
+    title: 'Ajoute ton véhicule',
+    subtitle: 'Renseigne ta plaque et on s\'occupe du reste. Ça prend 30 secondes.',
     isLast: true,
   },
 ];

@@ -215,4 +215,9 @@ export const pushApi = {
   unsubscribe: (endpoint) => api.post('/push/unsubscribe', { endpoint }),
 };
 
+export const coteApi = {
+  get: (vehicleId) => api.get(`/cote/${vehicleId}`),
+  update: (vehicleId, estimatedValue) => api.put(`/cote/${vehicleId}`, { estimatedValue }),
+};
+
 export default api;

@@ -256,7 +256,7 @@ export default function DashboardPage() {
             }
           />
           <div className="h-[220px] md:h-[260px] w-full">
-            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+            <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
               <BarChart data={data?.monthlyExpenses || []} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
                 <CartesianGrid stroke="rgba(255,255,255,0.04)" vertical={false} />
                 <XAxis dataKey="month" stroke="#71717a" fontSize={10} fontWeight={600} tickLine={false} axisLine={false} interval={0} />
@@ -282,7 +282,7 @@ export default function DashboardPage() {
             <>
               <div className="flex-1 flex items-center justify-center my-2">
                 <div className="w-[160px] h-[160px]">
-                  <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+                  <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                     <PieChart>
                       <Pie
                         data={data.expensesByCategory}

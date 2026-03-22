@@ -57,8 +57,10 @@ model Vehicle {
   fiscalPower           Int?
   co2                   Int?
   critAir               Int?       // Vignette Crit'Air 0-5, null si inconnu
-  firstRegistrationDate DateTime?
-  maintenanceConfig     Json?      // Intervalles personnalises par l'utilisateur
+  firstRegistrationDate   DateTime?
+  laCentraleVersionId     Int?       // versionId La Centrale pour la cote
+  estimatedValue          Float?     // Valeur estimée saisie manuellement par l'utilisateur
+  maintenanceConfig       Json?      // Intervalles personnalises par l'utilisateur
   createdAt             DateTime   @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -251,4 +253,18 @@ model ShareLink {
 
   @@index([vehicleId, userId])
   @@map("share_links")
+}
+
+model VehicleCote {
+  id        String   @id @default(uuid())
+  plate     String   @unique
+  low       Float
+  mid       Float
+  high      Float
+  raw       Json?
+  fetchedAt DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("vehicle_cotes")
 }

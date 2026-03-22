@@ -55,6 +55,9 @@ self.addEventListener('fetch', (event) => {
   // Ignorer les requêtes non-GET
   if (request.method !== 'GET') return;
 
+  // Ignorer les schemes non-http (chrome-extension://, etc.)
+  if (!request.url.startsWith('http')) return;
+
   // Stratégie pour les appels API : Network First (réseau d'abord, cache en fallback)
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(networkFirst(request, API_CACHE));
