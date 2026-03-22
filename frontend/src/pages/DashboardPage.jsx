@@ -19,6 +19,7 @@ import {
   documentTypeLabels,
 } from '../utils/helpers';
 import { motion as Motion } from 'framer-motion';
+import FuelPriceWidget from '../components/dashboard/FuelPriceWidget';
 
 const ChartTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
@@ -424,6 +425,12 @@ export default function DashboardPage() {
           </div>
         </Motion.div>
       </div>
+
+      {/* ─── Prix carburant ─── */}
+      <FuelPriceWidget
+        userFuelType={data?.ownershipCosts?.[0]?.fuelType || 'GASOLINE'}
+        variants={itemVariants}
+      />
 
       {/* ─── Coût de possession ─── */}
       {data?.ownershipCosts?.length > 0 && (

@@ -18,6 +18,13 @@ const FUEL_TYPES = {
   ELECTRIC: 'Électrique', LPG: 'GPL', OTHER: 'Autre',
 };
 
+const CRITAIR_PDF_COLORS = {
+  0: '#4ade80', 1: '#a78bfa', 2: '#facc15', 3: '#f97316', 4: '#b45309', 5: '#6b7280',
+};
+const CRITAIR_PDF_LABELS = {
+  0: 'Electrique', 1: 'Crit\'Air 1', 2: 'Crit\'Air 2', 3: 'Crit\'Air 3', 4: 'Crit\'Air 4', 5: 'Crit\'Air 5',
+};
+
 const COLORS = {
   bg: '#f5f0eb',
   dark: '#1a1a1a',
@@ -212,6 +219,9 @@ class PdfService {
     if (vehicle.transmission) fields.push(['Transmission', vehicle.transmission]);
     if (vehicle.bodyType) fields.push(['Carrosserie', vehicle.bodyType]);
     if (vehicle.doors) fields.push(['Portes', String(vehicle.doors)]);
+    if (vehicle.fiscalPower) fields.push(['Puissance fiscale', `${vehicle.fiscalPower} CV`]);
+    if (vehicle.co2) fields.push(['Emissions CO2', `${vehicle.co2} g/km`]);
+    if (vehicle.critAir != null) fields.push(['Vignette Crit\'Air', CRITAIR_PDF_LABELS[vehicle.critAir] || `Niveau ${vehicle.critAir}`]);
 
     fields.push(['Ajouté le', new Date(vehicle.createdAt).toLocaleDateString('fr-FR')]);
 

@@ -239,7 +239,7 @@ class DashboardService {
   async _calcOwnershipCosts(userId) {
     const vehicles = await prisma.vehicle.findMany({
       where: { userId },
-      select: { id: true, brand: true, model: true, createdAt: true, purchasePrice: true },
+      select: { id: true, brand: true, model: true, fuelType: true, createdAt: true, purchasePrice: true },
     });
 
     if (vehicles.length === 0) return [];
@@ -268,6 +268,7 @@ class DashboardService {
         vehicleId: v.id,
         brand: v.brand,
         model: v.model,
+        fuelType: v.fuelType,
         monthsOwned,
         totalExpenses: expenseTotal,
         totalFuel: fuelTotal,

@@ -72,6 +72,9 @@ class PlateService {
       year: d.AWN_date_mise_en_circulation_us
         ? new Date(d.AWN_date_mise_en_circulation_us).getFullYear()
         : null,
+      firstRegistrationDate: d.AWN_date_mise_en_circulation_us
+        ? new Date(d.AWN_date_mise_en_circulation_us)
+        : null,
       color: d.AWN_couleur || '',
       fuelType: this._mapFuelType(d.AWN_energie || ''),
       // Specs

@@ -1,12 +1,37 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { motion as Motion, useReducedMotion } from 'framer-motion';
+import { Helmet } from 'react-helmet-async';
+import { motion as Motion, useReducedMotion, AnimatePresence } from 'framer-motion';
 import {
   FileText, Bell, Wrench, TrendingUp, MapPin, Shield,
   ArrowRight, Check, X, Fuel, BarChart3, Share2, Car,
-  AlertTriangle, Star, ChevronRight,
+  AlertTriangle, Star, ChevronRight, ChevronDown,
 } from 'lucide-react';
 
 /* ─── Data ──────────────────────────────────────────────────── */
+
+const FAQ_ITEMS = [
+  {
+    q: 'Quand faire son contrôle technique ?',
+    a: 'Le premier contrôle technique doit être réalisé dans les 6 mois précédant le 4e anniversaire de la première mise en circulation du véhicule, puis tous les 2 ans. CarVault vous envoie des rappels automatiques à J-30, J-14 et J-7 pour ne jamais oublier.',
+  },
+  {
+    q: 'Comment lire une carte grise ?',
+    a: 'La carte grise (certificat d\'immatriculation) contient toutes les informations essentielles : champ A (numéro d\'immatriculation), B (date de 1ère immatriculation), D.1 (marque), D.2 (type/variante), P.6 (puissance fiscale). Avec CarVault, scannez votre plaque et toutes ces infos sont automatiquement importées.',
+  },
+  {
+    q: 'Combien coûte l\'entretien d\'une voiture par an ?',
+    a: 'En moyenne, l\'entretien d\'une voiture coûte entre 1 500 € et 2 500 € par an (assurance, carburant, révisions, réparations). CarVault vous aide à suivre chaque dépense et à calculer votre coût de possession réel au mois et au jour.',
+  },
+  {
+    q: 'Comment calculer la puissance fiscale ?',
+    a: 'La puissance fiscale (CV) est calculée selon la formule officielle française prenant en compte la puissance du moteur et les émissions de CO₂. CarVault récupère automatiquement la puissance fiscale lors du scan de plaque d\'immatriculation.',
+  },
+  {
+    q: 'Qu\'est-ce que la vignette Crit\'Air ?',
+    a: 'La vignette Crit\'Air classe les véhicules selon leur niveau d\'émissions polluantes (de 0 pour les électriques à 5 pour les plus polluants). Elle est obligatoire dans les Zones à Faibles Émissions (ZFE) comme Paris, Lyon ou Marseille. CarVault calcule automatiquement votre niveau Crit\'Air et vous alerte si votre véhicule est concerné par des restrictions.',
+  },
+];
 
 const MARQUEE_ITEMS = [
   { icon: '🗂', label: 'Coffre-fort documentaire' },
@@ -328,12 +353,106 @@ function AppMockup() {
 
 /* ─── Main component ────────────────────────────────────────── */
 
+function FaqSection() {
+  const [open, setOpen] = useState(null);
+  return (
+    <section className="relative z-10 px-6 md:px-12 py-24">
+      <div className="max-w-3xl mx-auto">
+        <Motion.div {...fade()} className="text-center mb-12">
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-accent">FAQ</span>
+          <h2 className="text-3xl md:text-4xl font-black font-display tracking-tight mt-2">Questions fréquentes</h2>
+        </Motion.div>
+        <div className="space-y-3">
+          {FAQ_ITEMS.map((item, i) => (
+            <Motion.div key={i} {...fade(i * 0.05)}>
+              <button
+                onClick={() => setOpen(open === i ? null : i)}
+                className="w-full text-left bento-card p-5 group"
+              >
+                <div className="flex items-center justify-between gap-4">
+                  <h3 className="text-sm font-bold text-white font-display">{item.q}</h3>
+                  <ChevronDown
+                    className={`w-4 h-4 text-white/40 shrink-0 transition-transform duration-300 ${open === i ? 'rotate-180' : ''}`}
+                  />
+                </div>
+                <AnimatePresence>
+                  {open === i && (
+                    <Motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                      className="overflow-hidden"
+                    >
+                      <p className="text-sm text-white/50 leading-relaxed mt-3 pt-3 border-t border-white/5">
+                        {item.a}
+                      </p>
+                    </Motion.div>
+                  )}
+                </AnimatePresence>
+              </button>
+            </Motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function LandingPage() {
   const prefersReduced = useReducedMotion();
 
   return (
     <div className="min-h-screen bg-bg text-white overflow-x-hidden">
-
+      <Helmet>
+        <title>CarVault — Carnet d'entretien numerique pour votre vehicule</title>
+        <meta name="description" content="Gerez votre vehicule simplement : carnet d'entretien, alertes CT, suivi carburant et depenses, score de sante, carte des garages. Essayez gratuitement." />
+        <link rel="canonical" href="https://carvault.fly.dev/" />
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "SoftwareApplication",
+          "name": "CarVault",
+          "applicationCategory": "UtilitiesApplication",
+          "operatingSystem": "Web",
+          "url": "https://carvault.fly.dev",
+          "description": "Carnet d'entretien numerique pour votre vehicule. Suivi entretien, alertes CT, depenses carburant, score de sante et carte des garages.",
+          "offers": [
+            {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "EUR",
+              "name": "Gratuit",
+              "description": "1 vehicule, fonctionnalites de base"
+            },
+            {
+              "@type": "Offer",
+              "price": "6.99",
+              "priceCurrency": "EUR",
+              "name": "Premium mensuel",
+              "description": "Vehicules illimites, toutes les fonctionnalites",
+              "priceSpecification": {
+                "@type": "UnitPriceSpecification",
+                "price": "6.99",
+                "priceCurrency": "EUR",
+                "billingDuration": "P1M"
+              }
+            }
+          ],
+          "screenshot": "https://carvault.fly.dev/og-image.png"
+        })}</script>
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          "mainEntity": FAQ_ITEMS.map(item => ({
+            "@type": "Question",
+            "name": item.q,
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": item.a,
+            },
+          })),
+        })}</script>
+      </Helmet>
 
       {/* ── Navbar ───────────────────────────────────────────── */}
       <header className="relative z-10 flex items-center justify-between px-6 md:px-12 py-5 border-b border-white/[0.05]">
@@ -662,6 +781,9 @@ export default function LandingPage() {
           </Motion.div>
         </div>
       </section>
+
+      {/* ── FAQ ────────────────────────────────────────────────── */}
+      <FaqSection />
 
       {/* ── Final CTA ────────────────────────────────────────── */}
       <section className="relative z-10 px-6 md:px-12 py-24">

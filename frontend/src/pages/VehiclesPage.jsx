@@ -116,6 +116,9 @@ export default function VehiclesPage() {
         transmission: data.transmission || '',
         bodyType: data.bodyType || '',
         doors: data.doors ? String(data.doors) : '',
+        fiscalPower: data.fiscalPower ? String(data.fiscalPower) : '',
+        co2: data.co2 ? String(data.co2) : '',
+        firstRegistrationDate: data.firstRegistrationDate || '',
       }));
       setPlateFound(true);
     } catch (err) {
@@ -315,6 +318,9 @@ export default function VehiclesPage() {
                     transmission: data.transmission || '',
                     bodyType: data.bodyType || '',
                     doors: data.doors ? String(data.doors) : '',
+                    fiscalPower: data.fiscalPower ? String(data.fiscalPower) : '',
+                    co2: data.co2 ? String(data.co2) : '',
+                    firstRegistrationDate: data.firstRegistrationDate || '',
                   }));
                   setPlateFound(true);
                 })

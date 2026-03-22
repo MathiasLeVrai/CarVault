@@ -4,6 +4,7 @@ const healthService = require('../services/health.service');
 const storageService = require('../services/storage.service');
 const prisma = require('../lib/prisma');
 const { getMaintenanceIntervals, MAINTENANCE_LABELS } = require('../data/vehicles');
+const { computeCritAir } = require('../services/critair.service');
 
 function findLastExpenseForType(expenses, maintenanceKey) {
   const mapping = {
@@ -58,7 +59,8 @@ class VehicleController {
   async create(req, res, next) {
     try {
       const { brand, model, year, mileage, licensePlate, color, fuelType, purchasePrice,
-              carapiTrimId, msrp, horsepower, engineSize, transmission, bodyType, doors } = req.body;
+              carapiTrimId, msrp, horsepower, engineSize, transmission, bodyType, doors,
+              fiscalPower, co2, firstRegistrationDate } = req.body;
 
       if (!brand || !model || !year) {
         return res.status(400).json({ error: 'Marque, modèle et année sont requis' });
@@ -99,6 +101,10 @@ class VehicleController {
         transmission: transmission || null,
         bodyType: bodyType || null,
         doors: doors ? parseInt(doors) : null,
+        fiscalPower: fiscalPower ? parseInt(fiscalPower) : null,
+        co2: co2 ? parseInt(co2) : null,
+        firstRegistrationDate: firstRegistrationDate ? new Date(firstRegistrationDate) : null,
+        critAir: computeCritAir(fuelType || 'GASOLINE', firstRegistrationDate || null),
       };
 
       const vehicle = await vehicleService.create(data, req.userId);

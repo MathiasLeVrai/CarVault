@@ -1,6 +1,7 @@
 const cron = require('node-cron');
 const prisma = require('../lib/prisma');
 const { getMaintenanceIntervals } = require('../data/vehicles');
+const { getBannedZones } = require('../data/zfe');
 const emailService = require('../services/email.service');
 const pushService = require('../services/push.service');
 
@@ -395,6 +396,46 @@ async function checkMileageService() {
 }
 
 // ============================================================
+// 6. Restrictions ZFE (Crit'Air)
+// ============================================================
+
+async function checkZfeAlerts() {
+  let created = 0;
+  const sixMonthsAgo = new Date();
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
+  const vehicles = await prisma.vehicle.findMany({
+    where: { critAir: { not: null, gte: 2 } },
+    include: {
+      user: { select: { id: true, email: true, firstName: true, notifEmail: true } },
+    },
+  });
+
+  for (const v of vehicles) {
+    const banned = getBannedZones(v.critAir);
+    if (banned.length === 0) continue;
+
+    if (await alertExists(v.userId, 'ZFE_RESTRICTION', `ZFE`, { since: sixMonthsAgo })) continue;
+
+    const cities = banned.slice(0, 5).map(z => z.city).join(', ');
+    const more = banned.length > 5 ? ` et ${banned.length - 5} autre(s)` : '';
+
+    await createAlert({
+      title: `ZFE : ${v.brand} ${v.model} (Crit'Air ${v.critAir})`,
+      message: `Votre ${v.brand} ${v.model} est Crit'Air ${v.critAir}. Ce vehicule est interdit de circulation dans les ZFE de ${cities}${more}. Verifiez les restrictions locales avant de circuler dans ces zones.`,
+      type: 'ZFE_RESTRICTION',
+      userId: v.userId,
+    }, {
+      email: v.user?.notifEmail !== false ? v.user?.email : null,
+      userName: v.user?.firstName,
+    });
+    created++;
+  }
+
+  return created;
+}
+
+// ============================================================
 // Orchestrateur principal
 // ============================================================
 
@@ -407,9 +448,10 @@ async function runAllAlertChecks() {
     const oilAlerts = await checkOilChange();
     const tireAlerts = await checkTireSeason();
     const kmAlerts = await checkMileageService();
+    const zfeAlerts = await checkZfeAlerts();
 
-    const total = docAlerts + maintAlerts + oilAlerts + tireAlerts + kmAlerts;
-    console.log(`[CRON] ${total} alerte(s) créée(s) — Documents: ${docAlerts}, Révision: ${maintAlerts}, Vidange: ${oilAlerts}, Pneus: ${tireAlerts}, Km: ${kmAlerts}`);
+    const total = docAlerts + maintAlerts + oilAlerts + tireAlerts + kmAlerts + zfeAlerts;
+    console.log(`[CRON] ${total} alerte(s) creee(s) — Documents: ${docAlerts}, Revision: ${maintAlerts}, Vidange: ${oilAlerts}, Pneus: ${tireAlerts}, Km: ${kmAlerts}, ZFE: ${zfeAlerts}`);
   } catch (error) {
     console.error('[CRON] Erreur alertes :', error.message);
   }

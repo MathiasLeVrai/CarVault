@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { motion as Motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { ArrowRight } from 'lucide-react';
@@ -28,6 +29,11 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-bg flex">
+      <Helmet>
+        <title>Connexion — CarVault</title>
+        <meta name="description" content="Connectez-vous a votre compte CarVault pour gerer vos vehicules, documents et depenses." />
+        <link rel="canonical" href="https://carvault.fly.dev/login" />
+      </Helmet>
       {/* Left — Visual */}
       <div className="hidden lg:flex lg:w-1/2 bg-bg-alt relative overflow-hidden items-center justify-center p-16 border-r border-white/5">
         <div className="relative z-10 max-w-md w-full">

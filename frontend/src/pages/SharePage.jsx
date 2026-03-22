@@ -1,10 +1,29 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import Badge from '../components/ui/Badge';
 import {
   Car, FileText, Wallet, Gauge, Heart, Wrench, FileCheck,
   PiggyBank, CheckCircle2, FileDown, Shield, CalendarClock,
 } from 'lucide-react';
+
+const CRITAIR_COLORS = {
+  0: '#4ade80', 1: '#a78bfa', 2: '#facc15', 3: '#f97316', 4: '#b45309', 5: '#6b7280',
+};
+
+function CritAirBadge({ level }) {
+  if (level == null) return null;
+  const color = CRITAIR_COLORS[level] || '#6b7280';
+  return (
+    <span
+      className="inline-flex items-center justify-center w-7 h-7 rounded-full text-[10px] font-black border-2 shrink-0"
+      style={{ borderColor: color, color: color, backgroundColor: `${color}15` }}
+      title={`Crit'Air ${level === 0 ? 'E' : level}`}
+    >
+      {level === 0 ? 'E' : level}
+    </span>
+  );
+}
 import {
   formatCurrency, formatDateShort, documentTypeLabels,
   expenseCategoryLabels, fuelTypeLabels,
@@ -62,6 +81,12 @@ export default function SharePage() {
 
   return (
     <div className="min-h-screen bg-bg selection:bg-accent/30">
+      <Helmet>
+        <title>{`${vehicle.brand} ${vehicle.model} ${vehicle.year} — Dossier CarVault`}</title>
+        <meta name="description" content={`Consultez le dossier complet de cette ${vehicle.brand} ${vehicle.model} ${vehicle.year} : historique, documents, score de sante.`} />
+        <meta property="og:title" content={`${vehicle.brand} ${vehicle.model} — Dossier vehicule CarVault`} />
+        <meta property="og:description" content={`${vehicle.mileage?.toLocaleString('fr-FR')} km — Score sante ${health?.score || '?'}/100`} />
+      </Helmet>
       <div className="fixed top-[-15%] left-[-15%] w-[45%] h-[45%] bg-accent/3 rounded-full blur-[140px] pointer-events-none" />
       <div className="max-w-4xl mx-auto px-5 py-8 md:py-12 space-y-8">
         {/* Header */}
@@ -94,6 +119,8 @@ export default function SharePage() {
               {vehicle.licensePlate && (
                 <span className="px-3 py-1 rounded-lg bg-black/40 border border-white/10 text-[11px] font-mono font-bold text-white uppercase">{vehicle.licensePlate}</span>
               )}
+              <CritAirBadge level={vehicle.critAir} />
+              {vehicle.fiscalPower && <span className="px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-[10px] font-bold text-white/60 uppercase tracking-wider">{vehicle.fiscalPower} CV fiscal</span>}
             </div>
             <h1 className="text-4xl md:text-5xl font-black text-white font-display tracking-tight">
               {vehicle.brand} <span className="text-white/60">{vehicle.model}</span>
@@ -240,6 +267,28 @@ export default function SharePage() {
             )}
           </div>
         )}
+
+        {/* CTA Banner */}
+        <div className="bento-card p-6 md:p-8 text-center relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-accent/10 to-transparent pointer-events-none" />
+          <div className="relative z-10">
+            <div className="w-12 h-12 rounded-2xl bg-accent flex items-center justify-center mx-auto mb-4 shadow-[0_0_30px_rgba(255,42,63,0.3)]">
+              <span className="text-lg font-black text-white font-display">CV</span>
+            </div>
+            <h3 className="text-xl font-black text-white font-display mb-2">
+              Gérez votre véhicule gratuitement
+            </h3>
+            <p className="text-sm text-ink-muted max-w-md mx-auto mb-5">
+              Suivi des dépenses, documents, rappels CT, score de santé… Tout pour votre voiture, en une seule app.
+            </p>
+            <a
+              href="/register"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-accent text-white text-sm font-bold hover:bg-accent/80 transition-colors shadow-[0_0_20px_rgba(255,42,63,0.3)]"
+            >
+              Créer mon compte — c&apos;est gratuit
+            </a>
+          </div>
+        </div>
 
         {/* Footer */}
         <div className="text-center py-6">

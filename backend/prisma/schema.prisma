@@ -54,8 +54,12 @@ model Vehicle {
   transmission  String?
   bodyType      String?
   doors              Int?
-  maintenanceConfig  Json?    // Intervalles personnalisés par l'utilisateur
-  createdAt          DateTime @default(now())
+  fiscalPower           Int?
+  co2                   Int?
+  critAir               Int?       // Vignette Crit'Air 0-5, null si inconnu
+  firstRegistrationDate DateTime?
+  maintenanceConfig     Json?      // Intervalles personnalises par l'utilisateur
+  createdAt             DateTime   @default(now())
   updatedAt     DateTime @updatedAt
 
   userId        String
@@ -171,6 +175,7 @@ enum AlertType {
   OIL_CHANGE
   TIRE_SEASON
   MILEAGE_SERVICE
+  ZFE_RESTRICTION
   OTHER
 }
 

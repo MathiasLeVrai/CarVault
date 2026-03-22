@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { motion as Motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { ArrowRight } from 'lucide-react';
@@ -31,6 +32,11 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen bg-bg flex">
+      <Helmet>
+        <title>Inscription — CarVault</title>
+        <meta name="description" content="Creez votre compte CarVault gratuitement et commencez a gerer votre vehicule en quelques secondes." />
+        <link rel="canonical" href="https://carvault.fly.dev/register" />
+      </Helmet>
       {/* Left — Visual */}
       <div className="hidden lg:flex lg:w-1/2 bg-bg-alt relative overflow-hidden items-center justify-center p-16 border-r border-white/5">
         <div className="relative z-10 max-w-md w-full">

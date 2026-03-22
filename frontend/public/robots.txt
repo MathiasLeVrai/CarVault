@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /vehicles
+Disallow: /documents
+Disallow: /expenses
+Disallow: /alerts
+Disallow: /settings
+Disallow: /map
+Disallow: /api/
+
+Sitemap: https://carvault.fly.dev/sitemap.xml
