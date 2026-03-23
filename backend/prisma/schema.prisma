@@ -166,6 +166,7 @@ enum ExpenseCategory {
   TECHNICAL_INSPECTION
   PARKING
   TOLL
+  CLEANING
   OTHER
 }
 

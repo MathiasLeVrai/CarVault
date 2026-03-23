@@ -68,6 +68,7 @@ export const expenseCategoryLabels = {
   TECHNICAL_INSPECTION: 'Contrôle technique',
   PARKING: 'Stationnement',
   TOLL: 'Péage',
+  CLEANING: 'Lavage',
   OTHER: 'Autre',
 };
 
@@ -83,6 +84,7 @@ export const expenseCategoryColors = {
   TECHNICAL_INSPECTION: '#ff6b00',
   PARKING: '#22c55e',
   TOLL: '#ff6b7a',
+  CLEANING: '#0ea5e9',
   OTHER: '#71717a',
 };
 

@@ -21,6 +21,7 @@ const EXPENSE_CATS = [
   { value: 'TECHNICAL_INSPECTION', label: 'Contrôle technique' },
   { value: 'PARKING',     label: 'Stationnement' },
   { value: 'TOLL',        label: 'Péage' },
+  { value: 'CLEANING',   label: 'Lavage' },
   { value: 'OTHER',       label: 'Autre' },
 ];
 
@@ -146,7 +147,7 @@ export default function QuickActionSheet({ onClose }) {
         toast.success('Plein enregistré');
       } else if (view === 'expense') {
         await expenseApi.create({
-          vehicleId: parseInt(vid),
+          vehicleId: vid,
           amount: parseFloat(exp.amount),
           category: exp.category,
           description: exp.description || undefined,
