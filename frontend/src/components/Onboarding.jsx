@@ -4,6 +4,7 @@ import { Car, FileText, CalendarClock, Bell, ArrowRight, X, Check } from 'lucide
 import Button from './ui/Button';
 import { vehicleApi, documentApi, alertApi } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
 const steps = [
   {
@@ -132,6 +133,8 @@ export default function Onboarding() {
   const goToStep = () => {
     navigate(currentStep.route);
   };
+
+  useBodyScrollLock(visible && !checking);
 
   if (checking || !visible) return null;
 

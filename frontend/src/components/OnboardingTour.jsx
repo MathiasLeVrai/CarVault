@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import { Car, Sparkles, ArrowRight, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -23,6 +24,7 @@ const SLIDES = [
 
 export default function OnboardingTour({ onDone }) {
   const { user } = useAuth();
+  useBodyScrollLock(true);
   const [slide, setSlide] = useState(0);
   const [direction, setDirection] = useState(1);
 

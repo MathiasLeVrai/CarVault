@@ -4,6 +4,7 @@ import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { X, Fuel, Receipt, Camera, Car, CheckCircle2, ChevronDown, ArrowLeft } from 'lucide-react';
 import { vehicleApi, fuelApi, expenseApi, documentApi } from '../services/api';
 import { useToast } from '../context/ToastContext';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
 const ACTIONS = [
   { id: 'fuel',     label: 'Plein',     icon: Fuel,    color: '#38bdf8', bg: 'rgba(56,189,248,0.08)', border: 'rgba(56,189,248,0.15)' },
@@ -77,11 +78,7 @@ export default function QuickActionSheet({ onClose }) {
   const toast = useToast();
   const fileInputRef = useRef(null);
 
-  // Lock body scroll while sheet is open
-  useEffect(() => {
-    document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = ''; };
-  }, []);
+  useBodyScrollLock(true);
 
   // Fuel form
   const [fuel, setFuel] = useState({ mileage: '', liters: '', pricePerLiter: '', isFull: true });

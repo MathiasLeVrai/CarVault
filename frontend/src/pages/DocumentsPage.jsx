@@ -10,6 +10,7 @@ import EmptyState from '../components/ui/EmptyState';
 import { FileText, Plus, Trash2, Upload, Eye, Camera, Sparkles, Bell, X, Download } from 'lucide-react';
 import { formatDateShort, daysUntil, documentTypeLabels, documentTypeBadge } from '../utils/helpers';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
 const typeFilters = [
   { value: '', label: 'Tous' },
@@ -58,16 +59,13 @@ export default function DocumentsPage() {
   const fileInputRef = useRef(null);
   const cameraInputRef = useRef(null);
 
-  // Lock scroll & handle Escape when viewing a document
+  useBodyScrollLock(!!viewingDoc);
+
   useEffect(() => {
     if (!viewingDoc) return;
-    document.body.style.overflow = 'hidden';
     const onKey = (e) => { if (e.key === 'Escape') setViewingDoc(null); };
     window.addEventListener('keydown', onKey);
-    return () => {
-      document.body.style.overflow = '';
-      window.removeEventListener('keydown', onKey);
-    };
+    return () => window.removeEventListener('keydown', onKey);
   }, [viewingDoc]);
 
   useEffect(() => { load(); }, [filter]);

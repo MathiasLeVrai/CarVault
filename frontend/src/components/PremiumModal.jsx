@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { motion as Motion } from 'framer-motion';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import { X, Zap, Check, Car, FileText, BarChart2, Shield, Loader2 } from 'lucide-react';
 import { subscriptionApi } from '../services/api';
 import { useToast } from '../context/ToastContext';
@@ -14,6 +15,7 @@ const PERKS = [
 export default function PremiumModal({ onClose }) {
   const [loading, setLoading] = useState(false);
   const toast = useToast();
+  useBodyScrollLock(true);
 
   const handleUpgrade = async () => {
     setLoading(true);

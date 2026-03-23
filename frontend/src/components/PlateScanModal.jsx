@@ -1,5 +1,6 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import { X, RotateCcw, CheckCircle2, Loader2, AlertCircle, ScanLine } from 'lucide-react';
 
 // Extract French license plate from raw OCR text
@@ -42,6 +43,7 @@ function enhanceFrame(canvas) {
 }
 
 export default function PlateScanModal({ onPlateFound, onClose }) {
+  useBodyScrollLock(true);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const streamRef = useRef(null);

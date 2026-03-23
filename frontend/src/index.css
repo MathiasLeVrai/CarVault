@@ -55,8 +55,27 @@ input, textarea, [contenteditable] {
   user-select: text;
 }
 
-button, [role="button"], a, input, select, textarea {
+button, [role="button"], a, select, textarea {
   touch-action: manipulation;
+}
+/* Native pickers / wheels (date, time, select) + range sliders — manipulation can break iOS scroll */
+input:not([type="date"]):not([type="datetime-local"]):not([type="month"]):not([type="time"]):not([type="range"]) {
+  touch-action: manipulation;
+}
+input[type="date"],
+input[type="datetime-local"],
+input[type="month"],
+input[type="time"],
+input[type="range"] {
+  touch-action: pan-y;
+}
+select {
+  touch-action: pan-y;
+}
+
+/* Recharts: SVG capture touches for tooltips — keep vertical scroll chaining */
+.recharts-responsive-container {
+  touch-action: pan-y;
 }
 
 /* Force vertical scroll on all content — prevents Motion/Recharts from blocking scroll */

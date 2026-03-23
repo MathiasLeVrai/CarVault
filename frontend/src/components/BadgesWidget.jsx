@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import { Car, FileText, ShieldCheck, Fuel, Zap, Wallet, BarChart2, Gauge, Trophy, X } from 'lucide-react';
 import { badgeApi } from '../services/api';
 
@@ -28,6 +29,7 @@ function BadgeIcon({ name, color, unlocked, size = 20 }) {
 }
 
 function BadgeDetail({ badge, onClose }) {
+  useBodyScrollLock(true);
   return (
     <>
       <Motion.div
