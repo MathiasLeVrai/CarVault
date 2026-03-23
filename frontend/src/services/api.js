@@ -100,6 +100,7 @@ export const vehicleApi = {
   create: (formData) => api.post('/vehicles', formData, true),
   update: (id, formData) => api.request(`/vehicles/${id}`, { method: 'PUT', body: formData, isFormData: true }),
   delete: (id) => api.delete(`/vehicles/${id}`),
+  backfill: () => api.post('/vehicles/backfill'),
   getMaintenancePlan: (id) => api.get(`/vehicles/${id}/maintenance`),
   updateMaintenancePlan: (id, intervals) => api.put(`/vehicles/${id}/maintenance`, { intervals }),
   downloadPdf: async (id) => {

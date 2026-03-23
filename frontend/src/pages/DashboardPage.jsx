@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { dashboardApi } from '../services/api';
+import { dashboardApi, vehicleApi } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import Badge from '../components/ui/Badge';
 import StatCard from '../components/ui/StatCard';
@@ -108,6 +108,10 @@ export default function DashboardPage() {
 
   useEffect(() => {
     dashboardApi.getData().then(setData).catch(() => {}).finally(() => setLoading(false));
+    // Backfill Crit'Air/CO2/puissance fiscale pour les véhicules existants (une fois par session)
+    if (!sessionStorage.getItem('cv_backfill_done')) {
+      vehicleApi.backfill().catch(() => {}).finally(() => sessionStorage.setItem('cv_backfill_done', '1'));
+    }
   }, []);
 
   if (loading) {
