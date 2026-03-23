@@ -55,31 +55,9 @@ input, textarea, [contenteditable] {
   user-select: text;
 }
 
-button, [role="button"], a, select, textarea {
-  touch-action: manipulation;
-}
-/* Native pickers / wheels (date, time, select) + range sliders — manipulation can break iOS scroll */
-input:not([type="date"]):not([type="datetime-local"]):not([type="month"]):not([type="time"]):not([type="range"]) {
-  touch-action: manipulation;
-}
-input[type="date"],
-input[type="datetime-local"],
-input[type="month"],
-input[type="time"],
-input[type="range"] {
-  touch-action: pan-y;
-}
-select {
-  touch-action: pan-y;
-}
-
-/* Recharts: SVG capture touches for tooltips — keep vertical scroll chaining */
+/* Keep touch handling close to browser defaults on iOS. Global touch-action rules
+   tend to freeze page scrolling after tapping fixed or animated UI. */
 .recharts-responsive-container {
-  touch-action: pan-y;
-}
-
-/* Force vertical scroll on all content — prevents Motion/Recharts from blocking scroll */
-.main-content-top {
   touch-action: pan-y;
 }
 
@@ -321,25 +299,18 @@ p { text-wrap: pretty; }
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-/* ── PWA standalone: lock viewport, prevent overscroll bounce ── */
-html, body {
-  overscroll-behavior: none;
-  -webkit-overflow-scrolling: touch;
+html {
+  background-color: var(--color-bg);
 }
 
 @media all and (display-mode: standalone) {
   html {
-    /* LE FIX PRINCIPAL : compense le décalage black-translucent */
-    min-height: calc(100% + env(safe-area-inset-top));
-    overflow: hidden;
+    min-height: 100%;
     background-color: var(--color-bg);
   }
   body {
     min-height: 100dvh;
-    /* Fallback si dvh est mal calculé au cold start */
     min-height: -webkit-fill-available;
-    overflow-y: auto;
-    overflow-x: hidden;
     background-color: var(--color-bg);
   }
 }
