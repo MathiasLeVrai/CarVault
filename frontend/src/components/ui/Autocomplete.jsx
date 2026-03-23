@@ -70,7 +70,7 @@ export default function Autocomplete({ label, value, options = [], onChange, pla
 
       {open && (
         <div className="relative z-50">
-          <div className="absolute top-2 left-0 w-full bg-[#121214] border border-white/10 rounded-xl shadow-2xl overflow-hidden animate-pop backdrop-blur-xl">
+          <div className="absolute top-2 left-0 w-full bg-[#121214] border border-white/10 rounded-xl shadow-2xl overflow-hidden animate-pop">
             <div className="flex items-center gap-2 px-4 py-3 border-b border-white/5 bg-white/[0.02]">
               <Search className="w-4 h-4 text-white/40 shrink-0" />
               <input

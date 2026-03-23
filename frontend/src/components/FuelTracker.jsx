@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
-import { Fuel, Plus, Trash2, TrendingUp, TrendingDown, Minus, ChevronDown, ChevronUp } from 'lucide-react';
+import { Fuel, Plus, Trash2, TrendingUp, TrendingDown, ChevronDown, ChevronUp } from 'lucide-react';
 import { fuelApi } from '../services/api';
 import Button from './ui/Button';
 
 const itemVariants = {
   hidden: { opacity: 0, y: 10 },
-  show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 120, damping: 20 } },
+  show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 260, damping: 24 } },
 };
 
 function StatBox({ label, value, unit, trend, sub }) {

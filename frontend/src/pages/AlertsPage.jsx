@@ -42,7 +42,7 @@ const containerVariants = {
 
 const itemVariants = {
   hidden: { opacity: 0, y: 10 },
-  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } }
+  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 260, damping: 24 } }
 };
 
 export default function AlertsPage() {
@@ -123,7 +123,7 @@ export default function AlertsPage() {
                         <Timer className="w-4 h-4" strokeWidth={2} />
                       </button>
                       {snoozeOpen === alert.id && (
-                        <div className="absolute right-0 bottom-full mb-2 z-50 bg-[#121214] border border-white/10 rounded-xl shadow-2xl py-1 min-w-[120px] animate-pop backdrop-blur-xl">
+                        <div className="absolute right-0 bottom-full mb-2 z-50 bg-[#121214] border border-white/10 rounded-xl shadow-2xl py-1 min-w-[120px] animate-pop">
                           {SNOOZE_OPTIONS.map(opt => (
                             <button key={opt.days} onClick={() => snooze(alert.id, opt.days)}
                               className="block w-full text-left px-4 py-2 text-xs font-bold text-white/80 hover:bg-white/5 hover:text-white transition-colors">

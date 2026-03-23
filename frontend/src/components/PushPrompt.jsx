@@ -44,7 +44,7 @@ export default function PushPrompt() {
           transition={{ type: 'spring', stiffness: 200, damping: 25 }}
           className="fixed bottom-20 md:bottom-6 left-4 right-4 md:left-auto md:right-6 md:w-[380px] z-50"
         >
-          <div className="bg-[#1a1a1e] border border-white/10 rounded-2xl p-5 shadow-2xl shadow-black/40 backdrop-blur-xl">
+          <div className="bg-[#1a1a1e] border border-white/10 rounded-2xl p-5 shadow-2xl shadow-black/40">
             <button onClick={handleDismiss} className="absolute top-3 right-3 p-1.5 rounded-lg hover:bg-white/10 text-white/30 hover:text-white/60 transition-colors">
               <X className="w-4 h-4" />
             </button>

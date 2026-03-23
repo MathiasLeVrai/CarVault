@@ -43,13 +43,13 @@ const containerVariants = {
 
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } }
+  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 260, damping: 24 } }
 };
 
 export default function VehiclesPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { showToast } = useToast();
+  const toast = useToast();
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -207,9 +207,9 @@ export default function VehiclesPage() {
         setShowModal(false);
         setShowPremium(true);
       } else if (err.code === 'PLATE_TAKEN') {
-        showToast('Ce véhicule est déjà enregistré par un autre utilisateur', 'error');
+        toast.error('Ce véhicule est déjà enregistré par un autre utilisateur');
       } else {
-        showToast(err.message || 'Erreur lors de l\'ajout', 'error');
+        toast.error(err.message || 'Erreur lors de l\'ajout');
       }
     } finally { setSubmitting(false); }
   };

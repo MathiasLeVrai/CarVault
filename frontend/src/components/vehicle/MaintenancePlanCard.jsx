@@ -57,7 +57,7 @@ export default function MaintenancePlanCard({ vehicleId, brand, maintenancePlan,
             <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: `${color}15`, color }}>{statusLabels[item.status]}</span>
           </div>
           <div className="h-1.5 rounded-full bg-white/5 overflow-hidden mb-2">
-            <div className="h-full rounded-full transition-all duration-700" style={{ width: `${Math.min(100, item.pct)}%`, backgroundColor: color, boxShadow: `0 0 8px ${color}60` }} />
+            <div className="h-full rounded-full transition-all duration-300" style={{ width: `${Math.min(100, item.pct)}%`, backgroundColor: color, boxShadow: `0 0 8px ${color}60` }} />
           </div>
           <div className="flex items-center justify-between text-[11px] text-white/40">
             <span>{item.remaining > 0 ? `${item.remaining.toLocaleString('fr-FR')} km restants` : `Dépassé de ${Math.abs(item.remaining).toLocaleString('fr-FR')} km`}</span>

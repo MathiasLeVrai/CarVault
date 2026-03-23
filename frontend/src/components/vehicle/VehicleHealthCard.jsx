@@ -26,7 +26,7 @@ function ScoreGauge({ score, grade, size = 140 }) {
         <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="var(--color-ink-faint)" strokeWidth={strokeWidth} opacity={0.4} />
         <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke={color} strokeWidth={strokeWidth}
           strokeDasharray={circumference} strokeDashoffset={circumference - progress}
-          strokeLinecap="round" className="transition-all duration-1000 ease-out drop-shadow-[0_0_12px_currentColor]" />
+          strokeLinecap="round" className="transition-all duration-500 ease-out drop-shadow-[0_0_12px_currentColor]" />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span className="text-4xl font-black text-white font-display tracking-tighter">{score}</span>
@@ -50,7 +50,7 @@ function SubScoreBar({ icon, label, score, max, color }) {
           <span className="text-xs font-bold text-white/50 font-mono">{score}/{max}</span>
         </div>
         <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
-          <div className="h-full rounded-full transition-all duration-700 ease-out"
+          <div className="h-full rounded-full transition-all duration-300 ease-out"
             style={{ width: `${pct}%`, backgroundColor: color || getScoreColor((score/max)*100),
               boxShadow: `0 0 12px ${(color || getScoreColor((score/max)*100))}80` }} />
         </div>

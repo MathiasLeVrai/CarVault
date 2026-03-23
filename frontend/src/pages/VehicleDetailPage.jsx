@@ -28,7 +28,7 @@ const monthNames = ['J','F','M','A','M','J','J','A','S','O','N','D'];
 const ChartTip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-[#121214] border border-white/10 rounded-xl px-4 py-3 shadow-2xl backdrop-blur-xl">
+    <div className="bg-[#121214] border border-white/10 rounded-xl px-4 py-3 shadow-2xl">
       <p className="text-xs font-semibold text-ink-light">{label}</p>
       <p className="text-sm font-bold text-white font-display">{formatCurrency(payload[0].value)}</p>
     </div>

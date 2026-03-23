@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Fuel, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { Fuel } from 'lucide-react';
 import { motion as Motion } from 'framer-motion';
 
 const FUEL_TYPE_MAP = {

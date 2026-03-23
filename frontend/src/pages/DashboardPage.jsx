@@ -38,7 +38,7 @@ const containerVariants = {
 
 const itemVariants = {
   hidden: { opacity: 0, y: 12 },
-  show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 120, damping: 20 } },
+  show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 260, damping: 24 } },
 };
 
 function SectionHeader({ icon: Icon, title, action }) {

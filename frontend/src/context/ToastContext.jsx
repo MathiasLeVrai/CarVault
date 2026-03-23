@@ -21,7 +21,7 @@ function ToastItem({ toast, onDismiss }) {
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: -12, scale: 0.94 }}
       transition={{ type: 'spring', damping: 26, stiffness: 320 }}
-      className={`flex items-start gap-3 px-4 py-3.5 rounded-2xl border backdrop-blur-xl shadow-2xl max-w-sm w-full ${bg} glass-panel`}
+      className={`flex items-start gap-3 px-4 py-3.5 rounded-2xl border shadow-2xl max-w-sm w-full ${bg} glass-panel`}
     >
       <Icon className={`w-4 h-4 mt-0.5 shrink-0 ${color}`} strokeWidth={2.5} />
       <p className="text-sm font-semibold text-white flex-1 leading-snug">{toast.message}</p>
