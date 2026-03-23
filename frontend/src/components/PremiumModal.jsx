@@ -36,9 +36,9 @@ export default function PremiumModal({ onClose }) {
     <>
       {/* Backdrop */}
       <Motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
+        initial={{ opacity: 0, pointerEvents: 'none' }}
+        animate={{ opacity: 1, pointerEvents: 'auto' }}
+        exit={{ opacity: 0, pointerEvents: 'none' }}
         className="fixed inset-0 z-[250] bg-black/70 backdrop-blur-sm"
         onClick={onClose}
       />

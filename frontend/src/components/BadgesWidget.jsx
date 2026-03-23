@@ -31,9 +31,9 @@ function BadgeDetail({ badge, onClose }) {
   return (
     <>
       <Motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
+        initial={{ opacity: 0, pointerEvents: 'none' }}
+        animate={{ opacity: 1, pointerEvents: 'auto' }}
+        exit={{ opacity: 0, pointerEvents: 'none' }}
         className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm"
         onClick={onClose}
       />

@@ -59,6 +59,11 @@ button, [role="button"], a, input, select, textarea {
   touch-action: manipulation;
 }
 
+/* Recharts captures touch events — allow vertical scroll over charts */
+.recharts-wrapper {
+  touch-action: pan-y !important;
+}
+
 body {
   background-color: var(--color-bg);
   color: var(--color-ink);
