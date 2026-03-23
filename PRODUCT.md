@@ -18,8 +18,6 @@ CarVault is a mobile-first PWA: the digital vault and operating system for car o
 
 - **Core:** JWT auth · Vehicle CRUD (manual + license plate via RapidAPI) · Document upload + expiration tracking · Custom reminders (J-30, J-14, J-7, J-1) · Expense tracking by category · Smart alerts (cron 6h) · Vehicle Health Score (/100, A–D) · Resale PDF export · Public share links (token, 30d) · Action dashboard (3 cards max) · Onboarding (4 steps) · Mileage + fuel tracking + stats · Badges/gamification · Notification prefs (email/push/weekly) · Per-document reminder config · Document type auto-detect · Map (garage/station) · Stripe subscriptions · PWA + service worker
 
-- **Disabled (code present):** Bank/Nordigen (`backend/src/controllers/bank.controller.js`, `frontend/src/pages/BankPage.jsx`)
-
 ## 4. Technical Stack
 
 **Frontend:** React 19, Vite 7, Tailwind 4, React Router 7, Recharts, Framer Motion.  

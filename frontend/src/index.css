@@ -59,9 +59,9 @@ button, [role="button"], a, input, select, textarea {
   touch-action: manipulation;
 }
 
-/* Recharts captures touch events — allow vertical scroll over charts */
-.recharts-wrapper {
-  touch-action: pan-y !important;
+/* Force vertical scroll on all content — prevents Motion/Recharts from blocking scroll */
+.main-content-top {
+  touch-action: pan-y;
 }
 
 body {
