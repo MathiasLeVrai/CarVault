@@ -1,6 +1,7 @@
 const cron = require('node-cron');
 const prisma = require('../lib/prisma');
 const { alertExists, createAlert } = require('./helpers');
+const fuelPriceService = require('../services/fuel-price.service');
 
 /**
  * Alertes budget & statistiques — quotidien 9h
@@ -243,6 +244,57 @@ async function checkKmRecord() {
 }
 
 // ============================================================
+// 5. Baisse prix carburant
+// ============================================================
+
+const FUEL_TYPE_TO_GOV = {
+  DIESEL:   ['Gazole'],
+  GASOLINE: ['SP95', 'SP98', 'E10'],
+  LPG:      ['GPLc'],
+};
+
+async function checkFuelPriceDrop() {
+  let created = 0;
+
+  const drops = await fuelPriceService.getPriceDrops();
+  if (drops.length === 0) return 0;
+
+  const now = new Date();
+  const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay() + 1);
+
+  for (const drop of drops) {
+    const matchingFuelTypes = Object.entries(FUEL_TYPE_TO_GOV)
+      .filter(([, names]) => names.includes(drop.fuelName))
+      .map(([ft]) => ft);
+    if (matchingFuelTypes.length === 0) continue;
+
+    const users = await prisma.user.findMany({
+      where: {
+        vehicles: { some: { fuelType: { in: matchingFuelTypes } } },
+      },
+      select: { id: true, email: true, firstName: true, notifEmail: true },
+    });
+
+    for (const u of users) {
+      if (await alertExists(u.id, 'FUEL_PRICE_DROP', drop.fuelName, { since: weekStart })) continue;
+
+      await createAlert({
+        title: `${drop.fuelName} en baisse`,
+        message: `Le ${drop.fuelName} a baissé par rapport à la semaine dernière (${drop.previousPrice.toFixed(3)}€ → ${drop.currentPrice.toFixed(3)}€, -${drop.dropPercent}%). Le temps de faire le plein ?`,
+        type: 'FUEL_PRICE_DROP',
+        userId: u.id,
+      }, {
+        email: u.notifEmail !== false ? u.email : null,
+        userName: u.firstName,
+      });
+      created++;
+    }
+  }
+
+  return created;
+}
+
+// ============================================================
 // Orchestrateur
 // ============================================================
 
@@ -254,9 +306,10 @@ async function runBudgetChecks() {
     const costAlerts = await checkCostPerKm();
     const fuelAlerts = await checkFuelBudget();
     const kmAlerts = await checkKmRecord();
+    const priceAlerts = await checkFuelPriceDrop();
 
-    const total = spikeAlerts + costAlerts + fuelAlerts + kmAlerts;
-    console.log(`[CRON] ${total} alerte(s) budget — Pic: ${spikeAlerts}, Coût/km: ${costAlerts}, Budget fuel: ${fuelAlerts}, Record: ${kmAlerts}`);
+    const total = spikeAlerts + costAlerts + fuelAlerts + kmAlerts + priceAlerts;
+    console.log(`[CRON] ${total} alerte(s) budget — Pic: ${spikeAlerts}, Coût/km: ${costAlerts}, Budget fuel: ${fuelAlerts}, Record: ${kmAlerts}, Prix fuel: ${priceAlerts}`);
   } catch (error) {
     console.error('[CRON] Erreur budget :', error.message);
   }

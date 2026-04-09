@@ -73,10 +73,71 @@ class FuelPriceService {
     }
   }
 
-  _weekAgo() {
+  /**
+   * Compare current week avg prices vs previous week.
+   * Returns an array of { fuelName, key, currentPrice, previousPrice, dropPercent }
+   * for fuels that dropped in price.
+   */
+  async getPriceDrops() {
+    try {
+      const [current, previous] = await Promise.all([
+        this._avgForPeriod(0, 7),
+        this._avgForPeriod(7, 14),
+      ]);
+
+      const drops = [];
+      for (const [name, curPrice] of Object.entries(current)) {
+        const prevPrice = previous[name];
+        if (!prevPrice || curPrice >= prevPrice) continue;
+        const dropPercent = ((prevPrice - curPrice) / prevPrice) * 100;
+        if (dropPercent < 0.3) continue;
+        drops.push({
+          fuelName: name,
+          key: FUEL_MAP[name] || name,
+          currentPrice: Math.round(curPrice * 1000) / 1000,
+          previousPrice: Math.round(prevPrice * 1000) / 1000,
+          dropPercent: Math.round(dropPercent * 10) / 10,
+        });
+      }
+      return drops;
+    } catch (err) {
+      console.error('[FuelPrice] Erreur getPriceDrops:', err.message);
+      return [];
+    }
+  }
+
+  async _avgForPeriod(daysAgoStart, daysAgoEnd) {
+    const from = this._daysAgo(daysAgoEnd);
+    const to = this._daysAgo(daysAgoStart);
+    const params = new URLSearchParams({
+      select: `prix_nom, AVG(prix_valeur) as avg_price`,
+      where: `prix_maj >= date'${from}' AND prix_maj <= date'${to}'`,
+      group_by: 'prix_nom',
+      limit: '10',
+    });
+
+    const res = await fetch(`${API_URL}?${params.toString()}`, {
+      headers: { 'Accept': 'application/json' },
+      signal: AbortSignal.timeout(15000),
+    });
+    if (!res.ok) throw new Error(`Fuel API: ${res.status}`);
+    const data = await res.json();
+
+    const result = {};
+    for (const r of (data.results || [])) {
+      if (r.prix_nom && r.avg_price) result[r.prix_nom] = r.avg_price;
+    }
+    return result;
+  }
+
+  _daysAgo(n) {
     const d = new Date();
-    d.setDate(d.getDate() - 7);
+    d.setDate(d.getDate() - n);
     return d.toISOString().split('T')[0];
+  }
+
+  _weekAgo() {
+    return this._daysAgo(7);
   }
 }
 

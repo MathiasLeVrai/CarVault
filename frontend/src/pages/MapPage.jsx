@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
 import { motion as Motion } from 'framer-motion';
 import { MapPin, Navigation, Wrench, ShieldCheck, Droplets, Fuel, Search, ExternalLink, Loader2 } from 'lucide-react';
@@ -80,7 +80,7 @@ function ViewportTracker({ onViewportChange, skipNextRef }) {
         const ne = bounds.getNorthEast();
         const radius = distance(center.lat, center.lng, ne.lat, ne.lng);
         onViewportChange(center.lat, center.lng, Math.min(radius, MAX_RADIUS));
-      }, 500);
+      }, 800);
     },
   });
   useEffect(() => () => clearTimeout(timerRef.current), []);
@@ -202,20 +202,26 @@ export default function MapPage() {
   const skipNextFetchRef = useRef(false);
   const activeFiltersRef = useRef(activeFilters);
   activeFiltersRef.current = activeFilters;
+  const fetchIdRef = useRef(0);
 
   const loadPOIs = useCallback(async (lat, lon, filters, radius = DEFAULT_RADIUS) => {
+    const id = ++fetchIdRef.current;
     setLoading(true);
     try {
-      const [overpassResults, fuelResults] = await Promise.all([
-        fetchPOIs(lat, lon, filters, radius),
-        filters.includes('fuel') ? fetchFuelStations(lat, lon, radius) : Promise.resolve([]),
-      ]);
+      const overpassPromise = fetchPOIs(lat, lon, filters, radius).catch(() => []);
+      const fuelPromise = filters.includes('fuel')
+        ? fetchFuelStations(lat, lon, radius).catch(() => [])
+        : Promise.resolve([]);
+      const [overpassResults, fuelResults] = await Promise.all([overpassPromise, fuelPromise]);
+      if (id !== fetchIdRef.current) return;
       setPois([...overpassResults, ...fuelResults]);
     } catch {
-      // silently fail — map remains usable
+      // both individual promises already catch — this is a safety net
     } finally {
-      setLoading(false);
-      setInitialLoad(false);
+      if (id === fetchIdRef.current) {
+        setLoading(false);
+        setInitialLoad(false);
+      }
     }
   }, []);
 
@@ -235,7 +241,7 @@ export default function MapPage() {
         viewportCenterRef.current = pos;
         viewportRadiusRef.current = DEFAULT_RADIUS;
         setMapCenter(pos);
-        loadPOIs(coords.latitude, coords.longitude, activeFilters);
+        loadPOIs(coords.latitude, coords.longitude, activeFiltersRef.current);
       },
       () => {
         setGeoError("Accès à la localisation refusé.");
@@ -243,8 +249,9 @@ export default function MapPage() {
       },
       { timeout: 10000 }
     );
-  }, [activeFilters, loadPOIs]);
+  }, [loadPOIs]);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { locateUser(); }, []);
 
   const handleViewportChange = useCallback((lat, lon, radius) => {
@@ -267,15 +274,23 @@ export default function MapPage() {
     window.open(`https://www.google.com/maps/dir/?api=1&destination=${poi.lat},${poi.lon}`, '_blank');
   };
 
-  const sortedPois = userPos
-    ? [...pois].sort((a, b) => distance(userPos[0], userPos[1], a.lat, a.lon) - distance(userPos[0], userPos[1], b.lat, b.lon))
-    : pois;
+  const filteredPois = useMemo(
+    () => pois.filter(p => activeFilters.includes(p.type)),
+    [pois, activeFilters],
+  );
 
-  const fuelStations = pois.filter(p => p.type === 'fuel');
-  const gazolePrices = fuelStations.map(s => s.prices?.Gazole).filter(Boolean);
-  const avgGazole = gazolePrices.length > 0
-    ? (gazolePrices.reduce((a, b) => a + b, 0) / gazolePrices.length).toFixed(3)
-    : null;
+  const sortedPois = useMemo(() => {
+    if (!userPos) return filteredPois;
+    return [...filteredPois].sort(
+      (a, b) => distance(userPos[0], userPos[1], a.lat, a.lon) - distance(userPos[0], userPos[1], b.lat, b.lon),
+    );
+  }, [filteredPois, userPos]);
+
+  const avgGazole = useMemo(() => {
+    const prices = filteredPois.filter(p => p.type === 'fuel').map(s => s.prices?.Gazole).filter(Boolean);
+    if (prices.length === 0) return null;
+    return (prices.reduce((a, b) => a + b, 0) / prices.length).toFixed(3);
+  }, [filteredPois]);
 
   return (
     <div className="h-[calc(100vh-80px)] md:h-screen flex flex-col overflow-hidden">

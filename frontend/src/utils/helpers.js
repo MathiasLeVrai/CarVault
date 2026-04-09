@@ -108,6 +108,7 @@ export const alertTypeLabels = {
   FUEL_BUDGET_EXCEEDED: 'Budget carburant',
   KM_RECORD: 'Record km',
   CO2_MALUS: 'Malus CO2',
+  FUEL_PRICE_DROP: 'Baisse carburant',
   OTHER: 'Autre',
 };
 
