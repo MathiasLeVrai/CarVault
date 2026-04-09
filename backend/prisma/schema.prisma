@@ -42,6 +42,7 @@ model Vehicle {
   model         String
   year          Int
   mileage       Int      @default(0)
+  purchaseMileage Int?
   photo         String?
   licensePlate  String?
   color         String?

@@ -93,11 +93,13 @@ async function checkCostPerKm() {
   });
 
   for (const v of vehicles) {
-    // Only trigger at 5000 km milestones
-    const milestone = Math.floor(v.mileage / 5000) * 5000;
-    if (milestone === 0) continue;
+    const purchaseMileage = v.purchaseMileage ?? 0;
+    const distanceSincePurchase = v.mileage - purchaseMileage;
+    if (distanceSincePurchase <= 0) continue;
 
-    const prevMilestone = milestone - 5000;
+    // Only trigger at 5000 km milestones
+    const milestone = Math.floor(distanceSincePurchase / 5000) * 5000;
+    if (milestone === 0) continue;
     // Check if we already alerted for this milestone
     if (await alertExists(v.userId, 'COST_PER_KM', `${milestone.toLocaleString('fr-FR')} km`)) continue;
 
@@ -116,11 +118,11 @@ async function checkCostPerKm() {
     const totalCost = (expenseTotal._sum.amount || 0) + (fuelTotal._sum.totalCost || 0);
     if (totalCost <= 0) continue;
 
-    const costPerKm = (totalCost / v.mileage).toFixed(2);
+    const costPerKm = (totalCost / distanceSincePurchase).toFixed(2);
 
     await createAlert({
       title: `Coût au km à ${milestone.toLocaleString('fr-FR')} km : ${v.brand} ${v.model}`,
-      message: `Votre ${v.brand} ${v.model} vous revient à ${costPerKm}€/km (${Math.round(totalCost).toLocaleString('fr-FR')}€ pour ${v.mileage.toLocaleString('fr-FR')} km).`,
+      message: `Votre ${v.brand} ${v.model} vous revient à ${costPerKm}€/km (${Math.round(totalCost).toLocaleString('fr-FR')}€ pour ${distanceSincePurchase.toLocaleString('fr-FR')} km parcourus depuis l'achat à ${purchaseMileage.toLocaleString('fr-FR')} km).`,
       type: 'COST_PER_KM',
       userId: v.userId,
     }, {

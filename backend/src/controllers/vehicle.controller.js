@@ -84,11 +84,13 @@ class VehicleController {
         ? await storageService.upload(photoFile.buffer, photoFile.originalname, 'vehicles')
         : null;
 
+      const parsedMileage = parseInt(mileage) || 0;
       const data = {
         brand,
         model,
         year: parseInt(year),
-        mileage: parseInt(mileage) || 0,
+        mileage: parsedMileage,
+        purchaseMileage: parsedMileage,
         licensePlate: licensePlate || null,
         color: color || null,
         fuelType: fuelType || 'GASOLINE',
