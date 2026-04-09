@@ -87,22 +87,25 @@ function ViewportTracker({ onViewportChange, skipNextRef }) {
   return null;
 }
 
-async function fetchPOIs(lat, lon, activeFilters, radius = DEFAULT_RADIUS) {
-  const overpassFilters = activeFilters.filter(id => id !== 'fuel');
-  if (overpassFilters.length === 0) return [];
+const OVERPASS_ENDPOINTS = [
+  'https://overpass-api.de/api/interpreter',
+  'https://overpass.kumi.systems/api/interpreter',
+];
 
-  const r = Math.min(Math.round(radius), MAX_RADIUS);
-  const conditions = overpassFilters.flatMap(id => {
-    const f = FILTERS.find(f => f.id === id);
-    return f.tags.map(([k, v]) => `node["${k}"="${v}"](around:${r},${lat},${lon});way["${k}"="${v}"](around:${r},${lat},${lon});`);
+async function fetchOverpass(query, attempt = 0) {
+  const endpoint = OVERPASS_ENDPOINTS[attempt % OVERPASS_ENDPOINTS.length];
+  const res = await fetch(endpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: `data=${encodeURIComponent(query)}`,
+    signal: AbortSignal.timeout(20000),
   });
+  if (!res.ok) throw new Error(`Overpass ${res.status}`);
+  return res.json();
+}
 
-  const query = `[out:json][timeout:15];(${conditions.join('')});out center;`;
-  const res = await fetch(`https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`);
-  if (!res.ok) throw new Error('Overpass API error');
-  const data = await res.json();
-
-  return data.elements.map(el => {
+function parseOverpassElements(elements) {
+  return elements.map(el => {
     const lat2 = el.lat ?? el.center?.lat;
     const lon2 = el.lon ?? el.center?.lon;
     if (!lat2 || !lon2) return null;
@@ -119,18 +122,40 @@ async function fetchPOIs(lat, lon, activeFilters, radius = DEFAULT_RADIUS) {
   }).filter(Boolean);
 }
 
+async function fetchPOIs(lat, lon, activeFilters, radius = DEFAULT_RADIUS) {
+  const overpassFilters = activeFilters.filter(id => id !== 'fuel');
+  if (overpassFilters.length === 0) return [];
+
+  const r = Math.min(Math.round(radius), MAX_RADIUS);
+  const conditions = overpassFilters.flatMap(id => {
+    const f = FILTERS.find(f => f.id === id);
+    return f.tags.map(([k, v]) => `node["${k}"="${v}"](around:${r},${lat},${lon});way["${k}"="${v}"](around:${r},${lat},${lon});`);
+  });
+
+  const query = `[out:json][timeout:25];(${conditions.join('')});out center;`;
+
+  // Try primary, then fallback mirror on failure
+  for (let attempt = 0; attempt < OVERPASS_ENDPOINTS.length; attempt++) {
+    try {
+      const data = await fetchOverpass(query, attempt);
+      return parseOverpassElements(data.elements || []);
+    } catch {
+      if (attempt === OVERPASS_ENDPOINTS.length - 1) throw new Error('All Overpass endpoints failed');
+    }
+  }
+  return [];
+}
+
 async function fetchFuelStations(lat, lon, radius = DEFAULT_RADIUS) {
-  // ODS geo filter: POINT(longitude latitude) — lon first, URL-encoded
   const r = Math.min(Math.round(radius), MAX_RADIUS);
   const where = encodeURIComponent(`distance(geom,geom'POINT(${lon} ${lat})',${r}m)`);
   const url = `https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/records?where=${where}&limit=50&select=id,adresse,ville,geom,gazole_prix,sp95_prix,e10_prix,sp98_prix`;
-  const res = await fetch(url);
+  const res = await fetch(url, { signal: AbortSignal.timeout(15000) });
   if (!res.ok) throw new Error('Fuel API error');
   const data = await res.json();
 
   return (data.results || [])
     .map(s => {
-      // geom field contains proper WGS84 coords {lat, lon}
       if (!s.geom?.lat || !s.geom?.lon) return null;
       return {
         id: `fuel_${s.id}`,
@@ -207,21 +232,32 @@ export default function MapPage() {
   const loadPOIs = useCallback(async (lat, lon, filters, radius = DEFAULT_RADIUS) => {
     const id = ++fetchIdRef.current;
     setLoading(true);
-    try {
-      const overpassPromise = fetchPOIs(lat, lon, filters, radius).catch(() => []);
-      const fuelPromise = filters.includes('fuel')
-        ? fetchFuelStations(lat, lon, radius).catch(() => [])
-        : Promise.resolve([]);
-      const [overpassResults, fuelResults] = await Promise.all([overpassPromise, fuelPromise]);
-      if (id !== fetchIdRef.current) return;
-      setPois([...overpassResults, ...fuelResults]);
-    } catch {
-      // both individual promises already catch — this is a safety net
-    } finally {
-      if (id === fetchIdRef.current) {
-        setLoading(false);
-        setInitialLoad(false);
-      }
+
+    const partial = { overpass: [], fuel: [] };
+    const stale = () => id !== fetchIdRef.current;
+
+    const overpassPromise = fetchPOIs(lat, lon, filters, radius)
+      .then(r => {
+        partial.overpass = r;
+        if (!stale()) setPois([...partial.overpass, ...partial.fuel]);
+        return r;
+      })
+      .catch(() => []);
+
+    const fuelPromise = filters.includes('fuel')
+      ? fetchFuelStations(lat, lon, radius)
+          .then(r => {
+            partial.fuel = r;
+            if (!stale()) setPois([...partial.overpass, ...partial.fuel]);
+            return r;
+          })
+          .catch(() => [])
+      : Promise.resolve([]);
+
+    await Promise.all([overpassPromise, fuelPromise]);
+    if (!stale()) {
+      setLoading(false);
+      setInitialLoad(false);
     }
   }, []);
 
