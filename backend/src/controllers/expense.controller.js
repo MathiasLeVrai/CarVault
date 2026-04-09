@@ -37,8 +37,12 @@ class ExpenseController {
     try {
       const { amount, category, date, description, mileage, vehicleId } = req.body;
 
-      if (!amount || !category || !date || !vehicleId) {
+      if (amount == null || amount === '' || !category || !date || !vehicleId) {
         return res.status(400).json({ error: 'Montant, catégorie, date et véhicule sont requis' });
+      }
+
+      if (parseFloat(amount) < 0) {
+        return res.status(400).json({ error: 'Le montant ne peut pas être négatif' });
       }
 
       const data = {

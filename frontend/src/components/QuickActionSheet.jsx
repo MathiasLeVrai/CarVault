@@ -123,7 +123,7 @@ export default function QuickActionSheet({ onClose }) {
     const vid = vehicleId || (vehicles.length === 1 ? String(vehicles[0].id) : '');
     if (!vid) return false;
     if (view === 'fuel') return fuel.mileage && fuel.liters && fuel.pricePerLiter;
-    if (view === 'expense') return exp.amount && exp.category;
+    if (view === 'expense') return exp.amount !== '' && exp.category;
     if (view === 'document') return docFile && docForm.name;
     return false;
   };

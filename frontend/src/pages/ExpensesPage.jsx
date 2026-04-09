@@ -174,7 +174,7 @@ export default function ExpensesPage() {
         <form onSubmit={submit} className="space-y-4">
           <Select label="Véhicule *" options={vehicles.map(v=>({value:v.id,label:`${v.brand} ${v.model} (${v.year})`}))} value={form.vehicleId} onChange={e=>setForm(p=>({...p,vehicleId:e.target.value}))} />
           <div className="grid grid-cols-2 gap-3">
-            <Input label="Montant (EUR) *" type="number" step="0.01" placeholder="85.50" value={form.amount} onChange={e=>setForm(p=>({...p,amount:e.target.value}))} required />
+            <Input label="Montant (EUR) *" type="number" step="0.01" min="0" placeholder="85.50" value={form.amount} onChange={e=>setForm(p=>({...p,amount:e.target.value}))} required />
             <Select label="Catégorie *" options={catForm} value={form.category} onChange={e=>setForm(p=>({...p,category:e.target.value}))} />
           </div>
           <Input label="Date *" type="date" value={form.date} onChange={e=>setForm(p=>({...p,date:e.target.value}))} required />
