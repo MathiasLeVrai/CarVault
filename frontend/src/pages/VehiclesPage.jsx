@@ -75,7 +75,7 @@ export default function VehiclesPage() {
   const [form, setForm] = useState({
     brand: '', model: '', year: '', mileage: '', licensePlate: '', color: '',
     fuelType: 'GASOLINE', purchasePrice: '', carapiTrimId: '', msrp: '',
-    horsepower: '', engineSize: '', transmission: '', bodyType: '', doors: '',
+    horsepower: '', engineSize: '', transmission: '', bodyType: '', doors: '', annualKmGoal: '',
   });
   const [photo, setPhoto] = useState(null);
   const [maintenanceUpToDate, setMaintenanceUpToDate] = useState(false);
@@ -186,7 +186,7 @@ export default function VehiclesPage() {
   };
 
   const resetForm = () => {
-    setForm({ brand: '', model: '', year: '', mileage: '', licensePlate: '', color: '', fuelType: 'GASOLINE', purchasePrice: '', carapiTrimId: '', msrp: '', horsepower: '', engineSize: '', transmission: '', bodyType: '', doors: '' });
+    setForm({ brand: '', model: '', year: '', mileage: '', licensePlate: '', color: '', fuelType: 'GASOLINE', purchasePrice: '', carapiTrimId: '', msrp: '', horsepower: '', engineSize: '', transmission: '', bodyType: '', doors: '', annualKmGoal: '' });
     setPhoto(null); setMaintenanceUpToDate(false); setModels([]); setTrims([]);
     setPlateInput(''); setPlateFound(false); setPlateError(''); setManualMode(false);
   };
@@ -408,7 +408,10 @@ export default function VehiclesPage() {
                 <Input label="Plaque" placeholder="AB-123-CD" value={form.licensePlate} onChange={e => setForm(p => ({ ...p, licensePlate: e.target.value }))} />
                 <Input label="Couleur" placeholder="Noir" value={form.color} onChange={e => setForm(p => ({ ...p, color: e.target.value }))} />
               </div>
-              <Input label="Prix d'achat (€)" type="number" step="0.01" placeholder="25000" value={form.purchasePrice} onChange={e => setForm(p => ({ ...p, purchasePrice: e.target.value }))} />
+              <div className="grid grid-cols-2 gap-3">
+                <Input label="Prix d'achat (€)" type="number" step="0.01" placeholder="25000" value={form.purchasePrice} onChange={e => setForm(p => ({ ...p, purchasePrice: e.target.value }))} />
+                <Input label="Objectif km annuel" type="number" step="100" placeholder="15000" value={form.annualKmGoal} onChange={e => setForm(p => ({ ...p, annualKmGoal: e.target.value }))} />
+              </div>
               <label className="flex items-center gap-3 p-4 rounded-xl bg-white/[0.02] border border-white/5 cursor-pointer hover:bg-white/[0.04] transition-all select-none">
                 <input type="checkbox" checked={maintenanceUpToDate} onChange={e => setMaintenanceUpToDate(e.target.checked)}
                   className="w-5 h-5 rounded-md border-2 border-white/20 bg-transparent accent-lime shrink-0" />

@@ -19,6 +19,7 @@ const EXPENSE_CATS = [
   { value: 'BRAKES',      label: 'Freins / Plaquettes' },
   { value: 'TIRES',       label: 'Pneus' },
   { value: 'BODYWORK',    label: 'Carrosserie' },
+  { value: 'WINDSHIELD',  label: 'Pare-brise' },
   { value: 'TECHNICAL_INSPECTION', label: 'Contrôle technique' },
   { value: 'PARKING',     label: 'Stationnement' },
   { value: 'TOLL',        label: 'Péage' },
@@ -84,7 +85,7 @@ export default function QuickActionSheet({ onClose }) {
   // Fuel form
   const [fuel, setFuel] = useState({ mileage: '', liters: '', pricePerLiter: '', isFull: true });
   // Expense form
-  const [exp, setExp] = useState({ amount: '', category: 'MAINTENANCE', description: '' });
+  const [exp, setExp] = useState({ amount: '', category: 'MAINTENANCE', description: '', date: new Date().toISOString().split('T')[0] });
   // Document form
   const [docForm, setDocForm] = useState({ name: '', type: 'INSURANCE', vehicleId: '', expirationDate: '' });
   const [docFile, setDocFile] = useState(null);
@@ -149,7 +150,7 @@ export default function QuickActionSheet({ onClose }) {
           amount: parseFloat(exp.amount),
           category: exp.category,
           description: exp.description || undefined,
-          date: new Date().toISOString(),
+          date: exp.date ? new Date(exp.date).toISOString() : new Date().toISOString(),
         });
         toast.success('Dépense enregistrée');
       } else if (view === 'document') {
@@ -309,10 +310,16 @@ export default function QuickActionSheet({ onClose }) {
                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
                   </div>
                 </Field>
-                <Field label="Montant (€)">
-                  <CvInput type="number" step="0.01" placeholder="89.90" value={exp.amount}
-                    onChange={e => setExp(p => ({ ...p, amount: e.target.value }))} />
-                </Field>
+                <div className="grid grid-cols-2 gap-3">
+                  <Field label="Montant (€)">
+                    <CvInput type="number" step="0.01" placeholder="89.90" value={exp.amount}
+                      onChange={e => setExp(p => ({ ...p, amount: e.target.value }))} />
+                  </Field>
+                  <Field label="Date">
+                    <CvInput type="date" value={exp.date}
+                      onChange={e => setExp(p => ({ ...p, date: e.target.value }))} />
+                  </Field>
+                </div>
                 <Field label="Description (optionnel)">
                   <CvInput placeholder="Vidange + filtre huile…" value={exp.description}
                     onChange={e => setExp(p => ({ ...p, description: e.target.value }))} />

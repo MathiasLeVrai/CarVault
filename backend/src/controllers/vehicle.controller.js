@@ -58,7 +58,7 @@ class VehicleController {
 
   async create(req, res, next) {
     try {
-      const { brand, model, year, mileage, licensePlate, color, fuelType, purchasePrice,
+      const { brand, model, year, mileage, licensePlate, color, fuelType, purchasePrice, annualKmGoal,
               carapiTrimId, msrp, horsepower, engineSize, transmission, bodyType, doors,
               fiscalPower, co2, firstRegistrationDate } = req.body;
 
@@ -93,6 +93,7 @@ class VehicleController {
         color: color || null,
         fuelType: fuelType || 'GASOLINE',
         purchasePrice: purchasePrice ? parseFloat(purchasePrice) : null,
+        annualKmGoal: annualKmGoal ? parseInt(annualKmGoal) : null,
         photo,
         carapiTrimId: carapiTrimId ? parseInt(carapiTrimId) : null,
         msrp: msrp ? parseFloat(msrp) : null,
