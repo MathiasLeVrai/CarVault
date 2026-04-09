@@ -101,6 +101,11 @@ export const alertTypeLabels = {
   OIL_CHANGE: 'Vidange',
   TIRE_SEASON: 'Pneus saison',
   MILEAGE_SERVICE: 'Révision km',
+  BUDGET_SPIKE: 'Pic de dépense',
+  COST_PER_KM: 'Coût au km',
+  FUEL_BUDGET_EXCEEDED: 'Budget carburant',
+  KM_RECORD: 'Record km',
+  CO2_MALUS: 'Malus CO2',
   OTHER: 'Autre',
 };
 

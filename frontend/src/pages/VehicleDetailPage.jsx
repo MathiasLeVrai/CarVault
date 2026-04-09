@@ -50,7 +50,7 @@ export default function VehicleDetailPage() {
   const [v, setV] = useState(null); const [loading, setLoading] = useState(true);
   const [showDoc, setShowDoc] = useState(false); const [showExp, setShowExp] = useState(false); const [sub, setSub] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
-  const [editForm, setEditForm] = useState({ brand: '', model: '', year: '', mileage: '', licensePlate: '', color: '', fuelType: 'GASOLINE', purchasePrice: '' });
+  const [editForm, setEditForm] = useState({ brand: '', model: '', year: '', mileage: '', licensePlate: '', color: '', fuelType: 'GASOLINE', purchasePrice: '', monthlyFuelBudget: '', annualKmGoal: '' });
   const [editPhoto, setEditPhoto] = useState(null);
   const [editSubmitting, setEditSubmitting] = useState(false);
   const [generatingPdf, setGeneratingPdf] = useState(false);
@@ -66,7 +66,7 @@ export default function VehicleDetailPage() {
   const [maintenancePlan, setMaintenancePlan] = useState(null);
 
   const openEdit = () => {
-    setEditForm({ brand: v.brand || '', model: v.model || '', year: String(v.year || ''), mileage: String(v.mileage || ''), licensePlate: v.licensePlate || '', color: v.color || '', fuelType: v.fuelType || 'GASOLINE', purchasePrice: v.purchasePrice ? String(v.purchasePrice) : '' });
+    setEditForm({ brand: v.brand || '', model: v.model || '', year: String(v.year || ''), mileage: String(v.mileage || ''), licensePlate: v.licensePlate || '', color: v.color || '', fuelType: v.fuelType || 'GASOLINE', purchasePrice: v.purchasePrice ? String(v.purchasePrice) : '', monthlyFuelBudget: v.monthlyFuelBudget ? String(v.monthlyFuelBudget) : '', annualKmGoal: v.annualKmGoal ? String(v.annualKmGoal) : '' });
     setEditPhoto(null);
     setShowEdit(true);
   };
@@ -342,6 +342,10 @@ export default function VehicleDetailPage() {
             <Input label="Couleur" placeholder="Noir" value={editForm.color} onChange={e => setEditForm(p => ({ ...p, color: e.target.value }))} />
           </div>
           <Input label="Prix d'achat (€)" type="number" step="0.01" placeholder="25000" value={editForm.purchasePrice} onChange={e => setEditForm(p => ({ ...p, purchasePrice: e.target.value }))} />
+          <div className="grid grid-cols-2 gap-3">
+            <Input label="Budget carburant (€/mois)" type="number" step="1" placeholder="150" value={editForm.monthlyFuelBudget} onChange={e => setEditForm(p => ({ ...p, monthlyFuelBudget: e.target.value }))} />
+            <Input label="Objectif km annuel" type="number" step="100" placeholder="15000" value={editForm.annualKmGoal} onChange={e => setEditForm(p => ({ ...p, annualKmGoal: e.target.value }))} />
+          </div>
           <div className="space-y-1.5">
             <label className="block text-sm font-semibold text-ink">Photo</label>
             <label className="flex items-center justify-center gap-2 w-full py-4 bg-white/[0.02] border border-white/10 border-dashed rounded-xl cursor-pointer text-sm text-ink-muted hover:bg-white/[0.04] hover:border-accent/50 transition-all">

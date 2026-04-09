@@ -2,12 +2,11 @@ const cron = require('node-cron');
 const prisma = require('../lib/prisma');
 const { getMaintenanceIntervals } = require('../data/vehicles');
 const { getBannedZones } = require('../data/zfe');
-const emailService = require('../services/email.service');
-const pushService = require('../services/push.service');
+const { alertExists, createAlert } = require('./helpers');
 
 /**
  * Système d'alertes intelligentes CarVault
- * 
+ *
  * Types d'alertes générées automatiquement :
  * 1. DOCUMENT_EXPIRY    — Documents proches/passés de leur date d'expiration
  * 2. MAINTENANCE_DUE    — Révision générale basée sur le temps (6 mois)
@@ -15,34 +14,6 @@ const pushService = require('../services/push.service');
  * 4. TIRE_SEASON        — Changement pneus été/hiver selon la saison
  * 5. MILEAGE_SERVICE    — Révision basée sur un seuil de km (freins, distribution, etc.)
  */
-
-// ============================================================
-// Helpers anti-doublon
-// ============================================================
-
-async function alertExists(userId, type, titleContains, options = {}) {
-  const where = { userId, type, title: { contains: titleContains } };
-  if (options.since) where.createdAt = { gte: options.since };
-  if (options.dueDate) where.dueDate = options.dueDate;
-  return prisma.alert.findFirst({ where });
-}
-
-async function createAlert(data, { email, userName, dueDate } = {}) {
-  const alert = await prisma.alert.create({ data });
-
-  // Send push notification (best-effort)
-  try {
-    await pushService.sendToUser(data.userId, data.title, data.message);
-  } catch { /* push is best-effort */ }
-
-  // Send email notification
-  if (email && emailService.isConfigured()) {
-    const sent = await emailService.sendAlertEmail(email, userName, data.title, data.message, dueDate || data.dueDate);
-    if (sent) await prisma.alert.update({ where: { id: alert.id }, data: { emailSent: true } });
-  }
-
-  return alert;
-}
 
 // ============================================================
 // 1. Expiration documents

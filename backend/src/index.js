@@ -45,6 +45,7 @@ const { startAlertCron } = require('./cron/alert.cron');
 const { startMonthlyReportCron } = require('./cron/monthly-report.cron');
 const { startWeeklyDigestCron } = require('./cron/weekly-digest.cron');
 const { startEngagementCron } = require('./cron/engagement.cron');
+const { startBudgetCron } = require('./cron/budget.cron');
 
 const app = express();
 app.set('trust proxy', 1);
@@ -189,6 +190,7 @@ app.listen(PORT, '0.0.0.0', () => {
   startMonthlyReportCron();
   startWeeklyDigestCron();
   startEngagementCron();
+  startBudgetCron();
 });
 
 process.on('unhandledRejection', (reason) => {

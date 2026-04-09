@@ -154,8 +154,8 @@ class VehicleController {
 
   async update(req, res, next) {
     try {
-      const intFields = ['year', 'mileage', 'horsepower', 'doors'];
-      const floatFields = ['purchasePrice', 'msrp', 'engineSize'];
+      const intFields = ['year', 'mileage', 'horsepower', 'doors', 'annualKmGoal'];
+      const floatFields = ['purchasePrice', 'msrp', 'engineSize', 'monthlyFuelBudget'];
       const stringFields = ['brand', 'model', 'licensePlate', 'color', 'fuelType', 'transmission', 'bodyType'];
       const allowed = [...intFields, ...floatFields, ...stringFields];
       const data = {};

@@ -61,6 +61,8 @@ model Vehicle {
   laCentraleVersionId     Int?       // versionId La Centrale pour la cote
   estimatedValue          Float?     // Valeur estimée saisie manuellement par l'utilisateur
   maintenanceConfig       Json?      // Intervalles personnalises par l'utilisateur
+  monthlyFuelBudget       Float?     // Budget carburant mensuel en €
+  annualKmGoal            Int?       // Objectif kilométrage annuel
   createdAt             DateTime   @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -180,6 +182,11 @@ enum AlertType {
   TIRE_SEASON
   MILEAGE_SERVICE
   ZFE_RESTRICTION
+  BUDGET_SPIKE
+  COST_PER_KM
+  FUEL_BUDGET_EXCEEDED
+  KM_RECORD
+  CO2_MALUS
   OTHER
 }
 

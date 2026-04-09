@@ -3,7 +3,7 @@ import { alertApi } from '../services/api';
 import Button from '../components/ui/Button';
 import Badge from '../components/ui/Badge';
 import EmptyState from '../components/ui/EmptyState';
-import { Bell, BellOff, Check, CheckCheck, Trash2, Clock, AlertTriangle, Shield, FileText, Wrench, Droplets, CircleDot, Gauge, Timer } from 'lucide-react';
+import { Bell, BellOff, Check, CheckCheck, Trash2, Clock, AlertTriangle, Shield, FileText, Wrench, Droplets, CircleDot, Gauge, Timer, TrendingUp, Calculator, Fuel, Trophy, Leaf } from 'lucide-react';
 import { formatDate, alertTypeLabels, daysUntil } from '../utils/helpers';
 import { motion as Motion } from 'framer-motion';
 
@@ -15,6 +15,11 @@ const icons = {
   OIL_CHANGE: Droplets,
   TIRE_SEASON: CircleDot,
   MILEAGE_SERVICE: Gauge,
+  BUDGET_SPIKE: TrendingUp,
+  COST_PER_KM: Calculator,
+  FUEL_BUDGET_EXCEEDED: Fuel,
+  KM_RECORD: Trophy,
+  CO2_MALUS: Leaf,
   OTHER: Bell,
 };
 
@@ -26,6 +31,11 @@ const colors = {
   OIL_CHANGE: 'bg-orange/20 text-orange border-orange/20',
   TIRE_SEASON: 'bg-lime/20 text-lime border-lime/20',
   MILEAGE_SERVICE: 'bg-info/20 text-info border-info/20',
+  BUDGET_SPIKE: 'bg-accent/20 text-accent border-accent/20',
+  COST_PER_KM: 'bg-sky/20 text-sky border-sky/20',
+  FUEL_BUDGET_EXCEEDED: 'bg-orange/20 text-orange border-orange/20',
+  KM_RECORD: 'bg-lime/20 text-lime border-lime/20',
+  CO2_MALUS: 'bg-violet/20 text-violet border-violet/20',
   OTHER: 'bg-white/10 text-white border-white/20',
 };
 
