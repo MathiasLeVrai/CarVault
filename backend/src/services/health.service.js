@@ -36,6 +36,7 @@ class HealthService {
 
   _scoreMaintenance(vehicle) {
     const intervals = getMaintenanceIntervals(vehicle.brand, vehicle.fuelType || 'GASOLINE');
+    const baselineMileage = vehicle.purchaseMileage ?? vehicle.mileage ?? 0;
     const details = [];
     let earned = 0;
     let checks = 0;
@@ -46,7 +47,7 @@ class HealthService {
       const lastOil = vehicle.expenses.find(e =>
         e.category === 'MAINTENANCE' && e.description && /vidange|huile|oil/i.test(e.description)
       );
-      const kmSince = vehicle.mileage - (lastOil?.mileage || 0);
+      const kmSince = vehicle.mileage - (lastOil?.mileage ?? baselineMileage);
       const ratio = kmSince / intervals.oilChange;
       const ok = ratio < 1;
       if (ok) earned++;
@@ -59,7 +60,7 @@ class HealthService {
       const lastBrake = vehicle.expenses.find(e =>
         e.description && /frein|brake|plaquette/i.test(e.description)
       );
-      const kmSince = vehicle.mileage - (lastBrake?.mileage || 0);
+      const kmSince = vehicle.mileage - (lastBrake?.mileage ?? baselineMileage);
       const ok = kmSince < intervals.brakes;
       if (ok) earned++;
       details.push({ label: 'Freins', ok, kmSince, interval: intervals.brakes });
@@ -71,7 +72,7 @@ class HealthService {
       const lastBelt = vehicle.expenses.find(e =>
         e.description && /courroie|distribution|timing|belt/i.test(e.description)
       );
-      const kmSince = vehicle.mileage - (lastBelt?.mileage || 0);
+      const kmSince = vehicle.mileage - (lastBelt?.mileage ?? baselineMileage);
       const ok = kmSince < intervals.timingBelt;
       if (ok) earned++;
       details.push({ label: 'Courroie distribution', ok, kmSince, interval: intervals.timingBelt });
@@ -81,7 +82,7 @@ class HealthService {
     if (intervals.generalService) {
       checks++;
       const lastService = vehicle.expenses.find(e => e.category === 'MAINTENANCE');
-      const kmSince = vehicle.mileage - (lastService?.mileage || 0);
+      const kmSince = vehicle.mileage - (lastService?.mileage ?? baselineMileage);
       const ok = kmSince < intervals.generalService;
       if (ok) earned++;
       details.push({ label: 'Révision générale', ok, kmSince, interval: intervals.generalService });

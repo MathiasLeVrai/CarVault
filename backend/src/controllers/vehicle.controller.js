@@ -198,6 +198,8 @@ class VehicleController {
       const custom = vehicle.maintenanceConfig || {};
       const intervals = { ...defaults, ...custom };
 
+      const baselineMileage = vehicle.purchaseMileage ?? vehicle.mileage ?? 0;
+
       // Pour chaque type, calculer le dernier km et la prochaine échéance
       const plan = [];
       for (const [key, intervalKm] of Object.entries(intervals)) {
@@ -205,8 +207,8 @@ class VehicleController {
 
         // Trouver la dernière dépense correspondante
         const lastExpense = findLastExpenseForType(vehicle.expenses, key);
-        // Si aucune dépense trouvée, on considère l'entretien à jour au km actuel
-        const lastKm = lastExpense ? lastExpense.mileage : vehicle.mileage;
+        // Sans historique, on part du km d'achat/import pour que le plan progresse avec le temps
+        const lastKm = lastExpense?.mileage ?? baselineMileage;
         const lastDate = lastExpense?.date || null;
         const kmSinceLast = vehicle.mileage - lastKm;
         const nextAtKm = lastKm + intervalKm;
