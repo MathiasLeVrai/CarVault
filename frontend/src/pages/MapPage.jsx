@@ -66,6 +66,9 @@ function MapController({ center }) {
 
 function ViewportTracker({ onViewportChange, skipNextRef }) {
   const timerRef = useRef(null);
+  const onChangeRef = useRef(onViewportChange);
+  onChangeRef.current = onViewportChange;
+
   useMapEvents({
     moveend(e) {
       if (skipNextRef.current) {
@@ -79,8 +82,8 @@ function ViewportTracker({ onViewportChange, skipNextRef }) {
         const bounds = map.getBounds();
         const ne = bounds.getNorthEast();
         const radius = distance(center.lat, center.lng, ne.lat, ne.lng);
-        onViewportChange(center.lat, center.lng, Math.min(radius, MAX_RADIUS));
-      }, 800);
+        onChangeRef.current(center.lat, center.lng, Math.min(radius, MAX_RADIUS));
+      }, 1200);
     },
   });
   useEffect(() => () => clearTimeout(timerRef.current), []);
@@ -227,38 +230,46 @@ export default function MapPage() {
   const skipNextFetchRef = useRef(false);
   const activeFiltersRef = useRef(activeFilters);
   activeFiltersRef.current = activeFilters;
-  const fetchIdRef = useRef(0);
+  const lastFetchRef = useRef({ lat: 0, lon: 0, radius: 0 });
+  const latestResultTs = useRef(0);
+  const loadingRef = useRef(false);
 
   const loadPOIs = useCallback(async (lat, lon, filters, radius = DEFAULT_RADIUS) => {
-    const id = ++fetchIdRef.current;
+    const ts = Date.now();
     setLoading(true);
+    loadingRef.current = true;
 
-    const partial = { overpass: [], fuel: [] };
-    const stale = () => id !== fetchIdRef.current;
+    lastFetchRef.current = { lat, lon, radius };
 
-    const overpassPromise = fetchPOIs(lat, lon, filters, radius)
-      .then(r => {
-        partial.overpass = r;
-        if (!stale()) setPois([...partial.overpass, ...partial.fuel]);
-        return r;
-      })
-      .catch(() => []);
+    const overpassDone = fetchPOIs(lat, lon, filters, radius)
+      .then(r => { if (ts >= latestResultTs.current) { latestResultTs.current = ts; return r; } return null; })
+      .catch(() => null);
 
-    const fuelPromise = filters.includes('fuel')
+    const fuelDone = filters.includes('fuel')
       ? fetchFuelStations(lat, lon, radius)
-          .then(r => {
-            partial.fuel = r;
-            if (!stale()) setPois([...partial.overpass, ...partial.fuel]);
-            return r;
-          })
-          .catch(() => [])
-      : Promise.resolve([]);
+          .then(r => { if (ts >= latestResultTs.current) return r; return null; })
+          .catch(() => null)
+      : Promise.resolve(null);
 
-    await Promise.all([overpassPromise, fuelPromise]);
-    if (!stale()) {
-      setLoading(false);
-      setInitialLoad(false);
+    const fuelRes = await fuelDone;
+    if (fuelRes !== null) {
+      setPois(prev => {
+        const nonFuel = prev.filter(p => p.type !== 'fuel');
+        return [...nonFuel, ...fuelRes];
+      });
     }
+
+    const overpassRes = await overpassDone;
+    if (overpassRes !== null) {
+      setPois(prev => {
+        const fuelOnly = prev.filter(p => p.type === 'fuel');
+        return [...overpassRes, ...fuelOnly];
+      });
+    }
+
+    loadingRef.current = false;
+    setLoading(false);
+    setInitialLoad(false);
   }, []);
 
   const locateUser = useCallback(() => {
@@ -293,6 +304,11 @@ export default function MapPage() {
   const handleViewportChange = useCallback((lat, lon, radius) => {
     viewportCenterRef.current = [lat, lon];
     viewportRadiusRef.current = radius;
+
+    const last = lastFetchRef.current;
+    const moved = distance(lat, lon, last.lat, last.lon);
+    if (moved < last.radius * 0.4 && !loadingRef.current) return;
+
     loadPOIs(lat, lon, activeFiltersRef.current, radius);
   }, [loadPOIs]);
 
@@ -301,7 +317,10 @@ export default function MapPage() {
       const next = prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id];
       const pos = viewportCenterRef.current || userPosRef.current;
       const radius = viewportRadiusRef.current || DEFAULT_RADIUS;
-      if (pos) loadPOIs(pos[0], pos[1], next, radius);
+      if (pos) {
+        latestResultTs.current = 0;
+        loadPOIs(pos[0], pos[1], next, radius);
+      }
       return next;
     });
   };
