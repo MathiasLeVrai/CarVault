@@ -69,6 +69,7 @@ export const expenseCategoryLabels = {
   PARKING: 'Stationnement',
   TOLL: 'Péage',
   CLEANING: 'Lavage',
+  FINE: 'Amende',
   OTHER: 'Autre',
 };
 
@@ -85,6 +86,7 @@ export const expenseCategoryColors = {
   PARKING: '#22c55e',
   TOLL: '#ff6b7a',
   CLEANING: '#0ea5e9',
+  FINE: '#dc2626',
   OTHER: '#71717a',
 };
 

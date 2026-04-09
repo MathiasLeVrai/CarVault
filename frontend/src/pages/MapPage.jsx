@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
 import { motion as Motion } from 'framer-motion';
 import { MapPin, Navigation, Wrench, ShieldCheck, Droplets, Fuel, Search, ExternalLink, Loader2 } from 'lucide-react';
 import L from 'leaflet';
@@ -21,7 +21,8 @@ const FILTERS = [
 ];
 
 const DEFAULT_CENTER = [48.8566, 2.3522];
-const RADIUS = 5000;
+const DEFAULT_RADIUS = 5000;
+const MAX_RADIUS = 15000;
 
 function makeIcon(color) {
   return L.divIcon({
@@ -58,18 +59,42 @@ const userIcon = L.divIcon({
 function MapController({ center }) {
   const map = useMap();
   useEffect(() => {
-    if (center) map.setView(center, 14, { animate: true });
+    if (center) map.setView(center, map.getZoom(), { animate: true });
   }, [center, map]);
   return null;
 }
 
-async function fetchPOIs(lat, lon, activeFilters) {
+function ViewportTracker({ onViewportChange, skipNextRef }) {
+  const timerRef = useRef(null);
+  useMapEvents({
+    moveend(e) {
+      if (skipNextRef.current) {
+        skipNextRef.current = false;
+        return;
+      }
+      clearTimeout(timerRef.current);
+      timerRef.current = setTimeout(() => {
+        const map = e.target;
+        const center = map.getCenter();
+        const bounds = map.getBounds();
+        const ne = bounds.getNorthEast();
+        const radius = distance(center.lat, center.lng, ne.lat, ne.lng);
+        onViewportChange(center.lat, center.lng, Math.min(radius, MAX_RADIUS));
+      }, 500);
+    },
+  });
+  useEffect(() => () => clearTimeout(timerRef.current), []);
+  return null;
+}
+
+async function fetchPOIs(lat, lon, activeFilters, radius = DEFAULT_RADIUS) {
   const overpassFilters = activeFilters.filter(id => id !== 'fuel');
   if (overpassFilters.length === 0) return [];
 
+  const r = Math.min(Math.round(radius), MAX_RADIUS);
   const conditions = overpassFilters.flatMap(id => {
     const f = FILTERS.find(f => f.id === id);
-    return f.tags.map(([k, v]) => `node["${k}"="${v}"](around:${RADIUS},${lat},${lon});way["${k}"="${v}"](around:${RADIUS},${lat},${lon});`);
+    return f.tags.map(([k, v]) => `node["${k}"="${v}"](around:${r},${lat},${lon});way["${k}"="${v}"](around:${r},${lat},${lon});`);
   });
 
   const query = `[out:json][timeout:15];(${conditions.join('')});out center;`;
@@ -94,10 +119,11 @@ async function fetchPOIs(lat, lon, activeFilters) {
   }).filter(Boolean);
 }
 
-async function fetchFuelStations(lat, lon) {
+async function fetchFuelStations(lat, lon, radius = DEFAULT_RADIUS) {
   // ODS geo filter: POINT(longitude latitude) — lon first, URL-encoded
-  const where = encodeURIComponent(`distance(geom,geom'POINT(${lon} ${lat})',5000m)`);
-  const url = `https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/records?where=${where}&limit=20&select=id,adresse,ville,geom,gazole_prix,sp95_prix,e10_prix,sp98_prix`;
+  const r = Math.min(Math.round(radius), MAX_RADIUS);
+  const where = encodeURIComponent(`distance(geom,geom'POINT(${lon} ${lat})',${r}m)`);
+  const url = `https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/records?where=${where}&limit=50&select=id,adresse,ville,geom,gazole_prix,sp95_prix,e10_prix,sp98_prix`;
   const res = await fetch(url);
   if (!res.ok) throw new Error('Fuel API error');
   const data = await res.json();
@@ -168,21 +194,28 @@ export default function MapPage() {
   const [loading, setLoading] = useState(false);
   const [geoError, setGeoError] = useState(null);
   const [selected, setSelected] = useState(null);
+  const [initialLoad, setInitialLoad] = useState(true);
   const markersRef = useRef({});
   const userPosRef = useRef(null);
+  const viewportCenterRef = useRef(null);
+  const viewportRadiusRef = useRef(DEFAULT_RADIUS);
+  const skipNextFetchRef = useRef(false);
+  const activeFiltersRef = useRef(activeFilters);
+  activeFiltersRef.current = activeFilters;
 
-  const loadPOIs = useCallback(async (lat, lon, filters) => {
+  const loadPOIs = useCallback(async (lat, lon, filters, radius = DEFAULT_RADIUS) => {
     setLoading(true);
     try {
       const [overpassResults, fuelResults] = await Promise.all([
-        fetchPOIs(lat, lon, filters),
-        filters.includes('fuel') ? fetchFuelStations(lat, lon) : Promise.resolve([]),
+        fetchPOIs(lat, lon, filters, radius),
+        filters.includes('fuel') ? fetchFuelStations(lat, lon, radius) : Promise.resolve([]),
       ]);
       setPois([...overpassResults, ...fuelResults]);
     } catch {
       // silently fail — map remains usable
     } finally {
       setLoading(false);
+      setInitialLoad(false);
     }
   }, []);
 
@@ -193,11 +226,14 @@ export default function MapPage() {
       return;
     }
     setLoading(true);
+    skipNextFetchRef.current = true;
     navigator.geolocation.getCurrentPosition(
       ({ coords }) => {
         const pos = [coords.latitude, coords.longitude];
         setUserPos(pos);
         userPosRef.current = pos;
+        viewportCenterRef.current = pos;
+        viewportRadiusRef.current = DEFAULT_RADIUS;
         setMapCenter(pos);
         loadPOIs(coords.latitude, coords.longitude, activeFilters);
       },
@@ -211,11 +247,18 @@ export default function MapPage() {
 
   useEffect(() => { locateUser(); }, []);
 
+  const handleViewportChange = useCallback((lat, lon, radius) => {
+    viewportCenterRef.current = [lat, lon];
+    viewportRadiusRef.current = radius;
+    loadPOIs(lat, lon, activeFiltersRef.current, radius);
+  }, [loadPOIs]);
+
   const toggleFilter = (id) => {
     setActiveFilters(prev => {
       const next = prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id];
-      const pos = userPosRef.current;
-      if (pos) loadPOIs(pos[0], pos[1], next);
+      const pos = viewportCenterRef.current || userPosRef.current;
+      const radius = viewportRadiusRef.current || DEFAULT_RADIUS;
+      if (pos) loadPOIs(pos[0], pos[1], next, radius);
       return next;
     });
   };
@@ -308,6 +351,7 @@ export default function MapPage() {
               attribution='© <a href="https://www.openstreetmap.org/copyright">OSM</a> © <a href="https://carto.com/">CARTO</a>'
             />
             <MapController center={mapCenter} />
+            <ViewportTracker onViewportChange={handleViewportChange} skipNextRef={skipNextFetchRef} />
 
             {userPos && (
               <Marker position={userPos} icon={userIcon}>
@@ -362,12 +406,18 @@ export default function MapPage() {
             })}
           </MapContainer>
 
-          {loading && (
+          {loading && initialLoad && (
             <div className="absolute inset-0 flex items-center justify-center bg-bg/60 backdrop-blur-sm z-[1000]">
               <div className="flex flex-col items-center gap-3">
                 <Loader2 className="w-8 h-8 animate-spin text-accent" />
                 <span className="text-sm font-semibold text-white/70">Recherche en cours…</span>
               </div>
+            </div>
+          )}
+          {loading && !initialLoad && (
+            <div className="absolute top-3 right-3 z-[1000] bg-bg/80 rounded-xl px-3 py-2 flex items-center gap-2 border border-white/10">
+              <Loader2 className="w-4 h-4 animate-spin text-accent" />
+              <span className="text-xs font-semibold text-white/60">Chargement…</span>
             </div>
           )}
         </div>
@@ -394,6 +444,7 @@ export default function MapPage() {
                 animate={{ opacity: 1, x: 0 }}
                 onClick={() => {
                   setSelected(poi);
+                  skipNextFetchRef.current = true;
                   setMapCenter([poi.lat, poi.lon]);
                   markersRef.current[poi.id]?.openPopup();
                 }}
@@ -462,6 +513,7 @@ export default function MapPage() {
                   key={poi.id}
                   onClick={() => {
                     setSelected(poi);
+                    skipNextFetchRef.current = true;
                     setMapCenter([poi.lat, poi.lon]);
                     markersRef.current[poi.id]?.openPopup();
                   }}

@@ -11,7 +11,7 @@ const DOC_TYPES = {
 const EXP_CATS = {
   MAINTENANCE: 'Entretien / Révision', OIL_CHANGE: 'Vidange', BRAKES: 'Freins / Plaquettes',
   TIRES: 'Pneus', BODYWORK: 'Carrosserie', TECHNICAL_INSPECTION: 'Contrôle technique',
-  PARKING: 'Stationnement', TOLL: 'Péage', OTHER: 'Autre',
+  PARKING: 'Stationnement', TOLL: 'Péage', CLEANING: 'Lavage', FINE: 'Amende', OTHER: 'Autre',
 };
 const FUEL_TYPES = {
   GASOLINE: 'Essence', DIESEL: 'Diesel', HYBRID: 'Hybride',

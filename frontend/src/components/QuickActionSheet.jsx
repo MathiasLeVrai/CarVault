@@ -23,6 +23,7 @@ const EXPENSE_CATS = [
   { value: 'PARKING',     label: 'Stationnement' },
   { value: 'TOLL',        label: 'Péage' },
   { value: 'CLEANING',   label: 'Lavage' },
+  { value: 'FINE',       label: 'Amende' },
   { value: 'OTHER',       label: 'Autre' },
 ];
 

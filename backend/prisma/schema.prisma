@@ -167,6 +167,7 @@ enum ExpenseCategory {
   PARKING
   TOLL
   CLEANING
+  FINE
   OTHER
 }
 
