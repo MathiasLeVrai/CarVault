@@ -5,7 +5,7 @@ import { motion as Motion, useReducedMotion, AnimatePresence } from 'framer-moti
 import {
   FileText, Bell, Wrench, TrendingUp, MapPin, Shield,
   ArrowRight, Check, X, Fuel, BarChart3, Share2, Car,
-  AlertTriangle, Star, ChevronRight, ChevronDown,
+  AlertTriangle, Star, ChevronRight, ChevronDown, Zap, Clock, Users,
 } from 'lucide-react';
 
 /* ─── Data ──────────────────────────────────────────────────── */
@@ -426,13 +426,13 @@ export default function LandingPage() {
             },
             {
               "@type": "Offer",
-              "price": "3.99",
+              "price": "4.99",
               "priceCurrency": "EUR",
               "name": "Premium mensuel",
               "description": "Vehicules illimites, toutes les fonctionnalites, 14 jours d'essai gratuit",
               "priceSpecification": {
                 "@type": "UnitPriceSpecification",
-                "price": "3.99",
+                "price": "4.99",
                 "priceCurrency": "EUR",
                 "billingDuration": "P1M"
               }
@@ -476,9 +476,9 @@ export default function LandingPage() {
           <span className="text-lg font-bold font-display tracking-tight">CarVault</span>
         </div>
         <nav className="flex items-center gap-3">
-          <Link to="/pricing" className="px-4 py-2 text-sm font-semibold text-white/50 hover:text-white transition-colors hidden sm:block">
+          <a href="#pricing" className="px-4 py-2 text-sm font-semibold text-white/50 hover:text-white transition-colors hidden sm:block">
             Tarifs
-          </Link>
+          </a>
           <Link to="/login" className="px-4 py-2 text-sm font-semibold text-white/50 hover:text-white transition-colors hidden sm:block">
             Se connecter
           </Link>
@@ -541,14 +541,24 @@ export default function LandingPage() {
               </Link>
             </Motion.div>
 
-            <Motion.p
+            <Motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.55, duration: 0.5 }}
-              className="text-xs text-white/25 font-medium mt-5"
+              className="flex flex-wrap items-center gap-4 mt-6"
             >
-              Gratuit pour 1 véhicule · Aucune carte bancaire requise · PWA installable
-            </Motion.p>
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/8">
+                <Users className="w-3.5 h-3.5 text-accent" />
+                <span className="text-xs font-bold text-white/50">500+ conducteurs inscrits</span>
+              </div>
+              <div className="flex items-center gap-1">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Star key={i} className="w-3 h-3 text-amber-400 fill-amber-400" />
+                ))}
+                <span className="text-xs font-bold text-white/40 ml-1.5">4.9/5</span>
+              </div>
+              <span className="text-xs text-white/25 font-medium">Aucune carte bancaire requise</span>
+            </Motion.div>
           </div>
 
           {/* Right — app mockup */}
@@ -777,21 +787,113 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── Pricing teaser ──────────────────────────────────── */}
-      <section className="relative z-10 px-6 md:px-12 py-20">
-        <div className="max-w-3xl mx-auto text-center">
-          <Motion.div {...fade()}>
+      {/* ── Pricing ──────────────────────────────────────────── */}
+      <section id="pricing" className="relative z-10 px-6 md:px-12 py-24">
+        <div className="max-w-4xl mx-auto">
+          <Motion.div {...fade()} className="text-center mb-14">
             <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/30 mb-4">Tarifs</p>
             <h2 className="text-4xl md:text-5xl font-black font-display tracking-tight mb-4">
-              Gratuit pour commencer.
+              Testez tout. <span className="text-accent">Payez après.</span>
             </h2>
-            <p className="text-white/40 font-medium text-lg mb-8 max-w-md mx-auto">
-              14 jours d'essai gratuit. Puis 3,99€/mois ou 39,99€/an.
+            <p className="text-white/40 font-medium text-lg max-w-md mx-auto">
+              14 jours d'essai gratuit. Sans engagement, annulable en un clic.
             </p>
-            <Link to="/pricing" className="cv-btn-dark px-8 py-4 text-base rounded-xl inline-flex items-center gap-2 justify-center">
-              Voir les tarifs <ArrowRight className="w-4 h-4" />
-            </Link>
           </Motion.div>
+
+          {/* Offre de lancement */}
+          <Motion.div {...fade(0.05)} className="mb-8">
+            <div className="relative overflow-hidden rounded-2xl p-5 md:p-6"
+              style={{ background: 'linear-gradient(135deg, rgba(255,42,63,0.08) 0%, rgba(245,158,11,0.08) 50%, rgba(124,92,252,0.08) 100%)', border: '1px solid rgba(255,42,63,0.18)' }}>
+              <div className="absolute top-0 right-0 w-64 h-64 pointer-events-none"
+                style={{ background: 'radial-gradient(circle, rgba(255,42,63,0.08) 0%, transparent 70%)', top: '-80px', right: '-40px' }} />
+              <div className="relative z-10 flex flex-col md:flex-row items-center gap-5">
+                <div className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 shadow-[0_0_24px_rgba(255,42,63,0.25)]"
+                  style={{ background: 'linear-gradient(135deg, #ff2a3f 0%, #ff6b00 100%)' }}>
+                  <Zap className="w-7 h-7 text-white" strokeWidth={2.5} fill="white" />
+                </div>
+                <div className="text-center md:text-left flex-1">
+                  <h3 className="text-lg font-black text-white font-display tracking-tight">
+                    Offre de lancement
+                  </h3>
+                  <p className="text-sm text-white/50 font-medium mt-1">
+                    CarVault vient de sortir — profitez de <span className="text-accent font-bold">14 jours d'essai gratuit</span> + le prix annuel le plus bas qu'on proposera jamais.
+                    Une fois ce tarif verrouillé, il ne changera pas pour vous, même si nos prix augmentent.
+                  </p>
+                </div>
+                <div className="shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.06] border border-white/10">
+                  <Clock className="w-4 h-4 text-amber-400" />
+                  <span className="text-sm font-bold text-amber-400">Places limitées</span>
+                </div>
+              </div>
+            </div>
+          </Motion.div>
+
+          {/* Pricing cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {/* Free */}
+            <Motion.div {...fade(0.08)} className="cv-card p-8">
+              <div className="mb-6">
+                <p className="text-sm font-bold text-white/50 mb-2">Gratuit</p>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-5xl font-black font-display text-white">0€</span>
+                  <span className="text-sm text-white/40 font-medium">pour toujours</span>
+                </div>
+              </div>
+              <div className="space-y-2.5 mb-8">
+                {['1 véhicule', 'Documents illimités', 'Alertes d\'expiration', 'Suivi des entretiens', 'Carnet de carburant'].map(f => (
+                  <div key={f} className="flex items-center gap-2.5">
+                    <Check className="w-4 h-4 text-lime flex-shrink-0" strokeWidth={2.5} />
+                    <span className="text-sm text-white/70 font-medium">{f}</span>
+                  </div>
+                ))}
+                {['Score de santé /100', 'Rapport PDF de revente', 'Statistiques avancées', 'Véhicules illimités'].map(f => (
+                  <div key={f} className="flex items-center gap-2.5">
+                    <X className="w-4 h-4 text-white/20 flex-shrink-0" strokeWidth={2} />
+                    <span className="text-sm text-white/25 font-medium">{f}</span>
+                  </div>
+                ))}
+              </div>
+              <Link to="/register" className="w-full py-3.5 text-sm rounded-xl inline-flex items-center gap-2 justify-center font-bold cv-btn-dark">
+                Commencer gratuitement <ArrowRight className="w-4 h-4" />
+              </Link>
+            </Motion.div>
+
+            {/* Premium */}
+            <Motion.div {...fade(0.12)} className="cv-card-accent p-8 relative">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                <span className="px-4 py-1.5 rounded-full text-xs font-bold bg-accent text-white shadow-[0_0_16px_rgba(255,42,63,0.4)]">
+                  Le plus populaire
+                </span>
+              </div>
+              <div className="mb-6">
+                <p className="text-sm font-bold text-white/50 mb-2">Premium</p>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-5xl font-black font-display text-white">39,99€</span>
+                  <span className="text-sm text-white/40 font-medium">/an</span>
+                </div>
+                <div className="flex items-center gap-3 mt-2">
+                  <span className="text-sm text-white/40 line-through">59,88€/an</span>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-lime/20 text-lime border border-lime/30">
+                    Économisez 20€/an
+                  </span>
+                </div>
+                <p className="text-xs text-white/30 mt-1.5">soit 3,33€/mois · ou 4,99€/mois sans engagement</p>
+              </div>
+              <div className="space-y-2.5 mb-8">
+                {['Véhicules illimités', 'Documents illimités', 'Alertes intelligentes', 'Suivi des entretiens', 'Carnet de carburant', 'Score de santé /100', 'Rapport PDF de revente', 'Statistiques avancées'].map(f => (
+                  <div key={f} className="flex items-center gap-2.5">
+                    <Check className="w-4 h-4 text-lime flex-shrink-0" strokeWidth={2.5} />
+                    <span className="text-sm text-white/80 font-medium">{f}</span>
+                  </div>
+                ))}
+              </div>
+              <Link to="/register" className="w-full py-3.5 text-sm rounded-xl inline-flex items-center gap-2 justify-center font-bold cv-btn-accent">
+                <Zap className="w-4 h-4" fill="white" strokeWidth={0} />
+                Démarrer l'essai gratuit <ArrowRight className="w-4 h-4" />
+              </Link>
+              <p className="text-center text-[10px] text-white/25 mt-3">14 jours gratuits · Aucun prélèvement pendant l'essai</p>
+            </Motion.div>
+          </div>
         </div>
       </section>
 
@@ -808,14 +910,14 @@ export default function LandingPage() {
                   <Shield className="w-7 h-7 text-accent" />
                 </div>
                 <h2 className="text-4xl md:text-5xl font-black font-display tracking-tight mb-4">
-                  Prenez le contrôle.
+                  14 jours pour tout tester.
                 </h2>
                 <p className="text-white/45 font-medium mb-8 text-lg">
-                  Gratuit pour 1 véhicule. Aucune carte bancaire.<br />
-                  Prêt en 3 minutes.
+                  Aucun prélèvement pendant l'essai.<br />
+                  Annulable en un clic, sans engagement.
                 </p>
                 <Link to="/register" className="cv-btn-accent px-10 py-4 text-base rounded-xl inline-flex items-center gap-2">
-                  Créer mon compte gratuit <ArrowRight className="w-4 h-4" />
+                  Démarrer l'essai gratuit <ArrowRight className="w-4 h-4" />
                 </Link>
               </div>
             </div>

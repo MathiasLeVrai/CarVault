@@ -129,7 +129,7 @@ export default function PricingPage() {
                 >
                   Annuel
                   <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-lime/20 text-lime border border-lime/30">
-                    -17%
+                    -33%
                   </span>
                 </button>
               </div>
@@ -139,7 +139,7 @@ export default function PricingPage() {
             <div className="text-center mb-6">
               <div className="flex items-baseline justify-center gap-1">
                 <span className="text-5xl font-black font-display text-white">
-                  {isYearly ? '39,99' : '3,99'}
+                  {isYearly ? '39,99' : '4,99'}
                 </span>
                 <span className="text-lg font-bold text-white/60">€</span>
                 <span className="text-sm text-white/40 ml-1">
@@ -148,7 +148,7 @@ export default function PricingPage() {
               </div>
               {isYearly && (
                 <p className="text-sm text-white/40 mt-2">
-                  soit 3,33€/mois — <span className="text-lime font-semibold">économisez 8€/an</span>
+                  soit 3,33€/mois — <span className="text-lime font-semibold">économisez 20€/an</span>
                 </p>
               )}
               <p className="text-xs text-white/30 mt-2">

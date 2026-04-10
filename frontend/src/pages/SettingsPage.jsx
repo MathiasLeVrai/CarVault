@@ -303,14 +303,14 @@ function SubscriptionCard({ user }) {
               onClick={() => setPlan('monthly')}
               className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${!isYearly ? 'bg-white/10 text-white' : 'text-white/40'}`}
             >
-              3,99€/mois
+              4,99€/mois
             </button>
             <button
               onClick={() => setPlan('yearly')}
               className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${isYearly ? 'bg-white/10 text-white' : 'text-white/40'}`}
             >
               39,99€/an
-              <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-lime/20 text-lime">-17%</span>
+              <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-lime/20 text-lime">-33%</span>
             </button>
           </div>
         </div>

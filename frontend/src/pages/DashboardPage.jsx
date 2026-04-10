@@ -8,7 +8,7 @@ import Button from '../components/ui/Button';
 import {
   Car, Wallet, CalendarClock, Bell, ChevronRight, TrendingDown,
   ArrowRight, FileText, Activity, Plus, Shield, Wrench, AlertTriangle,
-  Clock, TrendingUp, Fuel, Receipt,
+  Clock, TrendingUp, Fuel, Receipt, Zap,
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -151,6 +151,37 @@ export default function DashboardPage() {
           <Plus className="w-4 h-4" /> Ajouter un véhicule
         </Button>
       </Motion.div>
+
+      {/* ─── Premium banner ─── */}
+      {!user?.isPremium && (
+        <Motion.div variants={itemVariants}>
+          <div
+            className="relative overflow-hidden rounded-2xl p-4 sm:p-5 flex items-center justify-between gap-4 cursor-pointer group"
+            style={{ background: 'linear-gradient(135deg, rgba(255,42,63,0.10) 0%, rgba(124,92,252,0.10) 50%, rgba(56,189,248,0.08) 100%)', border: '1px solid rgba(255,42,63,0.15)' }}
+            onClick={() => navigate('/settings')}
+          >
+            <div className="absolute inset-0 bg-accent/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+            <div className="flex items-center gap-4 relative z-10">
+              <div className="w-10 h-10 rounded-xl bg-accent/20 border border-accent/30 flex items-center justify-center shrink-0 shadow-[0_0_16px_rgba(255,42,63,0.2)]">
+                <Zap className="w-5 h-5 text-accent" strokeWidth={2.5} fill="currentColor" />
+              </div>
+              <div>
+                <p className="text-sm font-black text-white font-display">
+                  Offre de lancement — <span className="text-accent">14 jours gratuits</span>
+                </p>
+                <p className="text-[11px] text-white/45 font-medium mt-0.5">
+                  Débloquez tout CarVault : véhicules illimités, stats avancées, export PDF. À partir de 3,33€/mois.
+                </p>
+              </div>
+            </div>
+            <div className="shrink-0 relative z-10">
+              <div className="cv-btn-accent px-4 py-2.5 rounded-xl text-xs font-bold inline-flex items-center gap-1.5">
+                Essayer <ArrowRight className="w-3.5 h-3.5" />
+              </div>
+            </div>
+          </div>
+        </Motion.div>
+      )}
 
       {/* ─── Ce mois-ci ─── */}
       {(() => {

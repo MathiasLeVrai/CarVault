@@ -1,6 +1,6 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import {
-  Gauge, Car, Receipt, FileText, LogOut, SlidersHorizontal, Plus, MapPinned,
+  Gauge, Car, Receipt, FileText, LogOut, SlidersHorizontal, Plus, MapPinned, Zap,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -24,7 +24,7 @@ const sidebarItems = [
 ];
 
 export default function Sidebar({ onFabPress }) {
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const location = useLocation();
 
   return (
@@ -66,6 +66,26 @@ export default function Sidebar({ onFabPress }) {
             );
           })}
         </nav>
+
+        {!user?.isPremium && (
+          <>
+            <div className="cv-divider mx-4 my-4" />
+            <NavLink
+              to="/settings"
+              className="mx-2 p-3 rounded-xl flex items-center gap-3 relative overflow-hidden group transition-all"
+              style={{ background: 'linear-gradient(135deg, rgba(255,42,63,0.12) 0%, rgba(124,92,252,0.12) 100%)', border: '1px solid rgba(255,42,63,0.2)' }}
+            >
+              <div className="w-9 h-9 rounded-lg bg-accent/20 flex items-center justify-center shrink-0">
+                <Zap className="w-4 h-4 text-accent" strokeWidth={2.5} fill="currentColor" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[12px] font-black text-white font-display">Passer à Premium</p>
+                <p className="text-[10px] text-white/40 font-medium">14 jours gratuits</p>
+              </div>
+              <div className="absolute inset-0 bg-accent/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+            </NavLink>
+          </>
+        )}
 
         <div className="cv-divider mx-4 my-4" />
 
