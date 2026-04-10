@@ -354,4 +354,4 @@ function startEngagementCron() {
   console.log('[CRON] Engagement notifications activées (quotidien 10h).');
 }
 
-module.exports = { startEngagementCron, runEngagementChecks };
+module.exports = { startEngagementCron };

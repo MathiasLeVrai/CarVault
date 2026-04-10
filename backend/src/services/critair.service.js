@@ -89,4 +89,4 @@ function computeCritAir(fuelType, firstRegistrationDate) {
   return null;
 }
 
-module.exports = { computeCritAir, CRITAIR_COLORS, CRITAIR_LABELS };
+module.exports = { computeCritAir };

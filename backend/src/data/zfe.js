@@ -38,4 +38,4 @@ function getMostRestrictiveThreshold() {
   return Math.min(...ZFE_ZONES.map(z => z.minCritAirBanned));
 }
 
-module.exports = { ZFE_ZONES, getBannedZones, getMostRestrictiveThreshold };
+module.exports = { getBannedZones };

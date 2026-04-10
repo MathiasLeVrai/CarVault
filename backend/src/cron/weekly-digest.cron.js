@@ -236,4 +236,4 @@ function startWeeklyDigestCron() {
   console.log('[CRON] Digest hebdomadaire activé (lundi 8h).');
 }
 
-module.exports = { startWeeklyDigestCron, generateWeeklyDigest };
+module.exports = { startWeeklyDigestCron };

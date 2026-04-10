@@ -439,4 +439,4 @@ function startAlertCron() {
   console.log('[CRON] Alertes intelligentes activées (toutes les 6h).');
 }
 
-module.exports = { startAlertCron, runAllAlertChecks };
+module.exports = { startAlertCron };

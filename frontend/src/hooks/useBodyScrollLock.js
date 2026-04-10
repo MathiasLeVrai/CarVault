@@ -5,7 +5,7 @@ let previousBodyOverflow = '';
 let previousHtmlOverflow = '';
 
 /** Nested overlays (modal + sheet + …) share one body lock without clearing each other. */
-export function acquireBodyScrollLock() {
+function acquireBodyScrollLock() {
   lockDepth += 1;
   if (lockDepth === 1) {
     previousBodyOverflow = document.body.style.overflow;
@@ -15,7 +15,7 @@ export function acquireBodyScrollLock() {
   }
 }
 
-export function releaseBodyScrollLock() {
+function releaseBodyScrollLock() {
   if (lockDepth === 0) return;
   lockDepth -= 1;
   if (lockDepth === 0) {

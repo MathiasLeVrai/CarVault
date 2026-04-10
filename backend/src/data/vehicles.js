@@ -212,4 +212,4 @@ function getMaintenanceIntervals(brandName, fuelType = 'GASOLINE') {
   return intervals;
 }
 
-module.exports = { vehicleBrands, getMaintenanceIntervals, DEFAULT_MAINTENANCE, FUEL_MAINTENANCE, MAINTENANCE_LABELS };
+module.exports = { vehicleBrands, getMaintenanceIntervals, MAINTENANCE_LABELS };

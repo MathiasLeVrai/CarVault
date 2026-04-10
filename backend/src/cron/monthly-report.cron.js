@@ -172,4 +172,4 @@ function startMonthlyReportCron() {
   console.log('[CRON] Rapport mensuel activé (1er du mois à 9h).');
 }
 
-module.exports = { startMonthlyReportCron, generateMonthlyReport };
+module.exports = { startMonthlyReportCron };

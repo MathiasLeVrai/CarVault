@@ -323,4 +323,4 @@ function startBudgetCron() {
   console.log('[CRON] Budget & stats activées (quotidien 9h).');
 }
 
-module.exports = { startBudgetCron, runBudgetChecks };
+module.exports = { startBudgetCron };

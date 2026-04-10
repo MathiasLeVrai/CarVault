@@ -221,4 +221,3 @@ export const coteApi = {
   update: (vehicleId, estimatedValue) => api.put(`/cote/${vehicleId}`, { estimatedValue }),
 };
 
-export default api;
