@@ -6,9 +6,11 @@ import usePush from '../hooks/usePush';
 import BadgesWidget from '../components/BadgesWidget';
 import {
   Bell, Mail, Smartphone, Calendar, Check, Settings, Sun, Moon, LogOut, Globe,
-  Camera, Pencil, Crown, User as UserIcon,
+  Camera, Pencil, Crown, User as UserIcon, Zap, Loader2, ExternalLink,
 } from 'lucide-react';
 import { motion as Motion } from 'framer-motion';
+import { subscriptionApi } from '../services/api';
+import { useToast } from '../context/ToastContext';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -219,6 +221,113 @@ function ProfileCard({ user, updateProfile, onSaved }) {
   );
 }
 
+function SubscriptionCard({ user }) {
+  const [loading, setLoading] = useState(false);
+  const [plan, setPlan] = useState('yearly');
+  const toast = useToast();
+  const isYearly = plan === 'yearly';
+
+  const handleUpgrade = async () => {
+    setLoading(true);
+    try {
+      const { url } = await subscriptionApi.createCheckout(plan);
+      if (url) window.location.href = url;
+      else toast.info('Contactez hello@carvault.fr pour activer Premium.');
+    } catch (err) {
+      toast.error(err.message || 'Erreur lors du paiement');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleManage = async () => {
+    setLoading(true);
+    try {
+      const { url } = await subscriptionApi.createPortal();
+      if (url) window.location.href = url;
+    } catch (err) {
+      toast.error(err.message || 'Erreur');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (user?.isPremium) {
+    return (
+      <div className="cv-card p-5 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-32 h-32 rounded-full pointer-events-none"
+          style={{ background: 'radial-gradient(circle, rgba(245,158,11,0.1) 0%, transparent 70%)', top: '-16px', right: '-16px' }} />
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+              style={{ background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.25)' }}>
+              <Crown className="w-5 h-5 text-amber-400" strokeWidth={2} />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-ink font-display">Abonnement Premium</p>
+              <p className="text-[11px] text-ink-muted mt-0.5">Actif — toutes les fonctionnalités débloquées</p>
+            </div>
+          </div>
+          <button
+            onClick={handleManage}
+            disabled={loading}
+            className="cv-btn-dark px-4 py-2.5 text-xs rounded-xl inline-flex items-center gap-1.5 font-bold shrink-0"
+          >
+            {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ExternalLink className="w-3.5 h-3.5" />}
+            Gérer
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="cv-card-accent p-6 relative overflow-hidden">
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-32 rounded-full pointer-events-none"
+        style={{ background: 'radial-gradient(circle, rgba(255,42,63,0.12) 0%, transparent 70%)', filter: 'blur(30px)', top: '-40px' }} />
+      <div className="relative z-10">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 rounded-xl bg-accent/20 border border-accent/30 flex items-center justify-center">
+            <Zap className="w-5 h-5 text-accent" strokeWidth={2.5} fill="currentColor" />
+          </div>
+          <div>
+            <p className="text-sm font-bold text-white font-display">Passer à Premium</p>
+            <p className="text-[11px] text-white/40">14 jours d'essai gratuit</p>
+          </div>
+        </div>
+
+        {/* Toggle */}
+        <div className="flex items-center justify-center mb-4">
+          <div className="inline-flex rounded-xl bg-white/[0.06] border border-white/10 p-1">
+            <button
+              onClick={() => setPlan('monthly')}
+              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${!isYearly ? 'bg-white/10 text-white' : 'text-white/40'}`}
+            >
+              3,99€/mois
+            </button>
+            <button
+              onClick={() => setPlan('yearly')}
+              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${isYearly ? 'bg-white/10 text-white' : 'text-white/40'}`}
+            >
+              39,99€/an
+              <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-lime/20 text-lime">-17%</span>
+            </button>
+          </div>
+        </div>
+
+        <button
+          onClick={handleUpgrade}
+          disabled={loading}
+          className="w-full py-3.5 rounded-2xl cv-btn-accent text-sm font-black flex items-center justify-center gap-2 disabled:opacity-50"
+        >
+          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" fill="white" strokeWidth={0} />}
+          {loading ? 'Redirection…' : 'Démarrer l\'essai gratuit'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function SettingsPage() {
   const { user, logout, updateProfile } = useAuth();
   const { theme, toggleTheme } = useTheme();
@@ -279,6 +388,11 @@ export default function SettingsPage() {
       {/* Profile card */}
       <Motion.div variants={itemVariants}>
         <ProfileCard user={user} updateProfile={updateProfile} onSaved={handleProfileSaved} />
+      </Motion.div>
+
+      {/* Subscription */}
+      <Motion.div variants={itemVariants}>
+        <SubscriptionCard user={user} />
       </Motion.div>
 
       {/* Badges */}

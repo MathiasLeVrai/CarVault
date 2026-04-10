@@ -426,15 +426,28 @@ export default function LandingPage() {
             },
             {
               "@type": "Offer",
-              "price": "6.99",
+              "price": "3.99",
               "priceCurrency": "EUR",
               "name": "Premium mensuel",
-              "description": "Vehicules illimites, toutes les fonctionnalites",
+              "description": "Vehicules illimites, toutes les fonctionnalites, 14 jours d'essai gratuit",
               "priceSpecification": {
                 "@type": "UnitPriceSpecification",
-                "price": "6.99",
+                "price": "3.99",
                 "priceCurrency": "EUR",
                 "billingDuration": "P1M"
+              }
+            },
+            {
+              "@type": "Offer",
+              "price": "39.99",
+              "priceCurrency": "EUR",
+              "name": "Premium annuel",
+              "description": "Vehicules illimites, toutes les fonctionnalites, 14 jours d'essai gratuit",
+              "priceSpecification": {
+                "@type": "UnitPriceSpecification",
+                "price": "39.99",
+                "priceCurrency": "EUR",
+                "billingDuration": "P1Y"
               }
             }
           ],
@@ -773,7 +786,7 @@ export default function LandingPage() {
               Gratuit pour commencer.
             </h2>
             <p className="text-white/40 font-medium text-lg mb-8 max-w-md mx-auto">
-              1 véhicule gratuit, pour toujours. Premium à 3€/mois pour toute la famille.
+              14 jours d'essai gratuit. Puis 3,99€/mois ou 39,99€/an.
             </p>
             <Link to="/pricing" className="cv-btn-dark px-8 py-4 text-base rounded-xl inline-flex items-center gap-2 justify-center">
               Voir les tarifs <ArrowRight className="w-4 h-4" />
