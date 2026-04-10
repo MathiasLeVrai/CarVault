@@ -15,9 +15,11 @@ class SubscriptionController {
 
   async createCheckout(req, res, next) {
     try {
+      const plan = req.body.plan === 'monthly' ? 'monthly' : 'yearly';
       const origin = req.headers.origin || process.env.APP_URL || 'http://localhost:5173';
       const result = await stripeService.createCheckoutSession(
         req.userId,
+        plan,
         `${origin}/dashboard?upgraded=1`,
         `${origin}/upgrade?cancelled=1`,
       );

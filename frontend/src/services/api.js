@@ -206,7 +206,7 @@ export const badgeApi = {
 
 export const subscriptionApi = {
   getStatus: () => api.get('/subscription/status'),
-  createCheckout: () => api.post('/subscription/checkout'),
+  createCheckout: (plan = 'yearly') => api.post('/subscription/checkout', { plan }),
   createPortal: () => api.post('/subscription/portal'),
 };
 

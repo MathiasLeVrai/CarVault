@@ -7,11 +7,14 @@ if (process.env.STRIPE_SECRET_KEY) {
 }
 
 const FREE_VEHICLE_LIMIT = 1;
-const PREMIUM_PRICE_ID = process.env.STRIPE_PRICE_ID || null;
+const PRICE_IDS = {
+  monthly: process.env.STRIPE_PRICE_ID || null,
+  yearly: process.env.STRIPE_PRICE_ID_YEARLY || null,
+};
 
 class StripeService {
   isConfigured() {
-    return !!stripe && !!PREMIUM_PRICE_ID;
+    return !!stripe && !!(PRICE_IDS.monthly || PRICE_IDS.yearly);
   }
 
   async getUserWithPremium(userId) {
@@ -30,9 +33,14 @@ class StripeService {
     return { allowed: count < FREE_VEHICLE_LIMIT, count, limit: FREE_VEHICLE_LIMIT };
   }
 
-  async createCheckoutSession(userId, successUrl, cancelUrl) {
+  async createCheckoutSession(userId, plan, successUrl, cancelUrl) {
     if (!this.isConfigured()) {
       throw new Error('Stripe non configuré');
+    }
+
+    const priceId = PRICE_IDS[plan] || PRICE_IDS.yearly || PRICE_IDS.monthly;
+    if (!priceId) {
+      throw new Error('Aucun prix Stripe configuré pour ce plan');
     }
 
     const user = await this.getUserWithPremium(userId);
@@ -49,11 +57,12 @@ class StripeService {
       customer: customerId,
       mode: 'subscription',
       payment_method_types: ['card'],
-      line_items: [{ price: PREMIUM_PRICE_ID, quantity: 1 }],
+      line_items: [{ price: priceId, quantity: 1 }],
       success_url: successUrl,
       cancel_url: cancelUrl,
       metadata: { userId },
       allow_promotion_codes: true,
+      subscription_data: { trial_period_days: 14 },
     });
 
     return { url: session.url, sessionId: session.id };
