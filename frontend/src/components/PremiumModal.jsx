@@ -3,6 +3,7 @@ import { motion as Motion } from 'framer-motion';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import { X, Zap, Check, Clock, Loader2 } from 'lucide-react';
 import { subscriptionApi } from '../services/api';
+import { PRICING } from '../constants/pricing';
 import { useToast } from '../context/ToastContext';
 
 export default function PremiumModal({ onClose }) {
@@ -84,7 +85,7 @@ export default function PremiumModal({ onClose }) {
                 className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${isYearly ? 'bg-white/10 text-white' : 'text-white/40'}`}
               >
                 Annuel
-                <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-lime/20 text-lime">-33%</span>
+                <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-lime/20 text-lime">{PRICING.discount}</span>
               </button>
             </div>
           </div>
@@ -92,12 +93,12 @@ export default function PremiumModal({ onClose }) {
           {/* Price */}
           <div className="text-center mb-5 py-3 rounded-2xl bg-white/[0.04] border border-white/8">
             <div className="flex items-baseline justify-center gap-1">
-              <span className="text-4xl font-black font-display text-white">{isYearly ? '39,99' : '4,99'}</span>
+              <span className="text-4xl font-black font-display text-white">{isYearly ? PRICING.yearly : PRICING.monthly}</span>
               <span className="text-lg font-bold text-white/60">€</span>
               <span className="text-sm text-white/40 ml-1">/ {isYearly ? 'an' : 'mois'}</span>
             </div>
             {isYearly && (
-              <p className="text-[11px] text-lime/70 mt-1 font-medium">soit 3,33€/mois — économisez 20€/an</p>
+              <p className="text-[11px] text-lime/70 mt-1 font-medium">soit {PRICING.yearlyPerMonth}€/mois — économisez {PRICING.yearlySavings}€/an</p>
             )}
             <p className="text-[11px] text-white/30 mt-1">Après 14 jours d'essai gratuit</p>
           </div>

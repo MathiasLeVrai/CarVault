@@ -97,6 +97,12 @@ p { text-wrap: pretty; }
   border-radius: 12px;
 }
 
+.premium-gradient {
+  background: linear-gradient(135deg, rgba(255,42,63,0.10) 0%, rgba(124,92,252,0.10) 50%, rgba(56,189,248,0.08) 100%);
+  border: 1px solid rgba(255,42,63,0.15);
+  border-radius: 16px;
+}
+
 .cv-card-accent {
   background: rgba(255, 42, 63, 0.05);
   border: 1px solid rgba(255,42,63,0.15);

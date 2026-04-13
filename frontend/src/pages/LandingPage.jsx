@@ -8,7 +8,11 @@ import {
   AlertTriangle, Star, ChevronRight, ChevronDown, Zap, Clock, Users,
 } from 'lucide-react';
 
+import { PRICING } from '../constants/pricing';
+
 /* ─── Data ──────────────────────────────────────────────────── */
+
+const FIVE_STARS = [0, 1, 2, 3, 4];
 
 const FAQ_ITEMS = [
   {
@@ -552,7 +556,7 @@ export default function LandingPage() {
                 <span className="text-xs font-bold text-white/50">500+ conducteurs inscrits</span>
               </div>
               <div className="flex items-center gap-1">
-                {Array.from({ length: 5 }).map((_, i) => (
+                {FIVE_STARS.map(i => (
                   <Star key={i} className="w-3 h-3 text-amber-400 fill-amber-400" />
                 ))}
                 <span className="text-xs font-bold text-white/40 ml-1.5">4.9/5</span>
@@ -772,7 +776,7 @@ export default function LandingPage() {
             {TESTIMONIALS.map((t, i) => (
               <Motion.div key={t.author} {...fade(i * 0.07)} className="cv-card p-6 flex flex-col">
                 <div className="flex gap-0.5 mb-4">
-                  {Array.from({ length: t.stars }).map((_, j) => (
+                  {FIVE_STARS.slice(0, t.stars).map(j => (
                     <Star key={j} className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
                   ))}
                 </div>
@@ -868,16 +872,16 @@ export default function LandingPage() {
               <div className="mb-6">
                 <p className="text-sm font-bold text-white/50 mb-2">Premium</p>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-5xl font-black font-display text-white">39,99€</span>
+                  <span className="text-5xl font-black font-display text-white">{PRICING.yearly}€</span>
                   <span className="text-sm text-white/40 font-medium">/an</span>
                 </div>
                 <div className="flex items-center gap-3 mt-2">
-                  <span className="text-sm text-white/40 line-through">59,88€/an</span>
+                  <span className="text-sm text-white/40 line-through">{PRICING.yearlyStrikethrough}€/an</span>
                   <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-lime/20 text-lime border border-lime/30">
-                    Économisez 20€/an
+                    Économisez {PRICING.yearlySavings}€/an
                   </span>
                 </div>
-                <p className="text-xs text-white/30 mt-1.5">soit 3,33€/mois · ou 4,99€/mois sans engagement</p>
+                <p className="text-xs text-white/30 mt-1.5">soit {PRICING.yearlyPerMonth}€/mois · ou {PRICING.monthly}€/mois sans engagement</p>
               </div>
               <div className="space-y-2.5 mb-8">
                 {['Véhicules illimités', 'Documents illimités', 'Alertes intelligentes', 'Suivi des entretiens', 'Carnet de carburant', 'Score de santé /100', 'Rapport PDF de revente', 'Statistiques avancées'].map(f => (

@@ -72,8 +72,7 @@ export default function Sidebar({ onFabPress }) {
             <div className="cv-divider mx-4 my-4" />
             <NavLink
               to="/settings"
-              className="mx-2 p-3 rounded-xl flex items-center gap-3 relative overflow-hidden group transition-all"
-              style={{ background: 'linear-gradient(135deg, rgba(255,42,63,0.12) 0%, rgba(124,92,252,0.12) 100%)', border: '1px solid rgba(255,42,63,0.2)' }}
+              className="mx-2 p-3 flex items-center gap-3 relative overflow-hidden group transition-all premium-gradient"
             >
               <div className="w-9 h-9 rounded-lg bg-accent/20 flex items-center justify-center shrink-0">
                 <Zap className="w-4 h-4 text-accent" strokeWidth={2.5} fill="currentColor" />

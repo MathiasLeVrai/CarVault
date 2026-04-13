@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { notificationApi } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { PRICING } from '../constants/pricing';
 import usePush from '../hooks/usePush';
 import BadgesWidget from '../components/BadgesWidget';
 import {
@@ -303,14 +304,14 @@ function SubscriptionCard({ user }) {
               onClick={() => setPlan('monthly')}
               className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${!isYearly ? 'bg-white/10 text-white' : 'text-white/40'}`}
             >
-              4,99€/mois
+              {PRICING.monthly}€/mois
             </button>
             <button
               onClick={() => setPlan('yearly')}
               className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${isYearly ? 'bg-white/10 text-white' : 'text-white/40'}`}
             >
-              39,99€/an
-              <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-lime/20 text-lime">-33%</span>
+              {PRICING.yearly}€/an
+              <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-lime/20 text-lime">{PRICING.discount}</span>
             </button>
           </div>
         </div>

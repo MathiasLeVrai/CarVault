@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { dashboardApi, vehicleApi } from '../services/api';
+import { PRICING } from '../constants/pricing';
 import { useAuth } from '../context/AuthContext';
 import Badge from '../components/ui/Badge';
 import StatCard from '../components/ui/StatCard';
@@ -155,10 +156,9 @@ export default function DashboardPage() {
       {/* ─── Premium banner ─── */}
       {!user?.isPremium && (
         <Motion.div variants={itemVariants}>
-          <div
-            className="relative overflow-hidden rounded-2xl p-4 sm:p-5 flex items-center justify-between gap-4 cursor-pointer group"
-            style={{ background: 'linear-gradient(135deg, rgba(255,42,63,0.10) 0%, rgba(124,92,252,0.10) 50%, rgba(56,189,248,0.08) 100%)', border: '1px solid rgba(255,42,63,0.15)' }}
-            onClick={() => navigate('/settings')}
+          <Link
+            to="/settings"
+            className="relative overflow-hidden rounded-2xl p-4 sm:p-5 flex items-center justify-between gap-4 group premium-gradient"
           >
             <div className="absolute inset-0 bg-accent/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
             <div className="flex items-center gap-4 relative z-10">
@@ -170,7 +170,7 @@ export default function DashboardPage() {
                   Offre de lancement — <span className="text-accent">14 jours gratuits</span>
                 </p>
                 <p className="text-[11px] text-white/45 font-medium mt-0.5">
-                  Débloquez tout CarVault : véhicules illimités, stats avancées, export PDF. À partir de 3,33€/mois.
+                  Débloquez tout CarVault : véhicules illimités, stats avancées, export PDF. À partir de {PRICING.yearlyPerMonth}€/mois.
                 </p>
               </div>
             </div>
@@ -179,7 +179,7 @@ export default function DashboardPage() {
                 Essayer <ArrowRight className="w-3.5 h-3.5" />
               </div>
             </div>
-          </div>
+          </Link>
         </Motion.div>
       )}
 
