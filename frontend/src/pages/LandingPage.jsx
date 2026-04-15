@@ -288,13 +288,13 @@ function AppMockup() {
             <p className="text-[10px] text-white/35 font-semibold uppercase tracking-wider">Mon véhicule</p>
             <p className="text-sm font-black font-display text-white">Peugeot 308 · AB-456-CD</p>
           </div>
-          <div className="w-10 h-10 rounded-2xl bg-accent/15 border border-accent/25 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-lg bg-accent/15 border border-accent/25 flex items-center justify-center">
             <Car className="w-5 h-5 text-accent" />
           </div>
         </div>
 
         {/* Score row */}
-        <div className="flex items-center gap-3 p-3 rounded-2xl bg-lime/[0.06] border border-lime/15 mb-3">
+        <div className="flex items-center gap-3 p-3 rounded-lg bg-lime/[0.06] border border-lime/15 mb-3">
           <div className="relative w-12 h-12 flex-shrink-0">
             <svg viewBox="0 0 48 48" className="w-full h-full -rotate-90">
               <circle cx="24" cy="24" r="18" fill="none" stroke="var(--color-ink-faint)" opacity="0.4" strokeWidth="5" />
@@ -312,7 +312,7 @@ function AppMockup() {
         </div>
 
         {/* Alert */}
-        <div className="flex items-center gap-2 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 mb-3">
+        <div className="flex items-center gap-2 p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/20 mb-3">
           <AlertTriangle className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
           <p className="text-[10px] text-amber-300 font-semibold">CT expire dans <span className="text-amber-400">8 jours</span></p>
         </div>
@@ -325,7 +325,7 @@ function AppMockup() {
             { name: 'Contrôle technique', exp: 'dans 8j', ok: false },
             { name: 'Carte grise', exp: '—', ok: true },
           ].map((doc) => (
-            <div key={doc.name} className="flex items-center justify-between px-2.5 py-2 rounded-xl bg-white/[0.03] border border-white/[0.05]">
+            <div key={doc.name} className="flex items-center justify-between px-2.5 py-2 rounded-md bg-white/[0.03] border border-white/[0.05]">
               <div className="flex items-center gap-2">
                 <div className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: doc.ok ? '#22c55e' : '#ff2a3f' }} />
                 <span className="text-[11px] text-white/70 font-medium">{doc.name}</span>
@@ -343,7 +343,7 @@ function AppMockup() {
             { icon: Wrench, label: 'Entretien', color: '#f59e0b' },
           ].map(({ icon: Icon, label, color }) => (
             <div key={label} className="flex flex-col items-center gap-1">
-              <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: `${color}15`, border: `1px solid ${color}25` }}>
+              <div className="w-8 h-8 rounded-md flex items-center justify-center" style={{ background: `${color}15`, border: `1px solid ${color}25` }}>
                 <Icon className="w-4 h-4" style={{ color }} />
               </div>
               <span className="text-[9px] text-white/30 font-medium">{label}</span>
@@ -364,7 +364,7 @@ function FaqSection() {
       <div className="max-w-3xl mx-auto">
         <Motion.div {...fade()} className="text-center mb-12">
           <span className="text-[10px] font-black uppercase tracking-[0.2em] text-accent">FAQ</span>
-          <h2 className="text-3xl md:text-4xl font-black font-display tracking-tight mt-2">Questions fréquentes</h2>
+          <h2 className="text-3xl md:text-4xl font-black font-display tracking-tight mt-2 text-balance">Questions fréquentes</h2>
         </Motion.div>
         <div className="space-y-3">
           {FAQ_ITEMS.map((item, i) => (
@@ -379,12 +379,12 @@ function FaqSection() {
                     className={`w-4 h-4 text-white/40 shrink-0 transition-transform duration-300 ${open === i ? 'rotate-180' : ''}`}
                   />
                 </div>
-                <AnimatePresence>
+                <AnimatePresence initial={false}>
                   {open === i && (
                     <Motion.div
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
+                      exit={{ height: 0, opacity: 0, y: -8 }}
                       transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
                       className="overflow-hidden"
                     >
@@ -480,13 +480,13 @@ export default function LandingPage() {
           <span className="text-lg font-bold font-display tracking-tight">CarVault</span>
         </div>
         <nav className="flex items-center gap-3">
-          <a href="#pricing" className="px-4 py-2 text-sm font-semibold text-white/50 hover:text-white transition-colors hidden sm:block">
+          <a href="#pricing" className="px-4 py-2.5 text-sm font-semibold text-white/50 hover:text-white transition-[color] duration-150 hidden sm:block">
             Tarifs
           </a>
-          <Link to="/login" className="px-4 py-2 text-sm font-semibold text-white/50 hover:text-white transition-colors hidden sm:block">
+          <Link to="/login" className="px-4 py-2.5 text-sm font-semibold text-white/50 hover:text-white transition-[color] duration-150 hidden sm:block">
             Se connecter
           </Link>
-          <Link to="/register" className="cv-btn-accent px-5 py-2.5 text-sm rounded-xl inline-flex items-center gap-1.5">
+          <Link to="/register" className="cv-btn-accent px-5 py-2.5 text-sm rounded-xl inline-flex items-center gap-1.5 active:scale-[0.96] transition-transform">
             Commencer <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </nav>
@@ -511,8 +511,8 @@ export default function LandingPage() {
             <Motion.h1
               initial={{ opacity: 0, y: 28 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-              className="text-5xl md:text-6xl lg:text-7xl font-black font-display leading-[1.08] tracking-tight mb-5"
+              transition={{ delay: 0.12, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+              className="text-5xl md:text-6xl lg:text-7xl font-black font-display leading-[1.08] tracking-tight mb-5 text-balance"
             >
               Tout ce qui concerne
               <br />
@@ -524,8 +524,8 @@ export default function LandingPage() {
             <Motion.p
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.25, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-              className="text-lg text-white/45 font-medium max-w-lg mb-8 leading-relaxed"
+              transition={{ delay: 0.24, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+              className="text-lg text-white/45 font-medium max-w-lg mb-8 leading-relaxed text-pretty"
             >
               Documents, entretiens, dépenses, alertes d'expiration — centralisés en 3 minutes.
               Fini le chaos des dossiers papier et les amendes oubliées.
@@ -534,13 +534,13 @@ export default function LandingPage() {
             <Motion.div
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.38, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ delay: 0.36, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
               className="flex flex-col sm:flex-row gap-3"
             >
-              <Link to="/register" className="cv-btn-accent px-8 py-4 text-base rounded-xl inline-flex items-center gap-2 justify-center">
+              <Link to="/register" className="cv-btn-accent px-8 py-4 text-base rounded-xl inline-flex items-center gap-2 justify-center active:scale-[0.96] transition-transform">
                 Créer mon espace gratuit <ArrowRight className="w-4 h-4" />
               </Link>
-              <Link to="/login" className="cv-btn-dark px-8 py-4 text-base rounded-xl inline-flex items-center gap-2 justify-center">
+              <Link to="/login" className="cv-btn-dark px-8 py-4 text-base rounded-xl inline-flex items-center gap-2 justify-center active:scale-[0.96] transition-transform">
                 J'ai déjà un compte <ChevronRight className="w-4 h-4 text-white/40" />
               </Link>
             </Motion.div>
@@ -548,7 +548,7 @@ export default function LandingPage() {
             <Motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.55, duration: 0.5 }}
+              transition={{ delay: 0.48, duration: 0.5 }}
               className="flex flex-wrap items-center gap-4 mt-6"
             >
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/8">
@@ -572,7 +572,7 @@ export default function LandingPage() {
 
       {/* ── Marquee ──────────────────────────────────────────── */}
       <div className="relative z-10 border-y border-white/[0.05] py-4 overflow-hidden bg-white/[0.015]">
-        <div className="flex gap-0" style={{ animation: prefersReduced ? 'none' : 'marquee 28s linear infinite' }}>
+        <div className="flex gap-0" style={{ animation: prefersReduced ? 'none' : 'marquee 28s linear infinite', willChange: 'transform' }}>
           {[...MARQUEE_ITEMS, ...MARQUEE_ITEMS].map((item, i) => (
             <div key={i} className="flex items-center gap-2 px-6 text-sm font-semibold text-white/35 flex-shrink-0 whitespace-nowrap">
               <span className="text-base">{item.icon}</span>
@@ -589,7 +589,7 @@ export default function LandingPage() {
         <div className="max-w-3xl mx-auto text-center">
           <Motion.div {...fade()}>
             <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-accent/70 mb-6">Le problème</p>
-            <h2 className="text-4xl md:text-5xl font-black font-display leading-[1.1] mb-6">
+            <h2 className="text-4xl md:text-5xl font-black font-display leading-[1.1] mb-6 text-balance">
               Vous avez une voiture.
               <br />
               <span className="text-white/30">Où sont vos documents ?</span>
@@ -616,7 +616,7 @@ export default function LandingPage() {
         <div className="max-w-5xl mx-auto">
           <Motion.div {...fade()} className="text-center mb-12">
             <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/30 mb-4">Fonctionnalités</p>
-            <h2 className="text-4xl md:text-5xl font-black font-display tracking-tight">
+            <h2 className="text-4xl md:text-5xl font-black font-display tracking-tight text-balance">
               Tout ce dont vous avez besoin.
               <br />
               <span className="text-white/30">Rien de superflu.</span>
@@ -654,7 +654,7 @@ export default function LandingPage() {
         <div className="max-w-4xl mx-auto">
           <Motion.div {...fade()} className="text-center mb-14">
             <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/30 mb-4">Mise en place</p>
-            <h2 className="text-4xl md:text-5xl font-black font-display tracking-tight">
+            <h2 className="text-4xl md:text-5xl font-black font-display tracking-tight text-balance">
               Opérationnel en 3 minutes.
             </h2>
           </Motion.div>
@@ -715,11 +715,11 @@ export default function LandingPage() {
         <div className="max-w-3xl mx-auto">
           <Motion.div {...fade()} className="text-center mb-12">
             <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/30 mb-4">Pourquoi CarVault ?</p>
-            <h2 className="text-4xl md:text-5xl font-black font-display tracking-tight mb-4">
+            <h2 className="text-4xl md:text-5xl font-black font-display tracking-tight mb-4 text-balance">
               Pas juste Google Drive<br />
               <span className="text-accent">+ un rappel calendrier.</span>
             </h2>
-            <p className="text-white/35 font-medium text-lg">
+            <p className="text-white/35 font-medium text-lg text-pretty">
               CarVault est construit spécifiquement pour la possession automobile.
             </p>
           </Motion.div>
@@ -767,7 +767,7 @@ export default function LandingPage() {
         <div className="max-w-5xl mx-auto">
           <Motion.div {...fade()} className="text-center mb-12">
             <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/30 mb-4">Témoignages</p>
-            <h2 className="text-4xl md:text-5xl font-black font-display tracking-tight">
+            <h2 className="text-4xl md:text-5xl font-black font-display tracking-tight text-balance">
               Ils ont arrêté le chaos.
             </h2>
           </Motion.div>
@@ -780,7 +780,7 @@ export default function LandingPage() {
                     <Star key={j} className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
                   ))}
                 </div>
-                <p className="text-sm text-white/65 font-medium leading-relaxed flex-1">"{t.quote}"</p>
+                <p className="text-sm text-white/65 font-medium leading-relaxed flex-1 text-pretty">"{t.quote}"</p>
                 <div className="mt-5 pt-4 border-t border-white/[0.06]">
                   <p className="text-sm font-bold text-white">{t.author}</p>
                   <p className="text-xs text-white/30 font-medium mt-0.5">{t.detail}</p>
@@ -796,10 +796,10 @@ export default function LandingPage() {
         <div className="max-w-4xl mx-auto">
           <Motion.div {...fade()} className="text-center mb-14">
             <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/30 mb-4">Tarifs</p>
-            <h2 className="text-4xl md:text-5xl font-black font-display tracking-tight mb-4">
+            <h2 className="text-4xl md:text-5xl font-black font-display tracking-tight mb-4 text-balance">
               Testez tout. <span className="text-accent">Payez après.</span>
             </h2>
-            <p className="text-white/40 font-medium text-lg max-w-md mx-auto">
+            <p className="text-white/40 font-medium text-lg max-w-md mx-auto text-pretty">
               14 jours d'essai gratuit. Sans engagement, annulable en un clic.
             </p>
           </Motion.div>
@@ -839,7 +839,7 @@ export default function LandingPage() {
               <div className="mb-6">
                 <p className="text-sm font-bold text-white/50 mb-2">Gratuit</p>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-5xl font-black font-display text-white">0€</span>
+                  <span className="text-5xl font-black font-display text-white tabular-nums">0€</span>
                   <span className="text-sm text-white/40 font-medium">pour toujours</span>
                 </div>
               </div>
@@ -857,7 +857,7 @@ export default function LandingPage() {
                   </div>
                 ))}
               </div>
-              <Link to="/register" className="w-full py-3.5 text-sm rounded-xl inline-flex items-center gap-2 justify-center font-bold cv-btn-dark">
+              <Link to="/register" className="w-full py-3.5 text-sm rounded-xl inline-flex items-center gap-2 justify-center font-bold cv-btn-dark active:scale-[0.96] transition-transform">
                 Commencer gratuitement <ArrowRight className="w-4 h-4" />
               </Link>
             </Motion.div>
@@ -872,7 +872,7 @@ export default function LandingPage() {
               <div className="mb-6">
                 <p className="text-sm font-bold text-white/50 mb-2">Premium</p>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-5xl font-black font-display text-white">{PRICING.yearly}€</span>
+                  <span className="text-5xl font-black font-display text-white tabular-nums">{PRICING.yearly}€</span>
                   <span className="text-sm text-white/40 font-medium">/an</span>
                 </div>
                 <div className="flex items-center gap-3 mt-2">
@@ -891,7 +891,7 @@ export default function LandingPage() {
                   </div>
                 ))}
               </div>
-              <Link to="/register" className="w-full py-3.5 text-sm rounded-xl inline-flex items-center gap-2 justify-center font-bold cv-btn-accent">
+              <Link to="/register" className="w-full py-3.5 text-sm rounded-xl inline-flex items-center gap-2 justify-center font-bold cv-btn-accent active:scale-[0.96] transition-transform">
                 <Zap className="w-4 h-4" fill="white" strokeWidth={0} />
                 Démarrer l'essai gratuit <ArrowRight className="w-4 h-4" />
               </Link>
@@ -913,14 +913,14 @@ export default function LandingPage() {
                 <div className="w-14 h-14 rounded-2xl bg-accent/20 border border-accent/30 flex items-center justify-center mx-auto mb-6">
                   <Shield className="w-7 h-7 text-accent" />
                 </div>
-                <h2 className="text-4xl md:text-5xl font-black font-display tracking-tight mb-4">
+                <h2 className="text-4xl md:text-5xl font-black font-display tracking-tight mb-4 text-balance">
                   14 jours pour tout tester.
                 </h2>
-                <p className="text-white/45 font-medium mb-8 text-lg">
+                <p className="text-white/45 font-medium mb-8 text-lg text-pretty">
                   Aucun prélèvement pendant l'essai.<br />
                   Annulable en un clic, sans engagement.
                 </p>
-                <Link to="/register" className="cv-btn-accent px-10 py-4 text-base rounded-xl inline-flex items-center gap-2">
+                <Link to="/register" className="cv-btn-accent px-10 py-4 text-base rounded-xl inline-flex items-center gap-2 active:scale-[0.96] transition-transform">
                   Démarrer l'essai gratuit <ArrowRight className="w-4 h-4" />
                 </Link>
               </div>
@@ -947,8 +947,8 @@ export default function LandingPage() {
           </p>
 
           <div className="flex gap-6">
-            <Link to="/login" className="text-xs text-white/30 hover:text-white/60 transition-colors font-medium">Connexion</Link>
-            <Link to="/register" className="text-xs text-white/30 hover:text-white/60 transition-colors font-medium">Inscription</Link>
+            <Link to="/login" className="text-xs text-white/30 hover:text-white/60 transition-[color] duration-150 font-medium">Connexion</Link>
+            <Link to="/register" className="text-xs text-white/30 hover:text-white/60 transition-[color] duration-150 font-medium">Inscription</Link>
           </div>
         </div>
       </footer>

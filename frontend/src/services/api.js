@@ -1,15 +1,19 @@
 const API_URL = '/api';
 
+const STORAGE_TOKEN = 'carvault_token';
+const STORAGE_REFRESH = 'carvault_refresh_token';
+
 /**
  * Client API centralisé pour CarVault
  */
 class ApiClient {
   constructor() {
     this.baseUrl = API_URL;
+    this._refreshPromise = null; // Prevents parallel refresh calls
   }
 
   getToken() {
-    return localStorage.getItem('carvault_token');
+    return localStorage.getItem(STORAGE_TOKEN);
   }
 
   getHeaders(isFormData = false) {
@@ -24,6 +28,41 @@ class ApiClient {
     return headers;
   }
 
+  /**
+   * Try to refresh the access token using the stored refresh token.
+   * Returns true if refresh succeeded, false otherwise.
+   */
+  async _tryRefresh() {
+    const refreshToken = localStorage.getItem(STORAGE_REFRESH);
+    if (!refreshToken) return false;
+
+    // If a refresh is already in flight, wait for it
+    if (this._refreshPromise) {
+      return this._refreshPromise;
+    }
+
+    this._refreshPromise = (async () => {
+      try {
+        const res = await fetch(`${this.baseUrl}/auth/refresh`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refreshToken }),
+        });
+        if (!res.ok) return false;
+        const data = await res.json();
+        localStorage.setItem(STORAGE_TOKEN, data.token);
+        localStorage.setItem(STORAGE_REFRESH, data.refreshToken);
+        return true;
+      } catch {
+        return false;
+      } finally {
+        this._refreshPromise = null;
+      }
+    })();
+
+    return this._refreshPromise;
+  }
+
   async request(endpoint, options = {}) {
     const { body, method = 'GET', isFormData = false } = options;
 
@@ -36,7 +75,17 @@ class ApiClient {
       config.body = isFormData ? body : JSON.stringify(body);
     }
 
-    const response = await fetch(`${this.baseUrl}${endpoint}`, config);
+    let response = await fetch(`${this.baseUrl}${endpoint}`, config);
+
+    // On 401, attempt a silent refresh and retry once
+    if (response.status === 401 && !endpoint.includes('/auth/refresh')) {
+      const refreshed = await this._tryRefresh();
+      if (refreshed) {
+        // Retry with new token
+        config.headers = this.getHeaders(isFormData);
+        response = await fetch(`${this.baseUrl}${endpoint}`, config);
+      }
+    }
 
     let data;
     try {
@@ -83,6 +132,7 @@ const api = new ApiClient();
 export const authApi = {
   register: (data) => api.post('/auth/register', data),
   login: (data) => api.post('/auth/login', data),
+  logout: () => api.post('/auth/logout'),
   getProfile: () => api.get('/auth/profile'),
   updateProfile: (formData) => api.request('/auth/profile', { method: 'PATCH', body: formData, isFormData: true }),
 };

@@ -44,6 +44,28 @@ class AuthController {
     }
   }
 
+  async refresh(req, res, next) {
+    try {
+      const { refreshToken } = req.body;
+      if (!refreshToken) {
+        return res.status(400).json({ error: 'Refresh token requis' });
+      }
+      const result = await authService.refresh(refreshToken);
+      res.json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async logout(req, res, next) {
+    try {
+      await authService.revokeRefreshTokens(req.userId);
+      res.json({ message: 'Déconnexion réussie' });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async updateProfile(req, res, next) {
     try {
       const { firstName, lastName } = req.body;

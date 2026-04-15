@@ -1,8 +1,11 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const prisma = require('../lib/prisma');
 const storageService = require('./storage.service');
 const { AppError } = require('../middleware/error.middleware');
+
+const REFRESH_TOKEN_EXPIRY_DAYS = 30;
 
 class AuthService {
   /**
@@ -34,8 +37,9 @@ class AuthService {
     });
 
     const token = this.generateToken(user.id);
+    const refreshToken = await this.generateRefreshToken(user.id);
 
-    return { user, token };
+    return { user, token, refreshToken };
   }
 
   /**
@@ -53,9 +57,10 @@ class AuthService {
     }
 
     const token = this.generateToken(user.id);
+    const refreshToken = await this.generateRefreshToken(user.id);
 
     const { password: _, ...userWithoutPassword } = user;
-    return { user: userWithoutPassword, token };
+    return { user: userWithoutPassword, token, refreshToken };
   }
 
   /**
@@ -116,14 +121,66 @@ class AuthService {
   }
 
   /**
-   * Générer un JWT
+   * Rafraîchir les tokens via refresh token
+   */
+  async refresh(refreshTokenValue) {
+    const stored = await prisma.refreshToken.findUnique({
+      where: { token: refreshTokenValue },
+    });
+
+    if (!stored || stored.expiresAt < new Date()) {
+      // Clean up expired token if it exists
+      if (stored) {
+        await prisma.refreshToken.delete({ where: { id: stored.id } });
+      }
+      throw new AppError('Refresh token invalide ou expiré', 401);
+    }
+
+    // Rotation: delete old, create new
+    await prisma.refreshToken.delete({ where: { id: stored.id } });
+
+    const token = this.generateToken(stored.userId);
+    const refreshToken = await this.generateRefreshToken(stored.userId);
+
+    return { token, refreshToken };
+  }
+
+  /**
+   * Révoquer tous les refresh tokens d'un utilisateur (logout)
+   */
+  async revokeRefreshTokens(userId) {
+    await prisma.refreshToken.deleteMany({ where: { userId } });
+  }
+
+  /**
+   * Générer un JWT (access token court)
    */
   generateToken(userId) {
     return jwt.sign(
       { userId },
       process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+      { expiresIn: '15m' }
     );
+  }
+
+  /**
+   * Générer et stocker un refresh token (longue durée)
+   */
+  async generateRefreshToken(userId) {
+    const token = crypto.randomBytes(40).toString('hex');
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + REFRESH_TOKEN_EXPIRY_DAYS);
+
+    await prisma.refreshToken.create({
+      data: { token, userId, expiresAt },
+    });
+
+    // Clean up old expired tokens for this user
+    await prisma.refreshToken.deleteMany({
+      where: { userId, expiresAt: { lt: new Date() } },
+    });
+
+    return token;
   }
 }
 

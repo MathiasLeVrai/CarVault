@@ -5,6 +5,7 @@ import { authApi } from '../services/api';
 const AuthContext = createContext(null);
 
 const STORAGE_TOKEN = 'carvault_token';
+const STORAGE_REFRESH = 'carvault_refresh_token';
 const STORAGE_USER = 'carvault_user';
 
 export function AuthProvider({ children }) {
@@ -21,7 +22,7 @@ export function AuthProvider({ children }) {
     let cancelled = false;
     if (!localStorage.getItem(STORAGE_TOKEN)) return;
 
-    // Background validation — don't block render, but logout if token invalid
+    // Background validation — the API client auto-refreshes on 401
     authApi.getProfile()
       .then(profile => {
         if (cancelled) return;
@@ -34,10 +35,11 @@ export function AuthProvider({ children }) {
       })
       .catch((err) => {
         if (cancelled) return;
-        // Only clear on auth errors (401/403), not network failures
+        // If we still get 401 after auto-refresh attempt, token is truly dead
         const status = err?.status;
         if (status === 401 || status === 403) {
           localStorage.removeItem(STORAGE_TOKEN);
+          localStorage.removeItem(STORAGE_REFRESH);
           localStorage.removeItem(STORAGE_USER);
           setUser(null);
         }
@@ -47,23 +49,28 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = async (email, password) => {
-    const { user: userData, token } = await authApi.login({ email, password });
+    const { user: userData, token, refreshToken } = await authApi.login({ email, password });
     localStorage.setItem(STORAGE_TOKEN, token);
+    localStorage.setItem(STORAGE_REFRESH, refreshToken);
     localStorage.setItem(STORAGE_USER, JSON.stringify(userData));
     setUser(userData);
     return userData;
   };
 
   const register = async (data) => {
-    const { user: userData, token } = await authApi.register(data);
+    const { user: userData, token, refreshToken } = await authApi.register(data);
     localStorage.setItem(STORAGE_TOKEN, token);
+    localStorage.setItem(STORAGE_REFRESH, refreshToken);
     localStorage.setItem(STORAGE_USER, JSON.stringify(userData));
     setUser(userData);
     return userData;
   };
 
   const logout = () => {
+    // Revoke refresh tokens server-side (best effort)
+    authApi.logout().catch(() => {});
     localStorage.removeItem(STORAGE_TOKEN);
+    localStorage.removeItem(STORAGE_REFRESH);
     localStorage.removeItem(STORAGE_USER);
     setUser(null);
   };

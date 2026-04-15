@@ -31,6 +31,7 @@ model User {
   shareLinks     ShareLink[]
   bankConnection    BankConnection?
   pushSubscriptions PushSubscription[]
+  refreshTokens     RefreshToken[]
 
   @@index([stripeSubscriptionId])
   @@map("users")
@@ -265,6 +266,18 @@ model ShareLink {
 
   @@index([vehicleId, userId])
   @@map("share_links")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("refresh_tokens")
 }
 
 model VehicleCote {
