@@ -29,9 +29,9 @@ model User {
   vehicles       Vehicle[]
   alerts         Alert[]
   shareLinks     ShareLink[]
-  bankConnection    BankConnection?
   pushSubscriptions PushSubscription[]
-  refreshTokens     RefreshToken[]
+  refreshTokens       RefreshToken[]
+  passwordResetTokens PasswordResetToken[]
 
   @@index([stripeSubscriptionId])
   @@map("users")
@@ -221,22 +221,6 @@ model FuelEntry {
   @@map("fuel_entries")
 }
 
-model BankConnection {
-  id            String   @id @default(uuid())
-  userId        String   @unique
-  institutionId String
-  institutionName String
-  requisitionId String   @unique
-  accountId     String?
-  status        String   @default("pending") // pending | linked | error
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("bank_connections")
-}
-
 model PushSubscription {
   id        String   @id @default(uuid())
   endpoint  String
@@ -280,16 +264,15 @@ model RefreshToken {
   @@map("refresh_tokens")
 }
 
-model VehicleCote {
+model PasswordResetToken {
   id        String   @id @default(uuid())
-  plate     String   @unique
-  low       Float
-  mid       Float
-  high      Float
-  raw       Json?
-  fetchedAt DateTime @default(now())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 
-  @@map("vehicle_cotes")
+  @@index([userId])
+  @@map("password_reset_tokens")
 }
+

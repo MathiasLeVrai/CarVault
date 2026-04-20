@@ -1,39 +1,50 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
-export default defineConfig({
-  plugins: [react(), tailwindcss()],
-  build: {
-    modulePreload: { polyfill: false },
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          'recharts': ['recharts'],
-          'leaflet': ['leaflet', 'react-leaflet'],
-          'framer': ['framer-motion'],
-          'sentry': ['@sentry/react'],
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '')
+  const hmrClientPort = env.VITE_HMR_CLIENT_PORT
+    ? Number(env.VITE_HMR_CLIENT_PORT)
+    : undefined
+  const hmr =
+    hmrClientPort != null && !Number.isNaN(hmrClientPort)
+      ? { clientPort: hmrClientPort }
+      : undefined
+
+  return {
+    plugins: [react(), tailwindcss()],
+    build: {
+      modulePreload: { polyfill: false },
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            'recharts': ['recharts'],
+            'leaflet': ['leaflet', 'react-leaflet'],
+            'framer': ['framer-motion'],
+            'sentry': ['@sentry/react'],
+          },
         },
       },
     },
-  },
-  server: {
-    port: 5173,
-    hmr: {
+    server: {
       port: 5173,
-    },
-    headers: {
-      'Cache-Control': 'no-store',
-    },
-    proxy: {
-      '/api': {
-        target: 'http://localhost:3001',
-        changeOrigin: true,
+      // Do not pin hmr.port to 5173: if the app is opened on another port (port forward,
+      // "simple browser", etc.), the WS must use that port — set VITE_HMR_CLIENT_PORT in .env.local.
+      ...(hmr ? { hmr } : {}),
+      headers: {
+        'Cache-Control': 'no-store',
       },
-      '/uploads': {
-        target: 'http://localhost:3001',
-        changeOrigin: true,
+      proxy: {
+        '/api': {
+          target: 'http://localhost:3001',
+          changeOrigin: true,
+        },
+        '/uploads': {
+          target: 'http://localhost:3001',
+          changeOrigin: true,
+        },
       },
     },
-  },
+  }
 })

@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const prisma = require('../lib/prisma');
 const storageService = require('./storage.service');
+const emailService = require('./email.service');
 const { AppError } = require('../middleware/error.middleware');
 
 const REFRESH_TOKEN_EXPIRY_DAYS = 30;
@@ -143,6 +144,62 @@ class AuthService {
     const refreshToken = await this.generateRefreshToken(stored.userId);
 
     return { token, refreshToken };
+  }
+
+  /**
+   * Demande de réinitialisation de mot de passe
+   */
+  async forgotPassword(email) {
+    const user = await prisma.user.findUnique({ where: { email } });
+    // Toujours répondre OK pour ne pas révéler si l'email existe
+    if (!user) return;
+
+    // Supprimer les anciens tokens de reset pour cet utilisateur
+    await prisma.passwordResetToken.deleteMany({ where: { userId: user.id } });
+
+    const token = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 heure
+
+    await prisma.passwordResetToken.create({
+      data: { token, userId: user.id, expiresAt },
+    });
+
+    const appUrl = process.env.APP_URL || 'https://carvault.fly.dev';
+    const resetLink = `${appUrl}/reset-password?token=${token}`;
+
+    const sent = await emailService.sendPasswordResetEmail(
+      user.email,
+      user.firstName,
+      resetLink,
+    );
+    if (!sent) {
+      console.warn('[AUTH] Échec envoi email reset pour', user.email);
+    }
+  }
+
+  /**
+   * Réinitialiser le mot de passe avec un token
+   */
+  async resetPassword(token, newPassword) {
+    const stored = await prisma.passwordResetToken.findUnique({ where: { token } });
+
+    if (!stored || stored.expiresAt < new Date()) {
+      if (stored) {
+        await prisma.passwordResetToken.delete({ where: { id: stored.id } });
+      }
+      throw new AppError('Lien invalide ou expiré. Veuillez refaire une demande.', 400);
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
+
+    await prisma.user.update({
+      where: { id: stored.userId },
+      data: { password: hashedPassword },
+    });
+
+    // Supprimer le token utilisé + révoquer toutes les sessions
+    await prisma.passwordResetToken.deleteMany({ where: { userId: stored.userId } });
+    await prisma.refreshToken.deleteMany({ where: { userId: stored.userId } });
   }
 
   /**

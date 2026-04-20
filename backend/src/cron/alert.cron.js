@@ -416,6 +416,14 @@ async function runAllAlertChecks() {
   console.log('[CRON] Lancement vérification intelligente des alertes...');
 
   try {
+    // Purge alertes lues de +90 jours
+    const ninetyDaysAgo = new Date();
+    ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+    const purged = await prisma.alert.deleteMany({
+      where: { isRead: true, createdAt: { lt: ninetyDaysAgo } },
+    });
+    if (purged.count > 0) console.log(`[CRON] ${purged.count} alerte(s) purgée(s) (lues +90j)`);
+
     const docAlerts = await checkDocumentExpiry();
     const maintAlerts = await checkMaintenanceDue();
     const oilAlerts = await checkOilChange();

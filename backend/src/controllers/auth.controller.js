@@ -66,6 +66,36 @@ class AuthController {
     }
   }
 
+  async forgotPassword(req, res, next) {
+    try {
+      const { email } = req.body;
+      if (!email) {
+        return res.status(400).json({ error: 'Email requis' });
+      }
+      await authService.forgotPassword(email);
+      // Toujours répondre OK pour ne pas révéler si l'email existe
+      res.json({ message: 'Si un compte existe avec cet email, un lien de réinitialisation a été envoyé.' });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async resetPassword(req, res, next) {
+    try {
+      const { token, password } = req.body;
+      if (!token || !password) {
+        return res.status(400).json({ error: 'Token et nouveau mot de passe requis' });
+      }
+      if (password.length < 6) {
+        return res.status(400).json({ error: 'Le mot de passe doit contenir au moins 6 caractères' });
+      }
+      await authService.resetPassword(token, password);
+      res.json({ message: 'Mot de passe réinitialisé avec succès.' });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async updateProfile(req, res, next) {
     try {
       const { firstName, lastName } = req.body;

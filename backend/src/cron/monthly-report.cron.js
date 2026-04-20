@@ -156,7 +156,7 @@ async function sendMonthlyEmail(email, firstName, monthName, data) {
     const transporter = emailService._getTransporter();
     if (!transporter) return;
     await transporter.sendMail({
-      from: `"CarVault" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
+      from: emailService.smtpFromHeader(),
       to: email,
       subject: `📊 CarVault — Votre récap de ${monthName}`,
       html,

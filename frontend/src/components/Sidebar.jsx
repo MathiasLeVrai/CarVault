@@ -2,7 +2,10 @@ import { NavLink, useLocation } from 'react-router-dom';
 import {
   Gauge, Car, Receipt, FileText, LogOut, SlidersHorizontal, Plus, MapPinned, Zap,
 } from 'lucide-react';
+import { motion as Motion, useReducedMotion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
+
+const BUBBLE_SPRING = { type: 'spring', stiffness: 300, damping: 28 };
 
 // Bottom nav: 4 main items + 1 central FAB
 const navItems = [
@@ -26,6 +29,7 @@ const sidebarItems = [
 export default function Sidebar({ onFabPress }) {
   const { logout, user } = useAuth();
   const location = useLocation();
+  const prefersReduced = useReducedMotion();
 
   return (
     <>
@@ -97,57 +101,56 @@ export default function Sidebar({ onFabPress }) {
         </button>
       </aside>
 
-      {/* Mobile Bottom Tab Bar */}
-      <nav className="md:hidden fixed left-0 right-0 bottom-0 z-50 cv-bottom-bar shadow-2xl">
-        <div>
-          <div className="flex items-center">
-            {/* Left 2 items */}
-            {navItems.slice(0, 2).map(({ to, icon, label }) => {
-              const active = location.pathname === to || location.pathname.startsWith(to + '/');
-              const IconComponent = icon;
+      {/* Mobile Bottom Tab Bar — Liquid Glass Pill */}
+      <nav className="md:hidden fixed left-0 right-0 bottom-0 z-50 cv-bottom-bar" role="tablist">
+        <div className="flex items-center justify-around relative">
+          {[
+            navItems[0],
+            navItems[1],
+            { to: null, isFab: true },
+            navItems[2],
+            navItems[3],
+          ].map((item, index) => {
+            if (item.isFab) {
               return (
-                <NavLink
-                  key={to}
-                  to={to}
-                  className={`flex flex-col items-center justify-center flex-1 py-3 rounded-xl transition-all relative ${
-                    active ? 'text-white' : 'text-ink-muted hover:text-white'
-                  }`}
+                <button
+                  key="fab"
+                  onClick={onFabPress}
+                  className="relative flex items-center justify-center w-11 h-11 rounded-full transition-transform active:scale-90"
+                  aria-label="Saisie rapide"
                 >
-                  <IconComponent className="w-5 h-5" strokeWidth={active ? 2.5 : 2} color={active ? '#ff2a3f' : 'currentColor'} />
-                  {active && <span className="text-[10px] font-semibold mt-1 animate-pop">{label}</span>}
-                </NavLink>
+                  <span className="absolute inset-0 rounded-full bg-accent/15" />
+                  <Plus className="w-5 h-5 text-accent relative z-10" strokeWidth={2.5} />
+                </button>
               );
-            })}
+            }
 
-            {/* FAB — quick action */}
-            <div className="flex-1 flex items-center justify-center py-2">
-              <button
-                onClick={onFabPress}
-                className="w-12 h-12 rounded-2xl bg-accent shadow-[0_0_24px_rgba(255,42,63,0.45)] flex items-center justify-center active:scale-95 transition-transform"
-                aria-label="Saisie rapide"
+            const active = item.to && (location.pathname === item.to || location.pathname.startsWith(item.to + '/'));
+            const IconComponent = item.icon;
+
+            return (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                role="tab"
+                aria-selected={active}
+                className="relative flex items-center justify-center w-12 h-11 rounded-full transition-transform active:scale-90"
               >
-                <Plus className="w-5 h-5 text-white" strokeWidth={2.5} />
-              </button>
-            </div>
-
-            {/* Right 2 items */}
-            {navItems.slice(2).map(({ to, icon, label }) => {
-              const active = location.pathname === to || location.pathname.startsWith(to + '/');
-              const IconComponent = icon;
-              return (
-                <NavLink
-                  key={to}
-                  to={to}
-                  className={`flex flex-col items-center justify-center flex-1 py-3 rounded-xl transition-all relative ${
-                    active ? 'text-white' : 'text-ink-muted hover:text-white'
-                  }`}
-                >
-                  <IconComponent className="w-5 h-5" strokeWidth={active ? 2.5 : 2} color={active ? '#ff2a3f' : 'currentColor'} />
-                  {active && <span className="text-[10px] font-semibold mt-1 animate-pop">{label}</span>}
-                </NavLink>
-              );
-            })}
-          </div>
+                {active && (
+                  <Motion.span
+                    layoutId="bottomNavBubble"
+                    className="absolute inset-0 rounded-full bg-white/10"
+                    style={{ borderRadius: 999 }}
+                    transition={prefersReduced ? { duration: 0.15 } : BUBBLE_SPRING}
+                  />
+                )}
+                <IconComponent
+                  className={`w-5 h-5 relative z-10 transition-colors ${active ? 'text-accent' : 'text-ink-muted'}`}
+                  strokeWidth={active ? 2.5 : 2}
+                />
+              </NavLink>
+            );
+          })}
         </div>
       </nav>
     </>

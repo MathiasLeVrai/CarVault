@@ -288,10 +288,24 @@ p { text-wrap: pretty; }
 /* =========== LAYOUT =========== */
 
 .cv-bottom-bar {
-  background: rgba(18, 18, 20, 0.95);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  /* Pill shape — floating, inset from edges */
+  margin-left: 16px;
+  margin-right: 16px;
+  margin-bottom: max(env(safe-area-inset-bottom, 12px), 12px);
+  border-radius: 999px;
+  padding: 6px 4px;
+
+  /* Liquid glass material */
+  background: rgba(18, 18, 20, 0.55);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+
+  /* Subtle inner glow border */
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.06),
+    0 4px 24px rgba(0, 0, 0, 0.35),
+    0 1px 4px rgba(0, 0, 0, 0.25);
 }
 
 .cv-header-glass {
@@ -349,10 +363,7 @@ html {
   }
 }
 
-/* Mobile bottom nav — safe area pour home indicator iOS */
-.cv-bottom-bar {
-  padding-bottom: max(env(safe-area-inset-bottom, 34px), 34px);
-}
+/* Mobile bottom nav — safe area handled by margin-bottom in pill shape above */
 
 /* =========== DOT PATTERN (Aceternity-style) =========== */
 
@@ -501,10 +512,14 @@ html.light .glass-panel {
 }
 
 html.light .cv-bottom-bar {
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border-top: 1px solid #e4e4e7;
+  background: rgba(255, 255, 255, 0.60);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.5),
+    0 4px 24px rgba(0, 0, 0, 0.10),
+    0 1px 4px rgba(0, 0, 0, 0.06);
 }
 
 html.light .cv-header-glass {

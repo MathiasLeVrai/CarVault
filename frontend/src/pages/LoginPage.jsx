@@ -111,7 +111,12 @@ export default function LoginPage() {
                 placeholder="nom@exemple.com" className="cv-input w-full px-4 py-3.5 text-base text-ink" required />
             </div>
             <div className="space-y-2">
-              <label className="block text-sm font-semibold text-white/80">Mot de passe</label>
+              <div className="flex items-center justify-between">
+                <label className="block text-sm font-semibold text-white/80">Mot de passe</label>
+                <Link to="/forgot-password" className="text-xs font-semibold text-ink-muted hover:text-accent transition-colors">
+                  Mot de passe oublié ?
+                </Link>
+              </div>
               <input type="password" value={password} onChange={e => setPassword(e.target.value)}
                 placeholder="••••••••" className="cv-input w-full px-4 py-3.5 text-base text-ink" required />
             </div>

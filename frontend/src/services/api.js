@@ -135,6 +135,8 @@ export const authApi = {
   logout: () => api.post('/auth/logout'),
   getProfile: () => api.get('/auth/profile'),
   updateProfile: (formData) => api.request('/auth/profile', { method: 'PATCH', body: formData, isFormData: true }),
+  forgotPassword: (email) => api.post('/auth/forgot-password', { email }),
+  resetPassword: (token, password) => api.post('/auth/reset-password', { token, password }),
 };
 
 // ===== Dashboard =====

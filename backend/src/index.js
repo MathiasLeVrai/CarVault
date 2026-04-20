@@ -25,6 +25,9 @@ if (missing.length) {
   process.exit(1);
 }
 
+const emailService = require('./services/email.service');
+emailService.logStartupHint();
+
 const authRoutes = require('./routes/auth.routes');
 const vehicleRoutes = require('./routes/vehicle.routes');
 const documentRoutes = require('./routes/document.routes');
@@ -118,6 +121,7 @@ app.use('/api', apiLimiter);
 // Rate limiters spécifiques (plus restrictifs, appliqués en plus du global)
 app.use('/api/auth/login', loginLimiter);
 app.use('/api/auth/register', registerLimiter);
+app.use('/api/auth/forgot-password', registerLimiter);
 app.use('/api/share', publicLimiter);
 app.use('/api/brands/plate', publicLimiter);
 app.use('/api/auth', authRoutes);

@@ -4,6 +4,8 @@ import { useEffect, lazy, Suspense } from 'react';
 import DashboardLayout from './layouts/DashboardLayout';
 const LoginPage = lazy(() => import('./pages/LoginPage'));
 const RegisterPage = lazy(() => import('./pages/RegisterPage'));
+const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'));
+const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'));
 const LandingPage = lazy(() => import('./pages/LandingPage'));
 // Lazy-loaded pages (heavy or rarely visited first)
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
@@ -56,6 +58,8 @@ export default function App() {
         <Route path="/" element={<PublicRoute><LandingPage /></PublicRoute>} />
         <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
         <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
+        <Route path="/forgot-password" element={<PublicRoute><ForgotPasswordPage /></PublicRoute>} />
+        <Route path="/reset-password" element={<PublicRoute><ResetPasswordPage /></PublicRoute>} />
         <Route path="/logout" element={<LogoutRoute />} />
         <Route path="/pricing" element={<PricingPage />} />
         <Route path="/share/:token" element={<SharePage />} />
