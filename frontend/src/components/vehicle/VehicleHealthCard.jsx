@@ -26,10 +26,10 @@ function ScoreGauge({ score, grade, size = 140 }) {
         <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="var(--color-ink-faint)" strokeWidth={strokeWidth} opacity={0.4} />
         <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke={color} strokeWidth={strokeWidth}
           strokeDasharray={circumference} strokeDashoffset={circumference - progress}
-          strokeLinecap="round" className="transition-all duration-500 ease-out drop-shadow-[0_0_12px_currentColor]" />
+          strokeLinecap="round" className="transition-[stroke-dashoffset] duration-500 ease-out drop-shadow-[0_0_12px_currentColor]" />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-4xl font-black text-white font-display tracking-tighter">{score}</span>
+        <span className="text-4xl font-black text-white font-display tracking-tighter tabular-nums">{score}</span>
         <span className="text-[10px] font-bold uppercase tracking-widest mt-1" style={{ color }}>{getGradeLabel(grade)}</span>
       </div>
     </div>
@@ -47,10 +47,10 @@ function SubScoreBar({ icon, label, score, max, color }) {
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between mb-1.5">
           <span className="text-xs font-bold text-white uppercase tracking-wider">{label}</span>
-          <span className="text-xs font-bold text-white/50 font-mono">{score}/{max}</span>
+          <span className="text-xs font-bold text-white/50 font-mono tabular-nums">{score}/{max}</span>
         </div>
         <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
-          <div className="h-full rounded-full transition-all duration-300 ease-out"
+          <div className="h-full rounded-full transition-[width] duration-300 ease-out"
             style={{ width: `${pct}%`, backgroundColor: color || getScoreColor((score/max)*100),
               boxShadow: `0 0 12px ${(color || getScoreColor((score/max)*100))}80` }} />
         </div>

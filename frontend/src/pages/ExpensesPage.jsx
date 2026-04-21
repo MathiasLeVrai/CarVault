@@ -121,7 +121,7 @@ export default function ExpensesPage() {
       <Motion.div variants={itemVariants} className="flex gap-2 flex-wrap">
         {catFilters.map(opt => (
           <button key={opt.value} onClick={() => setFilter(opt.value)}
-            className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${
+            className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-colors ${
               filter === opt.value ? 'bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.3)]' : 'bg-white/[0.02] border border-white/10 text-white/50 hover:bg-white/[0.06] hover:text-white'
             }`}>
             {opt.label}
@@ -156,7 +156,7 @@ export default function ExpensesPage() {
                     <span className="text-[10px] font-bold text-white/30">{formatDateShort(exp.date)}</span>
                   </div>
                 </div>
-                <button onClick={() => del(exp.id)} className="p-2 rounded-xl bg-white/5 hover:bg-accent/20 text-white/60 hover:text-accent transition-all">
+                <button onClick={() => del(exp.id)} className="p-2 rounded-xl bg-white/5 hover:bg-accent/20 text-white/60 hover:text-accent transition-colors">
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>

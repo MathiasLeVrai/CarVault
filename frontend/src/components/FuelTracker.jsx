@@ -14,7 +14,7 @@ function StatBox({ label, value, unit, trend, sub }) {
     <div className="flex-1 min-w-0">
       <p className="text-[10px] font-bold text-ink-muted uppercase tracking-wider mb-1">{label}</p>
       <div className="flex items-end gap-1.5">
-        <span className="text-xl font-black text-white font-display leading-none">{value ?? '—'}</span>
+        <span className="text-xl font-black text-white font-display leading-none tabular-nums">{value ?? '—'}</span>
         {unit && <span className="text-xs text-ink-muted font-semibold mb-0.5">{unit}</span>}
         {trend && (
           <span className={`text-[10px] font-bold mb-0.5 ${trend > 0 ? 'text-accent' : 'text-lime'}`}>
@@ -106,13 +106,13 @@ function AddFuelForm({ vehicleId, onAdded, onCancel }) {
       <button
         type="button"
         onClick={() => set('isFull', !form.isFull)}
-        className={`flex items-center gap-2.5 px-4 py-2.5 rounded-xl border text-sm font-semibold transition-all w-full ${
+        className={`flex items-center gap-2.5 px-4 py-2.5 rounded-xl border text-sm font-semibold transition-colors w-full ${
           form.isFull
             ? 'bg-lime/10 border-lime/30 text-lime'
             : 'bg-white/[0.03] border-white/10 text-ink-muted'
         }`}
       >
-        <div className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all ${
+        <div className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-colors ${
           form.isFull ? 'bg-lime border-lime' : 'border-white/30'
         }`}>
           {form.isFull && <div className="w-2 h-2 bg-bg rounded-sm" />}
@@ -124,7 +124,7 @@ function AddFuelForm({ vehicleId, onAdded, onCancel }) {
       {totalCost && (
         <div className="flex items-center justify-between px-4 py-3 bg-white/[0.04] rounded-xl">
           <span className="text-xs font-semibold text-ink-muted">Total estimé</span>
-          <span className="text-base font-black text-white font-display">{totalCost} €</span>
+          <span className="text-base font-black text-white font-display tabular-nums">{totalCost} €</span>
         </div>
       )}
 
@@ -288,13 +288,13 @@ export default function FuelTracker({ vehicleId }) {
 
                 {/* Cost */}
                 <div className="text-right">
-                  <p className="text-sm font-bold text-white font-display">{entry.totalCost.toFixed(2)} €</p>
+                  <p className="text-sm font-bold text-white font-display tabular-nums">{entry.totalCost.toFixed(2)} €</p>
                 </div>
 
                 {/* Delete */}
                 <button
                   onClick={() => handleDelete(entry.id)}
-                  className="opacity-0 group-hover:opacity-100 p-2.5 -mr-1 rounded-lg hover:bg-accent/10 text-ink-faint hover:text-accent transition-all"
+                  className="opacity-0 group-hover:opacity-100 p-2.5 -mr-1 rounded-lg hover:bg-accent/10 text-ink-faint hover:text-accent transition-[background-color,color,opacity]"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>

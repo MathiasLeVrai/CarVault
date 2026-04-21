@@ -176,7 +176,7 @@ export default function DocumentsPage() {
           <button
             key={opt.value}
             onClick={() => setFilter(opt.value)}
-            className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${
+            className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-colors ${
               filter === opt.value
                 ? 'bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.3)]'
                 : 'bg-white/[0.02] border border-white/10 text-white/50 hover:bg-white/[0.06] hover:text-white'
@@ -192,7 +192,7 @@ export default function DocumentsPage() {
         <Motion.div variants={itemVariants} className="flex gap-2 flex-wrap">
           <button
             onClick={() => setVehicleFilter('')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-colors ${
               vehicleFilter === ''
                 ? 'bg-accent/20 text-accent border border-accent/30'
                 : 'bg-white/[0.02] border border-white/10 text-white/50 hover:bg-white/[0.06] hover:text-white'
@@ -204,7 +204,7 @@ export default function DocumentsPage() {
             <button
               key={v.id}
               onClick={() => setVehicleFilter(v.id)}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-colors ${
                 vehicleFilter === v.id
                   ? 'bg-accent/20 text-accent border border-accent/30'
                   : 'bg-white/[0.02] border border-white/10 text-white/50 hover:bg-white/[0.06] hover:text-white'
@@ -301,13 +301,13 @@ export default function DocumentsPage() {
                       <div className="flex items-center gap-1">
                         <button
                           onClick={() => setViewingDoc(doc)}
-                          className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition-all"
+                          className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition-colors"
                         >
                           <Eye className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => del(doc.id)}
-                          className="p-2 rounded-xl bg-white/5 hover:bg-accent/20 text-white/60 hover:text-accent transition-all"
+                          className="p-2 rounded-xl bg-white/5 hover:bg-accent/20 text-white/60 hover:text-accent transition-colors"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -327,7 +327,7 @@ export default function DocumentsPage() {
           <div className="space-y-1.5">
             <label className="block text-sm font-semibold text-white">Fichier *</label>
             <div className="flex gap-2">
-              <label className="flex-1 flex flex-col items-center gap-2 p-5 bg-white/[0.02] border border-white/10 border-dashed rounded-xl cursor-pointer hover:bg-white/[0.04] hover:border-accent/50 transition-all text-center">
+              <label className="flex-1 flex flex-col items-center gap-2 p-5 bg-white/[0.02] border border-white/10 border-dashed rounded-xl cursor-pointer hover:bg-white/[0.04] hover:border-accent/50 transition-colors text-center">
                 <Upload className="w-6 h-6 text-white/40" />
                 <input
                   ref={fileInputRef}
@@ -340,7 +340,7 @@ export default function DocumentsPage() {
                   {file ? <span className="text-accent">{file.name}</span> : 'Fichier ou photo'}
                 </span>
               </label>
-              <label className="flex flex-col items-center gap-2 p-5 bg-white/[0.02] border border-white/10 border-dashed rounded-xl cursor-pointer hover:bg-white/[0.04] hover:border-violet/50 transition-all">
+              <label className="flex flex-col items-center gap-2 p-5 bg-white/[0.02] border border-white/10 border-dashed rounded-xl cursor-pointer hover:bg-white/[0.04] hover:border-violet/50 transition-colors">
                 <Camera className="w-6 h-6 text-violet/60" />
                 <input
                   ref={cameraInputRef}
@@ -431,7 +431,7 @@ export default function DocumentsPage() {
                     key={opt.value}
                     type="button"
                     onClick={() => toggleReminder(opt.value)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
                       reminders.includes(opt.value)
                         ? 'bg-lime/20 text-lime border border-lime/30'
                         : 'bg-white/5 text-white/40 border border-white/10 hover:text-white/60'
@@ -481,7 +481,7 @@ export default function DocumentsPage() {
                 <div className="flex items-center justify-between px-4 py-3 shrink-0" style={{ borderBottom: '1px solid var(--color-ink-faint)' }}>
                   <button
                     onClick={() => setViewingDoc(null)}
-                    className="flex items-center gap-2 px-3 py-2 rounded-xl cv-btn-dark text-sm font-semibold active:scale-95 transition-transform"
+                    className="flex items-center gap-2 px-3 py-2 rounded-xl cv-btn-dark text-sm font-semibold active:scale-[0.96] transition-transform"
                   >
                     <X className="w-4 h-4" />
                     Fermer
@@ -492,7 +492,7 @@ export default function DocumentsPage() {
                   <a
                     href={viewingDoc.filePath}
                     download
-                    className="flex items-center gap-2 px-3 py-2 rounded-xl cv-btn-dark text-sm font-semibold active:scale-95 transition-transform"
+                    className="flex items-center gap-2 px-3 py-2 rounded-xl cv-btn-dark text-sm font-semibold active:scale-[0.96] transition-transform"
                   >
                     <Download className="w-4 h-4" />
                   </a>
@@ -504,7 +504,7 @@ export default function DocumentsPage() {
                     <img
                       src={viewingDoc.filePath}
                       alt={viewingDoc.name}
-                      className="max-w-full max-h-full object-contain rounded-xl select-none"
+                      className="max-w-full max-h-full object-contain rounded-xl select-none cv-img-outline"
                       draggable={false}
                     />
                   ) : isPdf ? (

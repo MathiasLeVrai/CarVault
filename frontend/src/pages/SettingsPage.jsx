@@ -57,7 +57,7 @@ function Avatar({ user, size = 80 }) {
       <img
         src={user.avatar}
         alt="avatar"
-        className="rounded-full object-cover border-2 border-white/10"
+        className="rounded-full object-cover border-2 border-white/10 cv-img-outline"
         style={{ width: size, height: size }}
       />
     );
@@ -302,13 +302,13 @@ function SubscriptionCard({ user }) {
           <div className="inline-flex rounded-xl bg-white/[0.06] border border-white/10 p-1">
             <button
               onClick={() => setPlan('monthly')}
-              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${!isYearly ? 'bg-white/10 text-white' : 'text-white/40'}`}
+              className={`px-4 py-2 rounded-lg text-xs font-bold transition-[background-color,color] ${!isYearly ? 'bg-white/10 text-white' : 'text-white/40'}`}
             >
               {PRICING.monthly}€/mois
             </button>
             <button
               onClick={() => setPlan('yearly')}
-              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${isYearly ? 'bg-white/10 text-white' : 'text-white/40'}`}
+              className={`px-4 py-2 rounded-lg text-xs font-bold transition-[background-color,color] flex items-center gap-1.5 ${isYearly ? 'bg-white/10 text-white' : 'text-white/40'}`}
             >
               {PRICING.yearly}€/an
               <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-lime/20 text-lime">{PRICING.discount}</span>
@@ -535,7 +535,7 @@ export default function SettingsPage() {
       <Motion.div variants={itemVariants}>
         <button
           onClick={logout}
-          className="flex items-center gap-3 w-full p-5 rounded-2xl cv-btn-danger text-sm font-bold transition-all"
+          className="flex items-center gap-3 w-full p-5 rounded-2xl cv-btn-danger text-sm font-bold transition-colors"
         >
           <LogOut className="w-5 h-5 shrink-0" />
           Se déconnecter

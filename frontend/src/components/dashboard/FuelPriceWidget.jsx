@@ -56,7 +56,7 @@ export default function FuelPriceWidget({ userFuelType, variants }) {
 
       {/* Primary fuel type */}
       <div className="flex items-baseline gap-3 mb-4">
-        <span className="text-3xl font-black text-white font-display">{primary.avgPrice.toFixed(3)}</span>
+        <span className="text-3xl font-black text-white font-display tabular-nums">{primary.avgPrice.toFixed(3)}</span>
         <span className="text-sm text-ink-muted font-bold">/L</span>
         <span
           className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider"
@@ -78,7 +78,7 @@ export default function FuelPriceWidget({ userFuelType, variants }) {
             if (!p || !display) return null;
             return (
               <div key={key} className="p-2.5 rounded-xl bg-white/[0.03] border border-white/5 text-center">
-                <p className="text-xs font-black text-white font-display">{p.avgPrice.toFixed(3)}</p>
+                <p className="text-xs font-black text-white font-display tabular-nums">{p.avgPrice.toFixed(3)}</p>
                 <p className="text-[9px] text-ink-muted font-bold uppercase tracking-wider mt-0.5">{display.label}</p>
               </div>
             );

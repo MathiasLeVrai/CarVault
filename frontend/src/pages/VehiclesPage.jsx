@@ -243,7 +243,7 @@ export default function VehiclesPage() {
               <div className="aspect-[16/10] bg-[#121214] relative overflow-hidden">
                 {v.photo ? (
                   <img src={v.photo} alt={`${v.brand} ${v.model}`} loading="lazy"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" />
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out cv-img-outline" />
                 ) : (
                   <div className="absolute inset-0 flex items-center justify-center opacity-30 group-hover:opacity-50 transition-opacity duration-500">
                     <Car className="w-16 h-16 text-white/20 drop-shadow-2xl" strokeWidth={1} />
@@ -267,7 +267,7 @@ export default function VehiclesPage() {
                       </span>
                     )}
                   </div>
-                  <div className="w-8 h-8 rounded-full bg-white/[0.04] border border-white/10 flex items-center justify-center group-hover:bg-accent/20 group-hover:border-accent/30 group-hover:text-accent transition-all">
+                  <div className="w-8 h-8 rounded-full bg-white/[0.04] border border-white/10 flex items-center justify-center group-hover:bg-accent/20 group-hover:border-accent/30 group-hover:text-accent transition-colors">
                     <ArrowUpRight className="w-4 h-4" />
                   </div>
                 </div>
@@ -412,7 +412,7 @@ export default function VehiclesPage() {
                 <Input label="Prix d'achat (€)" type="number" step="0.01" placeholder="25000" value={form.purchasePrice} onChange={e => setForm(p => ({ ...p, purchasePrice: e.target.value }))} />
                 <Input label="Objectif km annuel" type="number" step="100" placeholder="15000" value={form.annualKmGoal} onChange={e => setForm(p => ({ ...p, annualKmGoal: e.target.value }))} />
               </div>
-              <label className="flex items-center gap-3 p-4 rounded-xl bg-white/[0.02] border border-white/5 cursor-pointer hover:bg-white/[0.04] transition-all select-none">
+              <label className="flex items-center gap-3 p-4 rounded-xl bg-white/[0.02] border border-white/5 cursor-pointer hover:bg-white/[0.04] transition-colors select-none">
                 <input type="checkbox" checked={maintenanceUpToDate} onChange={e => setMaintenanceUpToDate(e.target.checked)}
                   className="w-5 h-5 rounded-md border-2 border-white/20 bg-transparent accent-lime shrink-0" />
                 <div>
@@ -422,7 +422,7 @@ export default function VehiclesPage() {
               </label>
               <div className="space-y-1.5">
                 <label className="block text-sm font-semibold text-ink">Photo</label>
-                <label className="flex items-center justify-center gap-2 w-full py-4 bg-white/[0.02] border border-white/10 border-dashed rounded-xl cursor-pointer text-sm text-ink-muted hover:bg-white/[0.04] hover:border-accent/50 transition-all">
+                <label className="flex items-center justify-center gap-2 w-full py-4 bg-white/[0.02] border border-white/10 border-dashed rounded-xl cursor-pointer text-sm text-ink-muted hover:bg-white/[0.04] hover:border-accent/50 transition-colors">
                   <input type="file" accept="image/*" onChange={e => setPhoto(e.target.files[0])} className="hidden" />
                   {photo ? <span className="text-accent font-semibold">{photo.name}</span> : 'Uploader une image'}
                 </label>

@@ -127,7 +127,7 @@ export default function AlertsPage() {
                     <div className="relative">
                       <button
                         onClick={() => setSnoozeOpen(snoozeOpen === alert.id ? null : alert.id)}
-                        className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition-all"
+                        className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition-colors"
                         title="Reporter"
                       >
                         <Timer className="w-4 h-4" strokeWidth={2} />
@@ -145,11 +145,11 @@ export default function AlertsPage() {
                     </div>
 
                     {!alert.isRead && (
-                      <button onClick={() => markRead(alert.id)} className="p-2 rounded-xl bg-white/5 hover:bg-lime/20 text-white/60 hover:text-lime transition-all" title="Lu">
+                      <button onClick={() => markRead(alert.id)} className="p-2 rounded-xl bg-white/5 hover:bg-lime/20 text-white/60 hover:text-lime transition-colors" title="Lu">
                         <Check className="w-4 h-4" strokeWidth={2.5} />
                       </button>
                     )}
-                    <button onClick={() => del(alert.id)} className="p-2 rounded-xl bg-white/5 hover:bg-accent/20 text-white/60 hover:text-accent transition-all">
+                    <button onClick={() => del(alert.id)} className="p-2 rounded-xl bg-white/5 hover:bg-accent/20 text-white/60 hover:text-accent transition-colors">
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>

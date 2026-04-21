@@ -57,7 +57,7 @@ export default function MaintenancePlanCard({ vehicleId, brand, maintenancePlan,
             <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: `${color}15`, color }}>{statusLabels[item.status]}</span>
           </div>
           <div className="h-1.5 rounded-full bg-white/5 overflow-hidden mb-2">
-            <div className="h-full rounded-full transition-all duration-300" style={{ width: `${Math.min(100, item.pct)}%`, backgroundColor: color, boxShadow: `0 0 8px ${color}60` }} />
+            <div className="h-full rounded-full transition-[width] duration-300" style={{ width: `${Math.min(100, item.pct)}%`, backgroundColor: color, boxShadow: `0 0 8px ${color}60` }} />
           </div>
           <div className="flex items-center justify-between text-[11px] text-white/40">
             <span>{item.remaining > 0 ? `${item.remaining.toLocaleString('fr-FR')} km restants` : `Dépassé de ${Math.abs(item.remaining).toLocaleString('fr-FR')} km`}</span>
@@ -112,7 +112,7 @@ export default function MaintenancePlanCard({ vehicleId, brand, maintenancePlan,
       {okItems.length > 0 && (
         <button
           onClick={() => setShowAll(!showAll)}
-          className="w-full mt-4 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-white/[0.02] border border-white/5 text-xs font-bold text-white/40 hover:text-white/60 hover:bg-white/[0.04] transition-all"
+          className="w-full mt-4 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-white/[0.02] border border-white/5 text-xs font-bold text-white/40 hover:text-white/60 hover:bg-white/[0.04] transition-colors"
         >
           <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${showAll ? 'rotate-180' : ''}`} />
           {showAll ? 'Masquer les entretiens OK' : `Voir tout (${okItems.length} OK)`}

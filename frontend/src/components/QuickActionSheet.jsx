@@ -238,7 +238,7 @@ export default function QuickActionSheet({ onClose }) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05, type: 'spring', stiffness: 300, damping: 28 }}
                 onClick={() => handleAction(action.id)}
-                className="flex flex-col items-center gap-3 py-6 rounded-2xl border transition-all active:scale-95"
+                className="flex flex-col items-center gap-3 py-6 rounded-2xl border transition-[background-color,border-color,transform] active:scale-[0.96]"
                 style={{ background: action.bg, borderColor: action.border }}
               >
                 <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: `${action.color}15` }}>
@@ -332,7 +332,7 @@ export default function QuickActionSheet({ onClose }) {
               <>
                 <Field label="Fichier">
                   <label
-                    className={`flex items-center gap-3 p-4 rounded-xl border border-dashed cursor-pointer transition-all hover:bg-white/4 active:scale-[0.98] ${
+                    className={`flex items-center gap-3 p-4 rounded-xl border border-dashed cursor-pointer transition-[background-color,border-color,transform] hover:bg-white/4 active:scale-[0.96] ${
                       docFile ? 'border-violet/30 bg-violet/6' : 'border-white/10 bg-white/2'
                     }`}
                   >

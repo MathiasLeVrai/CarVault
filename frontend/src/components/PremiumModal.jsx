@@ -55,7 +55,7 @@ export default function PremiumModal({ onClose }) {
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-48 rounded-full pointer-events-none"
             style={{ background: 'radial-gradient(circle, rgba(255,42,63,0.15) 0%, transparent 70%)', filter: 'blur(40px)', top: '-30%' }} />
 
-          <button onClick={onClose} className="absolute top-4 right-4 w-8 h-8 rounded-xl bg-white/8 flex items-center justify-center">
+          <button onClick={onClose} className="absolute top-4 right-4 w-10 h-10 rounded-xl bg-white/8 flex items-center justify-center">
             <X className="w-4 h-4 text-white/50" />
           </button>
 
@@ -76,13 +76,13 @@ export default function PremiumModal({ onClose }) {
             <div className="inline-flex rounded-xl bg-white/[0.06] border border-white/10 p-1">
               <button
                 onClick={() => setPlan('monthly')}
-                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${!isYearly ? 'bg-white/10 text-white' : 'text-white/40'}`}
+                className={`px-4 py-2 rounded-lg text-xs font-bold transition-[background-color,color] ${!isYearly ? 'bg-white/10 text-white' : 'text-white/40'}`}
               >
                 Mensuel
               </button>
               <button
                 onClick={() => setPlan('yearly')}
-                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${isYearly ? 'bg-white/10 text-white' : 'text-white/40'}`}
+                className={`px-4 py-2 rounded-lg text-xs font-bold transition-[background-color,color] flex items-center gap-1.5 ${isYearly ? 'bg-white/10 text-white' : 'text-white/40'}`}
               >
                 Annuel
                 <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-lime/20 text-lime">{PRICING.discount}</span>

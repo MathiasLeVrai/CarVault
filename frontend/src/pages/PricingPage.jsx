@@ -120,13 +120,13 @@ export default function PricingPage() {
               <div className="inline-flex rounded-xl bg-white/[0.06] border border-white/10 p-1">
                 <button
                   onClick={() => setPlan('monthly')}
-                  className={`px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${!isYearly ? 'bg-white/10 text-white shadow-sm' : 'text-white/40 hover:text-white/60'}`}
+                  className={`px-5 py-2.5 rounded-lg text-sm font-bold transition-[background-color,color] ${!isYearly ? 'bg-white/10 text-white shadow-sm' : 'text-white/40 hover:text-white/60'}`}
                 >
                   Mensuel
                 </button>
                 <button
                   onClick={() => setPlan('yearly')}
-                  className={`px-5 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${isYearly ? 'bg-white/10 text-white shadow-sm' : 'text-white/40 hover:text-white/60'}`}
+                  className={`px-5 py-2.5 rounded-lg text-sm font-bold transition-[background-color,color] flex items-center gap-2 ${isYearly ? 'bg-white/10 text-white shadow-sm' : 'text-white/40 hover:text-white/60'}`}
                 >
                   Annuel
                   <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-lime/20 text-lime border border-lime/30">

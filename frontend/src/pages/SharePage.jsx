@@ -247,11 +247,11 @@ export default function SharePage() {
                 return (
                   <div key={item.label} className="p-4 rounded-xl bg-white/[0.02] border border-white/5 text-center">
                     <item.icon className="w-5 h-5 text-white/40 mx-auto mb-2" />
-                    <p className="text-xl font-black text-white font-display">{item.score}/{item.max}</p>
+                    <p className="text-xl font-black text-white font-display tabular-nums">{item.score}/{item.max}</p>
                     <p className="text-[10px] font-bold text-white/50 uppercase tracking-wider mt-1">{item.label}</p>
                     <div className="h-1 rounded-full bg-white/5 mt-3 overflow-hidden">
                       <div
-                        className="h-full rounded-full transition-all"
+                        className="h-full rounded-full transition-[width]"
                         style={{ width: `${pct}%`, backgroundColor: getScoreColor(pct) }}
                       />
                     </div>

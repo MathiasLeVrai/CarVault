@@ -52,7 +52,7 @@ export default function Sidebar({ onFabPress }) {
               <NavLink
                 key={to}
                 to={to}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-[14px] font-semibold transition-all duration-200 relative ${
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-[14px] font-semibold transition-colors duration-200 relative ${
                   active
                     ? 'bg-white/8 text-white'
                     : 'text-white/45 hover:text-white hover:bg-white/4'
@@ -76,7 +76,7 @@ export default function Sidebar({ onFabPress }) {
             <div className="cv-divider mx-4 my-4" />
             <NavLink
               to="/settings"
-              className="mx-2 p-3 flex items-center gap-3 relative overflow-hidden group transition-all premium-gradient"
+              className="mx-2 p-3 flex items-center gap-3 relative overflow-hidden group transition-colors premium-gradient"
             >
               <div className="w-9 h-9 rounded-lg bg-accent/20 flex items-center justify-center shrink-0">
                 <Zap className="w-4 h-4 text-accent" strokeWidth={2.5} fill="currentColor" />
@@ -94,7 +94,7 @@ export default function Sidebar({ onFabPress }) {
 
         <button
           onClick={logout}
-          className="flex items-center gap-3 px-4 py-3 rounded-xl text-[14px] font-semibold text-white/35 hover:text-accent hover:bg-white/4 transition-all w-full"
+          className="flex items-center gap-3 px-4 py-3 rounded-xl text-[14px] font-semibold text-white/35 hover:text-accent hover:bg-white/4 transition-colors w-full"
         >
           <LogOut className="w-[18px] h-[18px]" strokeWidth={2} />
           Déconnexion
@@ -116,7 +116,7 @@ export default function Sidebar({ onFabPress }) {
                 <button
                   key="fab"
                   onClick={onFabPress}
-                  className="relative flex items-center justify-center w-11 h-11 rounded-full transition-transform active:scale-90"
+                  className="relative flex items-center justify-center w-11 h-11 rounded-full transition-transform active:scale-[0.96]"
                   aria-label="Saisie rapide"
                 >
                   <span className="absolute inset-0 rounded-full bg-accent/15" />
@@ -134,7 +134,7 @@ export default function Sidebar({ onFabPress }) {
                 to={item.to}
                 role="tab"
                 aria-selected={active}
-                className="relative flex items-center justify-center w-12 h-11 rounded-full transition-transform active:scale-90"
+                className="relative flex items-center justify-center w-12 h-11 rounded-full transition-transform active:scale-[0.96]"
               >
                 {active && (
                   <Motion.span

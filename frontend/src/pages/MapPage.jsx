@@ -382,7 +382,7 @@ export default function MapPage() {
               <button
                 key={f.id}
                 onClick={() => toggleFilter(f.id)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all border ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-colors border ${
                   active
                     ? 'text-white border-white/20 bg-white/10'
                     : 'text-white/40 border-white/8 hover:border-white/15 hover:text-white/70'
@@ -518,7 +518,7 @@ export default function MapPage() {
                   setMapCenter([poi.lat, poi.lon]);
                   markersRef.current[poi.id]?.openPopup();
                 }}
-                className={`cv-card p-4 text-left transition-all ${isSelected ? 'border-white/20' : ''}`}
+                className={`cv-card p-4 text-left transition-colors ${isSelected ? 'border-white/20' : ''}`}
                 style={isSelected ? { borderColor: `${filterDef?.color}40`, background: `${filterDef?.color}10` } : {}}
               >
                 <div className="flex items-start gap-3">

@@ -127,7 +127,7 @@ export default function OnboardingTour({ onDone }) {
           <button
             key={i}
             onClick={() => goTo(i)}
-            className="transition-all rounded-full"
+            className="transition-[width,background-color] rounded-full"
             style={{
               width: i === slide ? 24 : 8,
               height: 8,

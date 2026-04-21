@@ -22,7 +22,7 @@ export default function Button({
   return (
     <button
       className={twMerge(clsx(
-        'inline-flex items-center justify-center gap-2 cursor-pointer transition-all font-semibold outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2 focus-visible:ring-offset-bg',
+        'inline-flex items-center justify-center gap-2 cursor-pointer transition-colors font-semibold outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2 focus-visible:ring-offset-bg',
         variants[variant],
         sizes[size],
         disabled && 'opacity-40 cursor-not-allowed pointer-events-none',

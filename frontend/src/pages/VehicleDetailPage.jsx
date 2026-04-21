@@ -164,7 +164,7 @@ export default function VehicleDetailPage() {
               </div>
               {v.documents?.length > 0 ? (
                 <div className="space-y-3">{v.documents.map(d => (
-                  <div key={d.id} className="flex items-center justify-between p-3 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] hover:border-white/10 transition-all group">
+                  <div key={d.id} className="flex items-center justify-between p-3 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] hover:border-white/10 transition-[background-color,border-color] group">
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
                         <FileText className="w-4 h-4 text-white/60" strokeWidth={2} />
@@ -178,7 +178,7 @@ export default function VehicleDetailPage() {
                       </div>
                     </div>
                     <button onClick={e => { e.stopPropagation(); delDoc(d.id); }}
-                      className="w-11 h-11 flex items-center justify-center rounded-xl md:opacity-0 md:group-hover:opacity-100 hover:bg-accent/20 text-white/40 hover:text-accent transition-all">
+                      className="w-11 h-11 flex items-center justify-center rounded-xl md:opacity-0 md:group-hover:opacity-100 hover:bg-accent/20 text-white/40 hover:text-accent transition-[background-color,color,opacity]">
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
@@ -193,7 +193,7 @@ export default function VehicleDetailPage() {
               </div>
               {v.expenses?.length > 0 ? (
                 <div className="space-y-3">{v.expenses.map(exp => (
-                  <div key={exp.id} className="flex items-center justify-between p-3 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] hover:border-white/10 transition-all group">
+                  <div key={exp.id} className="flex items-center justify-between p-3 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] hover:border-white/10 transition-[background-color,border-color] group">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center shrink-0">
                         <Wallet className="w-4 h-4 text-accent" strokeWidth={2} />
@@ -207,7 +207,7 @@ export default function VehicleDetailPage() {
                       </div>
                     </div>
                     <button onClick={e => { e.stopPropagation(); delExp(exp.id); }}
-                      className="w-11 h-11 flex items-center justify-center rounded-xl md:opacity-0 md:group-hover:opacity-100 hover:bg-accent/20 text-white/40 hover:text-accent transition-all">
+                      className="w-11 h-11 flex items-center justify-center rounded-xl md:opacity-0 md:group-hover:opacity-100 hover:bg-accent/20 text-white/40 hover:text-accent transition-[background-color,color,opacity]">
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
@@ -248,7 +248,7 @@ export default function VehicleDetailPage() {
           <Input label="Date d'expiration" type="date" value={df.expirationDate} onChange={e => setDf(p => ({...p, expirationDate: e.target.value}))} />
           <div className="space-y-1.5">
             <label className="block text-sm font-semibold text-white">Fichier *</label>
-            <label className="flex flex-col items-center gap-2 p-6 bg-white/[0.02] border border-white/10 border-dashed rounded-xl cursor-pointer hover:bg-white/[0.04] hover:border-accent/50 transition-all text-center">
+            <label className="flex flex-col items-center gap-2 p-6 bg-white/[0.02] border border-white/10 border-dashed rounded-xl cursor-pointer hover:bg-white/[0.04] hover:border-accent/50 transition-colors text-center">
               <Upload className="w-6 h-6 text-white/40" />
               <input type="file" onChange={e => setDocFile(e.target.files[0])} className="hidden" required />
               <span className="text-sm font-semibold text-white/60">{docFile ? <span className="text-accent">{docFile.name}</span> : 'Sélectionner un fichier...'}</span>
@@ -302,7 +302,7 @@ export default function VehicleDetailPage() {
                 <span className="text-xs font-mono text-white/70 truncate flex-1">
                   {window.location.origin}/share/{shareLink.token}
                 </span>
-                <button onClick={copyShareUrl} className="p-2 rounded-lg bg-white/5 hover:bg-accent/20 text-white/60 hover:text-accent transition-all shrink-0">
+                <button onClick={copyShareUrl} className="p-2 rounded-lg bg-white/5 hover:bg-accent/20 text-white/60 hover:text-accent transition-colors shrink-0">
                   {copied ? <Check className="w-4 h-4 text-lime" /> : <Copy className="w-4 h-4" />}
                 </button>
               </div>
@@ -348,7 +348,7 @@ export default function VehicleDetailPage() {
           </div>
           <div className="space-y-1.5">
             <label className="block text-sm font-semibold text-ink">Photo</label>
-            <label className="flex items-center justify-center gap-2 w-full py-4 bg-white/[0.02] border border-white/10 border-dashed rounded-xl cursor-pointer text-sm text-ink-muted hover:bg-white/[0.04] hover:border-accent/50 transition-all">
+            <label className="flex items-center justify-center gap-2 w-full py-4 bg-white/[0.02] border border-white/10 border-dashed rounded-xl cursor-pointer text-sm text-ink-muted hover:bg-white/[0.04] hover:border-accent/50 transition-colors">
               <input type="file" accept="image/*" onChange={e => setEditPhoto(e.target.files[0])} className="hidden" />
               {editPhoto ? <span className="text-accent font-semibold">{editPhoto.name}</span> : 'Changer la photo'}
             </label>

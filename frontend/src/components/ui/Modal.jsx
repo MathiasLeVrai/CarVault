@@ -28,7 +28,7 @@ export default function Modal({ isOpen, onClose, title, children }) {
         <div className="flex items-center justify-between px-6 md:px-8 py-5 border-b border-white/5">
           <h2 className="text-lg font-bold text-white font-display tracking-tight">{title}</h2>
           <button onClick={onClose}
-            className="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center hover:bg-white/10 hover:text-white text-white/50 transition-colors">
+            className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center hover:bg-white/10 hover:text-white text-white/50 transition-colors">
             <X className="w-4 h-4" strokeWidth={2.5} />
           </button>
         </div>
