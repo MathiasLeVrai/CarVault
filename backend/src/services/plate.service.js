@@ -5,9 +5,48 @@
 
 const RAPIDAPI_HOST = 'api-de-plaque-d-immatriculation-france.p.rapidapi.com';
 
+/** Durée de cache pour une réponse API réussie (données véhicule). */
+const TTL_POSITIVE_MS = 24 * 60 * 60 * 1000;
+/** Durée de cache pour « plaque introuvable » (évite de marteler l'API sur la même erreur). */
+const TTL_NEGATIVE_MS = 60 * 60 * 1000;
+/** Nombre max d'entrées en mémoire (LRU par ordre d'accès dans la Map). */
+const MAX_CACHE_ENTRIES = 5000;
+
 class PlateService {
   constructor() {
     this._cache = new Map();
+    /** Requêtes en cours par plaque normalisée (dédoublonnage si plusieurs clients en parallèle). */
+    this._inFlight = new Map();
+  }
+
+  _normalizePlate(plate) {
+    const stripped = plate.replace(/[\s-]+/g, '').toUpperCase();
+    const sivMatch = stripped.match(/^([A-Z]{2})(\d{3})([A-Z]{2})$/);
+    return sivMatch
+      ? `${sivMatch[1]}-${sivMatch[2]}-${sivMatch[3]}`
+      : stripped;
+  }
+
+  _getCached(normalizedPlate) {
+    const entry = this._cache.get(normalizedPlate);
+    if (!entry) return null;
+    if (Date.now() >= entry.expiry) {
+      this._cache.delete(normalizedPlate);
+      return null;
+    }
+    // LRU : remettre la clé en fin de Map
+    this._cache.delete(normalizedPlate);
+    this._cache.set(normalizedPlate, entry);
+    return entry;
+  }
+
+  _setCached(normalizedPlate, data, ttlMs) {
+    if (this._cache.size >= MAX_CACHE_ENTRIES && !this._cache.has(normalizedPlate)) {
+      const oldest = this._cache.keys().next().value;
+      if (oldest !== undefined) this._cache.delete(oldest);
+    }
+    if (this._cache.has(normalizedPlate)) this._cache.delete(normalizedPlate);
+    this._cache.set(normalizedPlate, { data, expiry: Date.now() + ttlMs });
   }
 
   /**
@@ -21,19 +60,26 @@ class PlateService {
       throw new Error('RAPIDAPI_KEY requis dans .env');
     }
 
-    // Normaliser la plaque : supprimer espaces/tirets, majuscules, puis reformater XX-NNN-XX
-    let stripped = plate.replace(/[\s-]+/g, '').toUpperCase();
-    const sivMatch = stripped.match(/^([A-Z]{2})(\d{3})([A-Z]{2})$/);
-    const normalizedPlate = sivMatch
-      ? `${sivMatch[1]}-${sivMatch[2]}-${sivMatch[3]}`
-      : stripped;
+    const normalizedPlate = this._normalizePlate(plate);
 
-    // Cache 24h
-    const cached = this._cache.get(normalizedPlate);
-    if (cached && Date.now() < cached.expiry) {
+    const cached = this._getCached(normalizedPlate);
+    if (cached) {
       return cached.data;
     }
 
+    if (!this._inFlight.has(normalizedPlate)) {
+      this._inFlight.set(
+        normalizedPlate,
+        this._fetchFromApi(normalizedPlate, apiKey).finally(() => {
+          this._inFlight.delete(normalizedPlate);
+        }),
+      );
+    }
+
+    return this._inFlight.get(normalizedPlate);
+  }
+
+  async _fetchFromApi(normalizedPlate, apiKey) {
     const url = `https://${RAPIDAPI_HOST}/?plaque=${encodeURIComponent(normalizedPlate)}`;
     const res = await fetch(url, {
       method: 'GET',
@@ -50,14 +96,12 @@ class PlateService {
     const body = await res.json();
 
     if (!body || body.error || !body.data) {
+      this._setCached(normalizedPlate, null, TTL_NEGATIVE_MS);
       return null;
     }
 
     const data = this._mapResponse(body.data, normalizedPlate);
-
-    // Cache 24h
-    this._cache.set(normalizedPlate, { data, expiry: Date.now() + 24 * 60 * 60 * 1000 });
-
+    this._setCached(normalizedPlate, data, TTL_POSITIVE_MS);
     return data;
   }
 
