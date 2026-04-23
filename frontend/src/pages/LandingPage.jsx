@@ -6,9 +6,11 @@ import {
   FileText, Bell, Wrench, TrendingUp, MapPin, Shield,
   ArrowRight, Check, X, Fuel, BarChart3, Share2, Car,
   AlertTriangle, Star, ChevronRight, ChevronDown, Zap, Clock, Users,
+  Sun, Moon,
 } from 'lucide-react';
 
 import { PRICING } from '../constants/pricing';
+import { useTheme } from '../context/ThemeContext';
 
 /* ─── Data ──────────────────────────────────────────────────── */
 
@@ -405,6 +407,7 @@ function FaqSection() {
 
 export default function LandingPage() {
   const prefersReduced = useReducedMotion();
+  const { theme, toggleTheme } = useTheme();
 
   return (
     <div className="min-h-screen bg-bg text-white overflow-x-hidden">
@@ -486,6 +489,17 @@ export default function LandingPage() {
           <Link to="/login" className="px-4 py-2.5 text-sm font-semibold text-white/50 hover:text-white transition-[color] duration-150 hidden sm:block">
             Se connecter
           </Link>
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="w-10 h-10 rounded-xl flex items-center justify-center text-white/50 hover:text-accent transition-colors shrink-0"
+            aria-label={theme === 'dark' ? 'Passer au mode clair' : 'Passer au mode sombre'}
+          >
+            {theme === 'dark'
+              ? <Sun className="w-[18px] h-[18px]" strokeWidth={2} />
+              : <Moon className="w-[18px] h-[18px]" strokeWidth={2} />
+            }
+          </button>
           <Link to="/register" className="cv-btn-accent px-5 py-2.5 text-sm rounded-xl inline-flex items-center gap-1.5 active:scale-[0.96] transition-transform">
             Commencer <ArrowRight className="w-3.5 h-3.5" />
           </Link>
