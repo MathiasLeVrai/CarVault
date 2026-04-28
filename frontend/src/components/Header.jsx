@@ -37,12 +37,9 @@ export default function Header() {
     <header className="fixed top-0 left-0 right-0 cv-header-glass z-50" style={{ paddingTop: 'var(--safe-top)' }}>
       <div className="h-16 md:h-20 flex items-center justify-between px-5 md:px-8">
       {/* Brand */}
-      <div className="flex items-center gap-2.5">
-        <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center shadow-[0_0_16px_rgba(255,42,63,0.3)]">
-          <span className="text-[11px] font-black text-white font-display">CV</span>
-        </div>
+      <div className="flex items-center">
         <span className="text-lg font-bold tracking-tight text-white font-display">
-          Car<span className="text-accent">Vault</span>
+          Carv<span className="text-accent">io</span>
         </span>
       </div>
 

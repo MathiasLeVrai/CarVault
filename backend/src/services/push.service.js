@@ -13,7 +13,7 @@ class PushService {
     if (!publicKey || !privateKey) return;
 
     webpush.setVapidDetails(
-      process.env.APP_URL || 'https://carvault.fly.dev',
+      process.env.APP_URL || 'https://carvio.fr',
       publicKey,
       privateKey,
     );

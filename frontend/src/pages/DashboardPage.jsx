@@ -170,7 +170,7 @@ export default function DashboardPage() {
                   Offre de lancement — <span className="text-accent">14 jours gratuits</span>
                 </p>
                 <p className="text-[11px] text-white/45 font-medium mt-0.5">
-                  Débloquez tout CarVault : véhicules illimités, stats avancées, export PDF. À partir de {PRICING.yearlyPerMonth}€/mois.
+                  Débloquez tout Carvio : véhicules illimités, stats avancées, export PDF. À partir de {PRICING.yearlyPerMonth}€/mois.
                 </p>
               </div>
             </div>

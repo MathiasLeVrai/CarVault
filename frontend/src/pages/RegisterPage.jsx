@@ -33,9 +33,9 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen bg-bg flex">
       <Helmet>
-        <title>Inscription — CarVault</title>
-        <meta name="description" content="Creez votre compte CarVault gratuitement et commencez a gerer votre vehicule en quelques secondes." />
-        <link rel="canonical" href="https://carvault.fly.dev/register" />
+        <title>Inscription — Carvio</title>
+        <meta name="description" content="Creez votre compte Carvio gratuitement et commencez a gerer votre vehicule en quelques secondes." />
+        <link rel="canonical" href="https://carvio.fr/register" />
       </Helmet>
       {/* Left — Visual */}
       <div className="hidden lg:flex lg:w-1/2 bg-bg-alt relative overflow-hidden items-center justify-center p-16 border-r border-white/5">
@@ -48,7 +48,7 @@ export default function RegisterPage() {
             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/[0.04] border border-white/10 mb-10"
           >
             <span className="text-sm font-black text-accent font-display">CV</span>
-            <span className="text-sm font-bold text-white/70">CarVault</span>
+            <span className="text-sm font-bold text-white/70">Carvio</span>
           </Motion.div>
 
           {/* Headline */}
@@ -94,7 +94,7 @@ export default function RegisterPage() {
           <div className="lg:hidden mb-10">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/[0.03] border border-white/10">
               <span className="text-sm font-black text-accent font-display">CV</span>
-              <span className="text-sm font-bold text-white">CarVault</span>
+              <span className="text-sm font-bold text-white">Carvio</span>
             </div>
           </div>
 

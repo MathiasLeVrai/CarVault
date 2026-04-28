@@ -57,7 +57,7 @@ export default function ResetPasswordPage() {
   return (
     <div className="min-h-screen bg-bg flex items-center justify-center p-8">
       <Helmet>
-        <title>Nouveau mot de passe — CarVault</title>
+        <title>Nouveau mot de passe — Carvio</title>
       </Helmet>
 
       <div className="w-full max-w-[400px]">
@@ -65,7 +65,7 @@ export default function ResetPasswordPage() {
         <div className="mb-10">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/[0.03] border border-white/10">
             <span className="text-sm font-black text-accent font-display">CV</span>
-            <span className="text-sm font-bold text-white">CarVault</span>
+            <span className="text-sm font-bold text-white">Carvio</span>
           </div>
         </div>
 

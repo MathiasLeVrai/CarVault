@@ -13,7 +13,7 @@ const BASE_SLIDES = [
     icon: Car,
     color: '#ff2a3f',
     bg: 'rgba(255,42,63,0.12)',
-    title: 'Bienvenue dans CarVault',
+    title: 'Bienvenue dans Carvio',
     subtitle: 'Ton garage numérique. Documents, dépenses, alertes CT, carburant — tout en un seul endroit.',
   },
   {

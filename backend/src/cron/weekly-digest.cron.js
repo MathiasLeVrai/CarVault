@@ -130,7 +130,7 @@ async function generateWeeklyDigest() {
 }
 
 async function sendWeeklyEmail(email, firstName, data) {
-  const appUrl = process.env.APP_URL || 'https://carvault.fly.dev';
+  const appUrl = process.env.APP_URL || 'https://carvio.fr';
   const sections = [];
 
   // Documents expirés
@@ -211,7 +211,7 @@ async function sendWeeklyEmail(email, firstName, data) {
     </div>
   </td></tr>
   <tr><td style="padding:16px 32px;background:#f9f9fb;border-top:1px solid #eeeeee;">
-    <p style="margin:0;font-size:11px;color:#aaaaaa;text-align:center;">CarVault · Récap hebdomadaire · <a href="${appUrl}/settings" style="color:#aaaaaa;text-decoration:none;">Se désabonner</a></p>
+    <p style="margin:0;font-size:11px;color:#aaaaaa;text-align:center;">Carvio · Récap hebdomadaire · <a href="${appUrl}/settings" style="color:#aaaaaa;text-decoration:none;">Se désabonner</a></p>
   </td></tr>
 </table></td></tr></table>
 </body></html>`;
@@ -222,7 +222,7 @@ async function sendWeeklyEmail(email, firstName, data) {
     await transporter.sendMail({
       from: emailService.smtpFromHeader(),
       to: email,
-      subject: `📬 CarVault — Votre récap de la semaine`,
+      subject: `📬 Carvio — Votre récap de la semaine`,
       html,
     });
   } catch (err) {

@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import Badge from '../components/ui/Badge';
 import {
   Car, FileText, Wallet, Gauge, Heart, Wrench, FileCheck,
-  PiggyBank, CheckCircle2, FileDown, Shield, CalendarClock,
+  PiggyBank, CheckCircle2, FileDown, Shield, Lock,
 } from 'lucide-react';
 
 const CRITAIR_COLORS = {
@@ -46,24 +46,95 @@ export default function SharePage() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [requiresPassword, setRequiresPassword] = useState(false);
+  const [password, setPassword] = useState('');
+  const [unlocking, setUnlocking] = useState(false);
+  const [passwordError, setPasswordError] = useState(null);
+
+  const fetchData = useCallback(async (pwd) => {
+    const headers = pwd ? { 'X-Share-Password': pwd } : {};
+    const res = await fetch(`/api/share/${token}`, { headers });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      const err = new Error(body.error || 'Lien invalide ou expiré');
+      err.status = res.status;
+      err.code = body.code;
+      throw err;
+    }
+    return res.json();
+  }, [token]);
 
   useEffect(() => {
-    fetch(`/api/share/${token}`)
-      .then(async res => {
-        if (!res.ok) {
-          const body = await res.json().catch(() => ({}));
-          throw new Error(body.error || 'Lien invalide ou expiré');
+    let cancelled = false;
+    (async () => {
+      try {
+        // First: check whether password is needed
+        const check = await fetch(`/api/share/${token}/check`).then(r => r.ok ? r.json() : null);
+        if (cancelled) return;
+        if (check?.requiresPassword) {
+          setRequiresPassword(true);
+          setLoading(false);
+          return;
         }
-        return res.json();
-      })
-      .then(setData)
-      .catch(err => setError(err.message))
-      .finally(() => setLoading(false));
-  }, [token]);
+        const json = await fetchData();
+        if (!cancelled) setData(json);
+      } catch (err) {
+        if (!cancelled) setError(err.message);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [token, fetchData]);
+
+  const handleUnlock = async (e) => {
+    e.preventDefault();
+    setUnlocking(true);
+    setPasswordError(null);
+    try {
+      const json = await fetchData(password);
+      setData(json);
+      setRequiresPassword(false);
+    } catch (err) {
+      setPasswordError(err.code === 'PASSWORD_INVALID' ? 'Mot de passe incorrect' : (err.message || 'Erreur'));
+    } finally {
+      setUnlocking(false);
+    }
+  };
 
   if (loading) return (
     <div className="min-h-screen bg-bg flex items-center justify-center">
       <div className="w-12 h-12 rounded-full border-2 border-white/10 border-t-accent animate-spin" />
+    </div>
+  );
+
+  if (requiresPassword && !data) return (
+    <div className="min-h-screen bg-bg flex flex-col items-center justify-center gap-6 p-6">
+      <div className="w-14 h-14 rounded-2xl bg-accent/20 flex items-center justify-center">
+        <Lock className="w-7 h-7 text-accent" />
+      </div>
+      <div className="text-center">
+        <h1 className="text-2xl font-black text-white font-display mb-1">Dossier protégé</h1>
+        <p className="text-sm text-ink-muted">Saisissez le mot de passe transmis par le propriétaire.</p>
+      </div>
+      <form onSubmit={handleUnlock} className="w-full max-w-sm space-y-3">
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Mot de passe"
+          autoFocus
+          className="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/10 text-white text-sm placeholder:text-ink-muted focus:border-accent focus:outline-none transition-colors"
+        />
+        {passwordError && <p className="text-xs text-red-400 text-center">{passwordError}</p>}
+        <button
+          type="submit"
+          disabled={!password || unlocking}
+          className="w-full px-5 py-3 rounded-xl bg-accent text-white text-sm font-bold hover:bg-accent/80 disabled:opacity-50 transition-colors shadow-[0_0_20px_rgba(255,42,63,0.3)]"
+        >
+          {unlocking ? 'Vérification…' : 'Accéder au dossier'}
+        </button>
+      </form>
     </div>
   );
 
@@ -77,33 +148,34 @@ export default function SharePage() {
     </div>
   );
 
+  if (!data) return null;
   const { vehicle, documents, expenses, stats, health, expiresAt } = data;
+  const pdfHref = password
+    ? `/api/share/${token}/pdf?p=${encodeURIComponent(password)}`
+    : `/api/share/${token}/pdf`;
 
   return (
     <div className="min-h-screen bg-bg selection:bg-accent/30">
       <Helmet>
-        <title>{`${vehicle.brand} ${vehicle.model} ${vehicle.year} — Dossier CarVault`}</title>
+        <title>{`${vehicle.brand} ${vehicle.model} ${vehicle.year} — Dossier Carvio`}</title>
         <meta name="description" content={`Consultez le dossier complet de cette ${vehicle.brand} ${vehicle.model} ${vehicle.year} : historique, documents, score de sante.`} />
-        <meta property="og:title" content={`${vehicle.brand} ${vehicle.model} — Dossier vehicule CarVault`} />
+        <meta property="og:title" content={`${vehicle.brand} ${vehicle.model} — Dossier vehicule Carvio`} />
         <meta property="og:description" content={`${vehicle.mileage?.toLocaleString('fr-FR')} km — Score sante ${health?.score || '?'}/100`} />
       </Helmet>
       <div className="fixed top-[-15%] left-[-15%] w-[45%] h-[45%] bg-accent/3 rounded-full blur-[140px] pointer-events-none" />
       <div className="max-w-4xl mx-auto px-5 py-8 md:py-12 space-y-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center shadow-[0_0_20px_rgba(255,42,63,0.3)]">
-              <span className="text-sm font-black text-white font-display">CV</span>
-            </div>
+          <div className="flex items-center">
             <div>
               <span className="text-lg font-bold tracking-tight text-white font-display">
-                Car<span className="text-accent">Vault</span>
+                Carv<span className="text-accent">io</span>
               </span>
               <p className="text-[10px] text-ink-muted font-semibold uppercase tracking-widest">Dossier partagé</p>
             </div>
           </div>
           <a
-            href={`/api/share/${token}/pdf`}
+            href={pdfHref}
             className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-accent text-white text-sm font-bold hover:bg-accent/80 transition-colors shadow-[0_0_20px_rgba(255,42,63,0.3)]"
           >
             <FileDown className="w-4 h-4" /> Télécharger le PDF
@@ -272,9 +344,6 @@ export default function SharePage() {
         <div className="bento-card p-6 md:p-8 text-center relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-accent/10 to-transparent pointer-events-none" />
           <div className="relative z-10">
-            <div className="w-12 h-12 rounded-2xl bg-accent flex items-center justify-center mx-auto mb-4 shadow-[0_0_30px_rgba(255,42,63,0.3)]">
-              <span className="text-lg font-black text-white font-display">CV</span>
-            </div>
             <h3 className="text-xl font-black text-white font-display mb-2">
               Gérez votre véhicule gratuitement
             </h3>
@@ -293,7 +362,7 @@ export default function SharePage() {
         {/* Footer */}
         <div className="text-center py-6">
           <p className="text-[10px] text-ink-muted font-bold uppercase tracking-widest">
-            Dossier généré par CarVault
+            Dossier généré par Carvio
           </p>
           {expiresAt && (
             <p className="text-[10px] text-white/20 mt-1">

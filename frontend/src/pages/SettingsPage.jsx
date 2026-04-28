@@ -233,7 +233,7 @@ function SubscriptionCard({ user }) {
     try {
       const { url } = await subscriptionApi.createCheckout(plan);
       if (url) window.location.href = url;
-      else toast.info('Contactez hello@carvault.fr pour activer Premium.');
+      else toast.info('Contactez hello@carvio.fr pour activer Premium.');
     } catch (err) {
       toast.error(err.message || 'Erreur lors du paiement');
     } finally {
@@ -523,7 +523,7 @@ export default function SettingsPage() {
           <div>
             <p className="text-sm font-bold text-ink font-display">Politique anti-spam</p>
             <p className="text-[11px] text-ink-muted mt-1 leading-relaxed">
-              CarVault limite les notifications à 1 alerte par document par palier (J-30, J-7, J-1).
+              Carvio limite les notifications à 1 alerte par document par palier (J-30, J-7, J-1).
               Vous pouvez aussi reporter (snooze) chaque alerte individuellement depuis la page Alertes.
               Pas de spam, promis.
             </p>

@@ -54,6 +54,20 @@ const app = express();
 app.set('trust proxy', 1);
 const PORT = process.env.PORT || 3001;
 
+// Ancienne URL Fly → domaine canonique (navigateurs, liens partagés). Ne pas rediriger le webhook Stripe
+// (POST + 301 peut faire perdre le corps côté client).
+app.use((req, res, next) => {
+  if (req.hostname !== 'carvault.fly.dev') return next();
+  if (req.path.startsWith('/api/subscription/webhook')) return next();
+  let host = 'carvio.fr';
+  try {
+    if (process.env.APP_URL) host = new URL(process.env.APP_URL).host;
+  } catch {
+    /* garde carvio.fr */
+  }
+  return res.redirect(301, `https://${host}${req.originalUrl}`);
+});
+
 // Rate limiters
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -156,7 +170,7 @@ if (process.env.SWAGGER_ENABLED !== 'false') {
     swaggerUi.serve,
     swaggerUi.setup(openapiDocument, {
       customCss: '.swagger-ui .topbar { display: none }',
-      customSiteTitle: 'CarVault API',
+      customSiteTitle: 'Carvio API',
     }),
   );
   app.get('/api/docs.json', (_req, res) => {
@@ -189,7 +203,7 @@ app.get('*', (req, res) => {
 });
 
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚗 CarVault API running on port ${PORT}`);
+  console.log(`🚗 Carvio API running on port ${PORT}`);
   startAlertCron();
   startMonthlyReportCron();
   startWeeklyDigestCron();

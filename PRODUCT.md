@@ -1,10 +1,10 @@
-# CarVault — Product & Technical Brief
+# Carvio — Product & Technical Brief
 
-**Production:** https://carvault.fly.dev
+**Production:** https://carvio.fr
 
 ## 1. What It Is
 
-CarVault is a mobile-first PWA: the digital vault and operating system for car ownership. It centralizes documents (insurance, registration, CT, invoices), expense and maintenance tracking, mileage/fuel history, expiration reminders, and resale-ready PDF export. Goal: replace chaos with clarity, control, and automation. It should feel like *“The Notion / Apple Wallet of your car.”*
+Carvio is a mobile-first PWA: the digital vault and operating system for car ownership. It centralizes documents (insurance, registration, CT, invoices), expense and maintenance tracking, mileage/fuel history, expiration reminders, and resale-ready PDF export. Goal: replace chaos with clarity, control, and automation. It should feel like *“The Notion / Apple Wallet of your car.”*
 
 ## 2. Problem & Users
 
@@ -33,7 +33,7 @@ CarVault is a mobile-first PWA: the digital vault and operating system for car o
 
 **Market:** France 40M vehicles; 1% × 3€/mo ≈ 14.4M€ ARR potential. Scale: Neon, Fly.io, abstracted storage; monolith splittable; SPA → React Native possible.
 
-**Risks:** Low engagement, acquisition difficulty, high trust expectations, API dependence, competition from Drive + reminders. Critical: *What makes CarVault 10× better than Drive + calendar?*
+**Risks:** Low engagement, acquisition difficulty, high trust expectations, API dependence, competition from Drive + reminders. Critical: *What makes Carvio 10× better than Drive + calendar?*
 
 ## 6. Vision & Priorities
 
@@ -43,10 +43,10 @@ CarVault is a mobile-first PWA: the digital vault and operating system for car o
 
 **Done:** Stripe, Fly.io Volume storage, CI/CD, ESLint clean, fuel + stats, badges, configurable reminders, share links + public PDF, notification center, onboarding, document auto-detect.
 
-**Next:** OCR scanning, PWA push notifications, BullMQ job queue, Sentry/monitoring, automated tests, i18n (EN/DE), bank integration (code ready, disabled).
+**Next:** OCR scanning, PWA push notifications, BullMQ job queue, Sentry/monitoring, automated tests, bank integration (code ready, disabled).
 
 ## 7. Founder Intent & Positioning
 
-**Goal:** Turn CarVault into a serious SaaS. Need: architectural review, scalability, 12‑month roadmap, retention, breakout features — think like a startup founder.
+**Goal:** Turn Carvio into a serious SaaS. Need: architectural review, scalability, 12‑month roadmap, retention, breakout features — think like a startup founder.
 
 **Positioning:** Not “document storage for cars” but a *control layer over vehicle ownership*. Executed well → high-retention, emotionally anchored, financially justified SaaS.

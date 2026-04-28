@@ -10,27 +10,26 @@ const DOC_TYPES = {
 };
 const EXP_CATS = {
   MAINTENANCE: 'Entretien / Révision', OIL_CHANGE: 'Vidange', BRAKES: 'Freins / Plaquettes',
-  TIRES: 'Pneus', BODYWORK: 'Carrosserie', TECHNICAL_INSPECTION: 'Contrôle technique',
-  PARKING: 'Stationnement', TOLL: 'Péage', CLEANING: 'Lavage', FINE: 'Amende', OTHER: 'Autre',
+  TIRES: 'Pneus', BODYWORK: 'Carrosserie', WINDSHIELD: 'Pare-brise',
+  TECHNICAL_INSPECTION: 'Contrôle technique', PARKING: 'Stationnement',
+  TOLL: 'Péage', CLEANING: 'Lavage', FINE: 'Amende', OTHER: 'Autre',
 };
 const FUEL_TYPES = {
   GASOLINE: 'Essence', DIESEL: 'Diesel', HYBRID: 'Hybride',
   ELECTRIC: 'Électrique', LPG: 'GPL', OTHER: 'Autre',
 };
 
-const CRITAIR_PDF_COLORS = {
-  0: '#4ade80', 1: '#a78bfa', 2: '#facc15', 3: '#f97316', 4: '#b45309', 5: '#6b7280',
-};
 const CRITAIR_PDF_LABELS = {
   0: 'Electrique', 1: 'Crit\'Air 1', 2: 'Crit\'Air 2', 3: 'Crit\'Air 3', 4: 'Crit\'Air 4', 5: 'Crit\'Air 5',
 };
 
+// Palette Carvio
 const COLORS = {
   bg: '#f5f0eb',
   dark: '#1a1a1a',
-  lime: '#b9ff66',
+  accent: '#ff2a3f',
+  accentSoft: '#ffe5e8',
   muted: '#888888',
-  accent: '#7c5cfc',
   white: '#ffffff',
   lightGray: '#e5e5e5',
   green: '#22c55e',
@@ -57,11 +56,10 @@ function resolvePhotoPath(photoUrl) {
 
 class PdfService {
   /**
-   * Générer le dossier PDF complet d'un véhicule
-   * @param {object} health - Score santé (optionnel)
-   * @returns {Promise<Buffer>}
+   * Générer le dossier PDF complet d'un véhicule.
+   * @param {object} meta - Métadonnées partage : { sharedAt }
    */
-  async generateVehicleDossier(vehicle, documents, expenses, stats, health) {
+  async generateVehicleDossier(vehicle, documents, expenses, stats, health, meta = {}) {
     if (!vehicle || typeof vehicle !== 'object') {
       return Promise.reject(new Error('Véhicule invalide'));
     }
@@ -75,11 +73,12 @@ class PdfService {
         size: 'A4',
         margins: { top: 50, bottom: 50, left: 50, right: 50 },
         bufferPages: true,
+        autoFirstPage: false,
         info: {
-          Title: `CarVault — Dossier revente — ${vehicle.brand || ''} ${vehicle.model || ''}`,
-          Author: 'CarVault',
+          Title: `Carvio — Dossier revente — ${vehicle.brand || ''} ${vehicle.model || ''}`,
+          Author: 'Carvio',
           Subject: 'Dossier exportable pour revente',
-          Creator: 'CarVault PDF Generator',
+          Creator: 'Carvio PDF Generator',
         },
       });
 
@@ -89,13 +88,15 @@ class PdfService {
       doc.on('error', reject);
 
       try {
+        // Chaque section commence par doc.addPage() — plus aucune page vierge en transition.
         this._drawCover(doc, vehicle, health);
         this._drawResaleSummary(doc, vehicle, safe.documents, safe.expenses);
         this._drawVehicleInfo(doc, vehicle, health);
         this._drawExpenseHistory(doc, safe.expenses, safe.stats);
         this._drawDocumentList(doc, safe.documents);
         this._drawFinancialSummary(doc, safe.expenses, safe.stats, health);
-        this._drawFooter(doc);
+        this._drawLegalMentions(doc);
+        this._drawFooter(doc, meta);
         doc.end();
       } catch (err) {
         reject(err);
@@ -106,11 +107,13 @@ class PdfService {
   // ===================== PAGE 1 : COUVERTURE =====================
 
   _drawCover(doc, vehicle, health) {
+    doc.addPage();
+
     // Fond sombre
     doc.rect(0, 0, doc.page.width, doc.page.height).fill(COLORS.dark);
 
     // Logo texte
-    doc.fontSize(14).fillColor(COLORS.lime).font('Helvetica-Bold').text('CARVAULT', 50, 50);
+    doc.fontSize(14).fillColor(COLORS.accent).font('Helvetica-Bold').text('CARVIO', 50, 50);
     doc.fontSize(9).fillColor(COLORS.muted).font('Helvetica').text('Dossier exportable pour revente', 50, 68);
 
     // Score santé en haut à droite de la couverture
@@ -134,7 +137,7 @@ class PdfService {
     // Nom du véhicule
     doc.fontSize(36).fillColor(COLORS.white).font('Helvetica-Bold')
       .text(`${vehicle.brand}`, 50, photoY, { width: doc.page.width - 100 });
-    doc.fontSize(36).fillColor(COLORS.lime).font('Helvetica-Bold')
+    doc.fontSize(36).fillColor(COLORS.accent).font('Helvetica-Bold')
       .text(`${vehicle.model}`, 50, photoY + 44, { width: doc.page.width - 100 });
 
     // Infos résumé
@@ -154,35 +157,42 @@ class PdfService {
 
     // Date de génération
     doc.fontSize(9).fillColor(COLORS.muted)
-      .text(`Généré le ${new Date().toLocaleDateString('fr-FR')} — CarVault`, 50, doc.page.height - 70, {
+      .text(`Généré le ${new Date().toLocaleDateString('fr-FR')} — Carvio`, 50, doc.page.height - 70, {
         width: doc.page.width - 100, align: 'center',
       });
-
-    doc.addPage();
   }
 
   // ===================== PAGE 2 : RÉSUMÉ REVENTE =====================
 
   _drawResaleSummary(doc, vehicle, documents, expenses) {
+    doc.addPage();
     this._drawHeader(doc, 'Contenu du dossier revente');
 
-    const hasPhoto = !!resolvePhotoPath(vehicle.photo);
+    const photoPath = resolvePhotoPath(vehicle.photo);
+    const hasPhoto = !!photoPath;
     const byType = (documents || []).reduce((acc, d) => { acc[d.type] = (acc[d.type] || 0) + 1; return acc; }, {});
     const maintenanceCount = (expenses || []).filter(e => e.category === 'MAINTENANCE').length;
     const invoiceCount = byType.INVOICE || 0;
     const ctCount = byType.TECHNICAL_INSPECTION || 0;
     const carteGriseCount = byType.REGISTRATION || 0;
 
+    let y = 110;
+    if (photoPath) {
+      try {
+        doc.image(photoPath, 50, y, { fit: [doc.page.width - 100, 180], align: 'center' });
+        y += 200;
+      } catch { /* ignore */ }
+    }
+
     const items = [
       { label: 'Kilométrage', value: `${vehicle.mileage?.toLocaleString('fr-FR') ?? '—'} km`, ok: true },
-      { label: 'Historique entretien', value: maintenanceCount ? `${maintenanceCount} entrée(s)` : 'Aucune', ok: true },
-      { label: 'Factures', value: invoiceCount ? `${invoiceCount} document(s)` : 'Aucune', ok: true },
-      { label: 'Contrôle technique (CT)', value: ctCount ? `${ctCount} document(s)` : 'Aucun', ok: true },
-      { label: 'Carte grise', value: carteGriseCount ? `${carteGriseCount} document(s)` : 'Aucune', ok: true },
+      { label: 'Historique entretien', value: maintenanceCount ? `${maintenanceCount} entrée(s)` : 'Aucune', ok: maintenanceCount > 0 },
+      { label: 'Factures', value: invoiceCount ? `${invoiceCount} document(s)` : 'Aucune', ok: invoiceCount > 0 },
+      { label: 'Contrôle technique (CT)', value: ctCount ? `${ctCount} document(s)` : 'Aucun', ok: ctCount > 0 },
+      { label: 'Carte grise', value: carteGriseCount ? `${carteGriseCount} document(s)` : 'Aucune', ok: carteGriseCount > 0 },
       { label: 'Photos', value: hasPhoto ? 'Incluse(s)' : 'Aucune', ok: hasPhoto },
     ];
 
-    let y = 120;
     items.forEach((item, i) => {
       doc.rect(50, y, doc.page.width - 100, 36).fill(i % 2 === 0 ? '#f9f7f4' : COLORS.white);
       doc.fontSize(11).fillColor(COLORS.dark).font('Helvetica-Bold').text(item.label, 60, y + 10);
@@ -192,16 +202,15 @@ class PdfService {
         .text(item.ok ? '✓' : '—', doc.page.width - 80, y + 12);
       y += 40;
     });
-
-    doc.addPage();
   }
 
   // ===================== PAGE 3 : FICHE VÉHICULE =====================
 
   _drawVehicleInfo(doc, vehicle, health) {
+    doc.addPage();
     this._drawHeader(doc, 'Fiche véhicule');
 
-    let y = 120;
+    let y = 110;
     const fields = [
       ['Marque', vehicle.brand],
       ['Modèle', vehicle.model],
@@ -210,10 +219,12 @@ class PdfService {
       ['Plaque d\'immatriculation', vehicle.licensePlate || 'N/C'],
       ['Couleur', vehicle.color || 'N/C'],
       ['Type de carburant', FUEL_TYPES[vehicle.fuelType] || 'N/C'],
-      ['Prix d\'achat', vehicle.purchasePrice ? `${vehicle.purchasePrice.toLocaleString('fr-FR')} €` : 'N/C'],
     ];
 
-    // Specs techniques (depuis CarAPI)
+    if (vehicle.purchasePrice != null) {
+      fields.push(['Prix d\'achat', `${vehicle.purchasePrice.toLocaleString('fr-FR')} €`]);
+    }
+
     if (vehicle.horsepower) fields.push(['Puissance', `${vehicle.horsepower} ch`]);
     if (vehicle.engineSize) fields.push(['Cylindrée', `${vehicle.engineSize} L`]);
     if (vehicle.transmission) fields.push(['Transmission', vehicle.transmission]);
@@ -258,39 +269,34 @@ class PdfService {
         y += 20;
       }
 
-      // Total
       const scoreColor = this._getScoreColor(health.score);
       doc.fontSize(11).fillColor(scoreColor).font('Helvetica-Bold')
         .text(`Score global : ${health.score}/100 (${health.grade})`, 50, y + 5);
     }
-
-    doc.addPage();
   }
 
-  // ===================== PAGE 3+ : HISTORIQUE ENTRETIEN/DÉPENSES =====================
+  // ===================== HISTORIQUE DÉPENSES =====================
 
   _drawExpenseHistory(doc, expenses, _stats) {
+    doc.addPage();
     this._drawHeader(doc, 'Historique des dépenses');
 
     if (!expenses || expenses.length === 0) {
       doc.fontSize(11).fillColor(COLORS.muted).font('Helvetica')
-        .text('Aucune dépense enregistrée.', 50, 130);
-      doc.addPage();
+        .text('Aucune dépense enregistrée.', 50, 120);
       return;
     }
 
-    // En-tête du tableau
-    let y = 120;
+    let y = 110;
     this._drawTableRow(doc, y, ['Date', 'Catégorie', 'Description', 'Km', 'Montant'], true);
     y += 28;
 
-    // Lignes
     const sorted = [...expenses].sort((a, b) => new Date(b.date) - new Date(a.date));
     for (const exp of sorted) {
       if (y > doc.page.height - 80) {
         doc.addPage();
         this._drawHeader(doc, 'Historique des dépenses (suite)');
-        y = 120;
+        y = 110;
         this._drawTableRow(doc, y, ['Date', 'Catégorie', 'Description', 'Km', 'Montant'], true);
         y += 28;
       }
@@ -306,23 +312,20 @@ class PdfService {
       ], false);
       y += 24;
     }
-
-    doc.addPage();
   }
 
   // ===================== DOCUMENTS =====================
 
   _drawDocumentList(doc, documents) {
+    doc.addPage();
     this._drawHeader(doc, 'Documents');
 
     if (!documents || documents.length === 0) {
       doc.fontSize(11).fillColor(COLORS.muted).font('Helvetica')
-        .text('Aucun document enregistré.', 50, 130);
-      doc.addPage();
+        .text('Aucun document enregistré.', 50, 120);
       return;
     }
 
-    // Grouper par type
     const grouped = {};
     for (const d of documents) {
       const typeName = DOC_TYPES[d.type] || d.type;
@@ -330,24 +333,22 @@ class PdfService {
       grouped[typeName].push(d);
     }
 
-    // Ordre pour revente : Carte grise, CT, Factures, puis le reste
     const typeOrder = [DOC_TYPES.REGISTRATION, DOC_TYPES.TECHNICAL_INSPECTION, DOC_TYPES.INVOICE];
     const orderedEntries = [
       ...typeOrder.filter(t => grouped[t]).map(t => [t, grouped[t]]),
       ...Object.entries(grouped).filter(([t]) => !typeOrder.includes(t)),
     ];
 
-    let y = 120;
+    let y = 110;
     for (const [typeName, docs] of orderedEntries) {
       if (y > doc.page.height - 120) {
         doc.addPage();
         this._drawHeader(doc, 'Documents (suite)');
-        y = 120;
+        y = 110;
       }
 
-      // Type header
       doc.rect(50, y, doc.page.width - 100, 26).fill(COLORS.dark);
-      doc.fontSize(10).fillColor(COLORS.lime).font('Helvetica-Bold')
+      doc.fontSize(10).fillColor(COLORS.accent).font('Helvetica-Bold')
         .text(`${typeName} (${docs.length})`, 60, y + 7);
       y += 30;
 
@@ -355,7 +356,7 @@ class PdfService {
         if (y > doc.page.height - 60) {
           doc.addPage();
           this._drawHeader(doc, 'Documents (suite)');
-          y = 120;
+          y = 110;
         }
 
         const expDate = d.expirationDate ? new Date(d.expirationDate) : null;
@@ -377,18 +378,16 @@ class PdfService {
 
       y += 10;
     }
-
-    doc.addPage();
   }
 
   // ===================== RÉSUMÉ FINANCIER =====================
 
   _drawFinancialSummary(doc, expenses, _stats, health) {
+    doc.addPage();
     this._drawHeader(doc, 'Résumé financier');
 
-    let y = 120;
+    let y = 110;
 
-    // Totaux
     const currentYear = new Date().getFullYear();
     const totalAll = (expenses || []).reduce((sum, e) => sum + (e.amount != null ? Number(e.amount) : 0), 0);
     const totalYear = (expenses || [])
@@ -400,10 +399,9 @@ class PdfService {
       ['Total général', `${totalAll.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €`],
       [`Total ${currentYear}`, `${totalYear.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €`],
       ['Moyenne mensuelle', `${avgMonthly.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €`],
-      ['Nombre de dépenses', String(expenses.length)],
+      ['Nombre de dépenses', String((expenses || []).length)],
     ];
 
-    // Ajouter la valeur estimée si disponible
     if (health?.estimatedValue) {
       summaryItems.push(['Valeur estimée', `${health.estimatedValue.toLocaleString('fr-FR')} €`]);
     }
@@ -418,7 +416,6 @@ class PdfService {
 
     y += 30;
 
-    // Répartition par catégorie
     doc.fontSize(13).fillColor(COLORS.dark).font('Helvetica-Bold')
       .text('Répartition par catégorie', 50, y);
     y += 25;
@@ -432,12 +429,16 @@ class PdfService {
 
     const sortedCats = Object.entries(byCategory).sort(([, a], [, b]) => b - a);
     for (const [cat, total] of sortedCats) {
+      if (y > doc.page.height - 60) {
+        doc.addPage();
+        this._drawHeader(doc, 'Résumé financier (suite)');
+        y = 110;
+      }
       const pct = totalAll > 0 ? (total / totalAll * 100).toFixed(1) : 0;
 
-      // Barre de progression
       const barWidth = totalAll > 0 ? Math.min((total / totalAll) * 300, 300) : 0;
       doc.rect(50, y, 300, 12).fill(COLORS.lightGray);
-      if (barWidth > 0) doc.rect(50, y, barWidth, 12).fill(COLORS.dark);
+      if (barWidth > 0) doc.rect(50, y, barWidth, 12).fill(COLORS.accent);
 
       doc.fontSize(9).fillColor(COLORS.dark).font('Helvetica-Bold')
         .text(`${cat}`, 360, y + 1);
@@ -445,6 +446,50 @@ class PdfService {
         .text(`${total.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} € (${pct}%)`, 430, y + 1);
 
       y += 22;
+    }
+  }
+
+  // ===================== MENTIONS LÉGALES =====================
+
+  _drawLegalMentions(doc) {
+    doc.addPage();
+    this._drawHeader(doc, 'Mentions & vérifications recommandées');
+
+    let y = 110;
+    const blocks = [
+      {
+        title: 'Kilométrage déclaré',
+        body: 'Le kilométrage indiqué est celui renseigné par le propriétaire. Il est conseillé à l\'acheteur de croiser cette donnée avec les contrôles techniques et factures jointes au dossier.',
+      },
+      {
+        title: 'Vérification HistoVec',
+        body: 'Pour un historique administratif officiel (sinistres, gages, opposition à la vente), demandez au vendeur le rapport HistoVec disponible gratuitement sur https://histovec.interieur.gouv.fr',
+      },
+      {
+        title: 'Documents joints',
+        body: 'Ce dossier liste les documents conservés par le propriétaire. Les fichiers eux-mêmes (carte grise, CT, factures) ne sont pas inclus dans ce PDF — demandez-les au vendeur.',
+      },
+      {
+        title: 'Score santé Carvio',
+        body: 'Le score santé est un indicateur calculé automatiquement à partir des données saisies (entretien, documents, dépenses). Il n\'a pas de valeur d\'expertise mécanique.',
+      },
+      {
+        title: 'Données personnelles',
+        body: 'Ce dossier ne contient ni nom, ni adresse du propriétaire. Il peut être révoqué à tout moment depuis l\'application Carvio.',
+      },
+    ];
+
+    for (const b of blocks) {
+      if (y > doc.page.height - 100) {
+        doc.addPage();
+        this._drawHeader(doc, 'Mentions (suite)');
+        y = 110;
+      }
+      doc.fontSize(11).fillColor(COLORS.dark).font('Helvetica-Bold').text(b.title, 50, y);
+      y += 16;
+      doc.fontSize(9).fillColor(COLORS.muted).font('Helvetica')
+        .text(b.body, 50, y, { width: doc.page.width - 100, align: 'justify' });
+      y += doc.heightOfString(b.body, { width: doc.page.width - 100 }) + 14;
     }
   }
 
@@ -460,7 +505,7 @@ class PdfService {
   _drawHeader(doc, title) {
     doc.rect(0, 0, doc.page.width, 80).fill(COLORS.dark);
     doc.fontSize(18).fillColor(COLORS.white).font('Helvetica-Bold').text(title, 50, 30);
-    doc.fontSize(8).fillColor(COLORS.lime).font('Helvetica').text('CARVAULT', doc.page.width - 110, 35);
+    doc.fontSize(8).fillColor(COLORS.accent).font('Helvetica-Bold').text('CARVIO', doc.page.width - 110, 35);
   }
 
   _drawTableRow(doc, y, cells, isHeader) {
@@ -473,7 +518,7 @@ class PdfService {
 
     cells.forEach((cell, i) => {
       doc.fontSize(isHeader ? 9 : 9)
-        .fillColor(isHeader ? COLORS.lime : COLORS.dark)
+        .fillColor(isHeader ? COLORS.accent : COLORS.dark)
         .font(isHeader ? 'Helvetica-Bold' : 'Helvetica')
         .text(cell, colX[i], y + (isHeader ? 7 : 5), { width: colWidths[i], lineBreak: false });
     });
@@ -484,16 +529,35 @@ class PdfService {
     }
   }
 
-  _drawFooter(doc) {
+  _drawFooter(doc, meta = {}) {
     const range = doc.bufferedPageRange();
     const totalPages = range.start + range.count;
+    const sharedAtStr = meta.sharedAt
+      ? `Partagé via Carvio le ${new Date(meta.sharedAt).toLocaleDateString('fr-FR')}`
+      : 'Partagé via Carvio';
+
+    const footerOpts = { lineBreak: false, height: 20 };
     for (let i = 0; i < range.count; i++) {
       const pageIndex = range.start + i;
       doc.switchToPage(pageIndex);
+
+      // Page 1 (couverture sombre) : on saute le watermark pour ne pas casser le design
+      if (pageIndex === range.start) {
+        doc.fontSize(8).fillColor(COLORS.muted).font('Helvetica')
+          .text(`Page ${pageIndex + 1} / ${totalPages}`, 50, doc.page.height - 30, {
+            ...footerOpts, width: doc.page.width - 100, align: 'center',
+          });
+        continue;
+      }
+
+      // Watermark + pagination
+      doc.fontSize(7).fillColor(COLORS.muted).font('Helvetica')
+        .text(sharedAtStr, 50, doc.page.height - 30, {
+          ...footerOpts, width: doc.page.width - 100, align: 'left',
+        });
       doc.fontSize(8).fillColor(COLORS.muted).font('Helvetica')
         .text(`Page ${pageIndex + 1} / ${totalPages}`, 50, doc.page.height - 30, {
-          width: doc.page.width - 100,
-          align: 'center',
+          ...footerOpts, width: doc.page.width - 100, align: 'right',
         });
     }
   }

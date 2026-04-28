@@ -41,7 +41,7 @@ async function checkNoRecentExpense(userId) {
 
   if (!recent) {
     return {
-      title: 'CarVault — Dépenses à jour ?',
+      title: 'Carvio — Dépenses à jour ?',
       body: 'Pas de dépense enregistrée depuis 2 semaines. Entretien, plein, péage… pensez à mettre à jour !',
       url: '/expenses',
     };
@@ -74,7 +74,7 @@ async function checkNoRecentMileage(userId) {
 
   if (!recentFuel && !recentMileage) {
     return {
-      title: 'CarVault — Kilométrage',
+      title: 'Carvio — Kilométrage',
       body: 'Vous avez roulé récemment ? Mettez à jour votre kilométrage pour un suivi précis.',
       url: '/vehicles',
     };
@@ -96,7 +96,7 @@ async function checkFewDocuments(userId) {
 
   if (count < 2) {
     return {
-      title: 'CarVault — Documents',
+      title: 'Carvio — Documents',
       body: 'Ajoutez vos documents importants (assurance, CT, carte grise) pour ne rien oublier.',
       url: '/documents',
     };
@@ -131,7 +131,7 @@ async function checkTireWear(userId) {
   if (!recentTires) {
     const v = nonElectric[0];
     return {
-      title: 'CarVault — Pneus à surveiller',
+      title: 'Carvio — Pneus à surveiller',
       body: `Aucun entretien pneus enregistré depuis 1 an sur votre ${v.brand} ${v.model}. Vérifiez profondeur, pression et usure.`,
       url: '/expenses',
     };
@@ -151,7 +151,7 @@ async function checkCO2Malus(userId) {
 
   if (vehicle) {
     return {
-      title: 'CarVault — Malus CO2',
+      title: 'Carvio — Malus CO2',
       body: `Votre ${vehicle.brand} ${vehicle.model} émet ${vehicle.co2} g/km. Ce véhicule entre dans la tranche malus 2026 (seuil ${CO2_MALUS_THRESHOLD} g/km).`,
       url: '/vehicles',
     };
@@ -168,7 +168,7 @@ async function checkMissingPhoto(userId) {
 
   if (vehicleWithoutPhoto) {
     return {
-      title: 'CarVault — Photo manquante',
+      title: 'Carvio — Photo manquante',
       body: `Ajoutez une photo de votre ${vehicleWithoutPhoto.brand} ${vehicleWithoutPhoto.model} pour compléter sa fiche.`,
       url: `/vehicles/${vehicleWithoutPhoto.id}`,
     };
@@ -208,7 +208,7 @@ async function checkFuelEfficiency(userId) {
 
   if (lastConsumption > avgConsumption * 1.2) {
     return {
-      title: 'CarVault — Consommation inhabituelle',
+      title: 'Carvio — Consommation inhabituelle',
       body: `Dernier plein : ${lastConsumption.toFixed(1)} L/100km vs moyenne ${avgConsumption.toFixed(1)} L/100km sur votre ${vehicle.brand} ${vehicle.model}. Vérifiez pression pneus ou style de conduite.`,
       url: `/vehicles/${vehicle.id}`,
     };
@@ -247,7 +247,7 @@ async function checkAnnualKmGoal(userId) {
 
   if (pct > 0) {
     return {
-      title: `CarVault — Objectif km ${vehicle.brand} ${vehicle.model}`,
+      title: `Carvio — Objectif km ${vehicle.brand} ${vehicle.model}`,
       body: `Vous êtes à ${pct}% de votre objectif annuel (${kmDone.toLocaleString('fr-FR')} / ${vehicle.annualKmGoal.toLocaleString('fr-FR')} km). ${remaining > 0 ? `${remaining.toLocaleString('fr-FR')} km restants.` : 'Objectif atteint !'}`,
       url: `/vehicles/${vehicle.id}`,
     };
@@ -285,7 +285,7 @@ async function checkMonthlyCostInsight(userId) {
   const monthly = Math.round(total / 3);
 
   return {
-    title: `CarVault — Bilan ${vehicle.brand} ${vehicle.model}`,
+    title: `Carvio — Bilan ${vehicle.brand} ${vehicle.model}`,
     body: `Votre ${vehicle.brand} ${vehicle.model} vous coûte environ ${monthly}€/mois en moyenne. Consultez le détail.`,
     url: `/vehicles/${vehicle.id}`,
   };

@@ -1,21 +1,31 @@
+const bcrypt = require('bcryptjs');
 const prisma = require('../lib/prisma');
 const { AppError } = require('../middleware/error.middleware');
 
 class ShareService {
-  async createLink(vehicleId, userId, expiresInDays = 30) {
+  async createLink(vehicleId, userId, opts = {}) {
     const vehicle = await prisma.vehicle.findFirst({ where: { id: vehicleId, userId } });
     if (!vehicle) throw new AppError('Véhicule non trouvé', 404);
 
-    const existing = await prisma.shareLink.findFirst({
-      where: { vehicleId, userId, OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] },
-    });
-    if (existing) return existing;
+    const { expiresInDays = 30, password, hidePurchasePrice = false, label } = opts;
 
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + expiresInDays);
+    let expiresAt = null;
+    if (expiresInDays && Number(expiresInDays) > 0) {
+      expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + Number(expiresInDays));
+    }
+
+    const passwordHash = password ? await bcrypt.hash(password, 10) : null;
 
     return prisma.shareLink.create({
-      data: { vehicleId, userId, expiresAt },
+      data: {
+        vehicleId,
+        userId,
+        expiresAt,
+        passwordHash,
+        hidePurchasePrice: !!hidePurchasePrice,
+        label: label || null,
+      },
     });
   }
 
@@ -39,6 +49,21 @@ class ShareService {
     return link;
   }
 
+  async verifyAccess(link, password) {
+    if (!link.passwordHash) return true;
+    if (!password) throw new AppError('Mot de passe requis', 401, 'PASSWORD_REQUIRED');
+    const ok = await bcrypt.compare(String(password), link.passwordHash);
+    if (!ok) throw new AppError('Mot de passe invalide', 401, 'PASSWORD_INVALID');
+    return true;
+  }
+
+  async trackView(linkId) {
+    return prisma.shareLink.update({
+      where: { id: linkId },
+      data: { viewCount: { increment: 1 }, lastViewedAt: new Date() },
+    });
+  }
+
   async revokeLink(id, userId) {
     const link = await prisma.shareLink.findFirst({ where: { id, userId } });
     if (!link) throw new AppError('Lien introuvable', 404);
@@ -46,10 +71,14 @@ class ShareService {
   }
 
   async getLinksForVehicle(vehicleId, userId) {
-    return prisma.shareLink.findMany({
+    const links = await prisma.shareLink.findMany({
       where: { vehicleId, userId },
       orderBy: { createdAt: 'desc' },
     });
+    return links.map(({ passwordHash, ...rest }) => ({
+      ...rest,
+      hasPassword: !!passwordHash,
+    }));
   }
 }
 

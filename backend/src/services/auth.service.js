@@ -164,7 +164,7 @@ class AuthService {
       data: { token, userId: user.id, expiresAt },
     });
 
-    const appUrl = process.env.APP_URL || 'https://carvault.fly.dev';
+    const appUrl = process.env.APP_URL || 'https://carvio.fr';
     const resetLink = `${appUrl}/reset-password?token=${token}`;
 
     const sent = await emailService.sendPasswordResetEmail(

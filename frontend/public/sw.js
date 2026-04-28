@@ -1,9 +1,9 @@
 /**
- * CarVault Service Worker
+ * Carvio Service Worker
  * Cache les ressources statiques et les réponses API pour le mode offline.
  */
 
-const CACHE_VERSION = 'carvault-v2';
+const CACHE_VERSION = 'carvio-v1';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const API_CACHE = `${CACHE_VERSION}-api`;
 const UPLOADS_CACHE = `${CACHE_VERSION}-uploads`;
@@ -35,7 +35,7 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((keys) => {
       return Promise.all(
         keys
-          .filter((key) => key.startsWith('carvault-') && key !== STATIC_CACHE && key !== API_CACHE && key !== UPLOADS_CACHE)
+          .filter((key) => (key.startsWith('carvio-') || key.startsWith('carvault-')) && key !== STATIC_CACHE && key !== API_CACHE && key !== UPLOADS_CACHE)
           .map((key) => {
             console.log('[SW] Suppression ancien cache:', key);
             return caches.delete(key);
@@ -127,7 +127,7 @@ self.addEventListener('push', (event) => {
   try {
     const data = event.data.json();
     event.waitUntil(
-      self.registration.showNotification(data.title || 'CarVault', {
+      self.registration.showNotification(data.title || 'Carvio', {
         body: data.body || '',
         icon: data.icon || '/icons/icon-192.svg',
         badge: data.badge || '/icons/icon-192.svg',

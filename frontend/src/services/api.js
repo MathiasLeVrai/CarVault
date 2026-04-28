@@ -4,7 +4,7 @@ const STORAGE_TOKEN = 'carvault_token';
 const STORAGE_REFRESH = 'carvault_refresh_token';
 
 /**
- * Client API centralisé pour CarVault
+ * Client API centralisé pour Carvio
  */
 class ApiClient {
   constructor() {
@@ -64,11 +64,11 @@ class ApiClient {
   }
 
   async request(endpoint, options = {}) {
-    const { body, method = 'GET', isFormData = false } = options;
+    const { body, method = 'GET', isFormData = false, headers: extraHeaders } = options;
 
     const config = {
       method,
-      headers: this.getHeaders(isFormData),
+      headers: { ...this.getHeaders(isFormData), ...(extraHeaders || {}) },
     };
 
     if (body) {
@@ -109,8 +109,8 @@ class ApiClient {
     return data;
   }
 
-  get(endpoint) {
-    return this.request(endpoint);
+  get(endpoint, options = {}) {
+    return this.request(endpoint, options);
   }
 
   post(endpoint, body, isFormData = false) {
@@ -171,7 +171,7 @@ export const vehicleApi = {
     }
     const blob = await response.blob();
     const url = window.URL.createObjectURL(blob);
-    const filename = response.headers.get('Content-Disposition')?.match(/filename="(.+)"/)?.[1] || 'CarVault_Dossier.pdf';
+    const filename = response.headers.get('Content-Disposition')?.match(/filename="(.+)"/)?.[1] || 'Carvio_Dossier.pdf';
     const a = document.createElement('a');
     a.href = url;
     a.download = filename;
@@ -216,10 +216,14 @@ export const alertApi = {
 
 // ===== Share Links =====
 export const shareApi = {
-  create: (vehicleId, expiresInDays) => api.post('/share', { vehicleId, expiresInDays }),
+  create: (vehicleId, opts = {}) => api.post('/share', { vehicleId, ...opts }),
   getLinks: (vehicleId) => api.get(`/share/vehicle/${vehicleId}`),
   revoke: (id) => api.delete(`/share/link/${id}`),
-  getPublic: (token) => api.get(`/share/${token}`),
+  getPublic: (token, password) => {
+    const url = `/share/${token}`;
+    return api.get(url, password ? { headers: { 'X-Share-Password': password } } : undefined);
+  },
+  checkAccess: (token) => api.get(`/share/${token}/check`),
 };
 
 // ===== Notification Preferences =====

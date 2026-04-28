@@ -19,23 +19,23 @@ const FIVE_STARS = [0, 1, 2, 3, 4];
 const FAQ_ITEMS = [
   {
     q: 'Quand faire son contrôle technique ?',
-    a: 'Le premier contrôle technique doit être réalisé dans les 6 mois précédant le 4e anniversaire de la première mise en circulation du véhicule, puis tous les 2 ans. CarVault vous envoie des rappels automatiques à J-30, J-14 et J-7 pour ne jamais oublier.',
+    a: 'Le premier contrôle technique doit être réalisé dans les 6 mois précédant le 4e anniversaire de la première mise en circulation du véhicule, puis tous les 2 ans. Carvio vous envoie des rappels automatiques à J-30, J-14 et J-7 pour ne jamais oublier.',
   },
   {
     q: 'Comment lire une carte grise ?',
-    a: 'La carte grise (certificat d\'immatriculation) contient toutes les informations essentielles : champ A (numéro d\'immatriculation), B (date de 1ère immatriculation), D.1 (marque), D.2 (type/variante), P.6 (puissance fiscale). Avec CarVault, scannez votre plaque et toutes ces infos sont automatiquement importées.',
+    a: 'La carte grise (certificat d\'immatriculation) contient toutes les informations essentielles : champ A (numéro d\'immatriculation), B (date de 1ère immatriculation), D.1 (marque), D.2 (type/variante), P.6 (puissance fiscale). Avec Carvio, scannez votre plaque et toutes ces infos sont automatiquement importées.',
   },
   {
     q: 'Combien coûte l\'entretien d\'une voiture par an ?',
-    a: 'En moyenne, l\'entretien d\'une voiture coûte entre 1 500 € et 2 500 € par an (assurance, carburant, révisions, réparations). CarVault vous aide à suivre chaque dépense et à calculer votre coût de possession réel au mois et au jour.',
+    a: 'En moyenne, l\'entretien d\'une voiture coûte entre 1 500 € et 2 500 € par an (assurance, carburant, révisions, réparations). Carvio vous aide à suivre chaque dépense et à calculer votre coût de possession réel au mois et au jour.',
   },
   {
     q: 'Comment calculer la puissance fiscale ?',
-    a: 'La puissance fiscale (CV) est calculée selon la formule officielle française prenant en compte la puissance du moteur et les émissions de CO₂. CarVault récupère automatiquement la puissance fiscale lors du scan de plaque d\'immatriculation.',
+    a: 'La puissance fiscale (CV) est calculée selon la formule officielle française prenant en compte la puissance du moteur et les émissions de CO₂. Carvio récupère automatiquement la puissance fiscale lors du scan de plaque d\'immatriculation.',
   },
   {
     q: 'Qu\'est-ce que la vignette Crit\'Air ?',
-    a: 'La vignette Crit\'Air classe les véhicules selon leur niveau d\'émissions polluantes (de 0 pour les électriques à 5 pour les plus polluants). Elle est obligatoire dans les Zones à Faibles Émissions (ZFE) comme Paris, Lyon ou Marseille. CarVault calcule automatiquement votre niveau Crit\'Air et vous alerte si votre véhicule est concerné par des restrictions.',
+    a: 'La vignette Crit\'Air classe les véhicules selon leur niveau d\'émissions polluantes (de 0 pour les électriques à 5 pour les plus polluants). Elle est obligatoire dans les Zones à Faibles Émissions (ZFE) comme Paris, Lyon ou Marseille. Carvio calcule automatiquement votre niveau Crit\'Air et vous alerte si votre véhicule est concerné par des restrictions.',
   },
 ];
 
@@ -122,13 +122,13 @@ const COMPARISON = [
 
 const TESTIMONIALS = [
   {
-    quote: "J'avais pris 135€ d'amende l'année dernière pour mon CT. Depuis CarVault, j'ai eu le rappel 30 jours avant. Irréprochable.",
+    quote: "J'avais pris 135€ d'amende l'année dernière pour mon CT. Depuis Carvio, j'ai eu le rappel 30 jours avant. Irréprochable.",
     author: 'Thomas M.',
     detail: 'Renault Clio, Paris 11e',
     stars: 5,
   },
   {
-    quote: "La revente de ma Golf a été nickel — j'ai envoyé le PDF CarVault à l'acheteur, il a signé le même jour. Vraiment utile.",
+    quote: "La revente de ma Golf a été nickel — j'ai envoyé le PDF Carvio à l'acheteur, il a signé le même jour. Vraiment utile.",
     author: 'Laura D.',
     detail: 'Volkswagen Golf, Lyon',
     stars: 5,
@@ -412,16 +412,16 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-bg text-white overflow-x-hidden">
       <Helmet>
-        <title>CarVault — Carnet d'entretien numerique pour votre vehicule</title>
+        <title>Carvio — Carnet d'entretien numerique pour votre vehicule</title>
         <meta name="description" content="Gerez votre vehicule simplement : carnet d'entretien, alertes CT, suivi carburant et depenses, score de sante, carte des garages. Essayez gratuitement." />
-        <link rel="canonical" href="https://carvault.fly.dev/" />
+        <link rel="canonical" href="https://carvio.fr/" />
         <script type="application/ld+json">{JSON.stringify({
           "@context": "https://schema.org",
           "@type": "SoftwareApplication",
-          "name": "CarVault",
+          "name": "Carvio",
           "applicationCategory": "UtilitiesApplication",
           "operatingSystem": "Web",
-          "url": "https://carvault.fly.dev",
+          "url": "https://carvio.fr",
           "description": "Carnet d'entretien numerique pour votre vehicule. Suivi entretien, alertes CT, depenses carburant, score de sante et carte des garages.",
           "offers": [
             {
@@ -458,7 +458,7 @@ export default function LandingPage() {
               }
             }
           ],
-          "screenshot": "https://carvault.fly.dev/og-image.png"
+          "screenshot": "https://carvio.fr/og-image.png"
         })}</script>
         <script type="application/ld+json">{JSON.stringify({
           "@context": "https://schema.org",
@@ -480,7 +480,7 @@ export default function LandingPage() {
           <div className="w-9 h-9 rounded-xl bg-accent flex items-center justify-center shadow-[0_0_20px_rgba(255,42,63,0.35)]">
             <span className="text-xs font-black text-white font-display">CV</span>
           </div>
-          <span className="text-lg font-bold font-display tracking-tight">CarVault</span>
+          <span className="text-lg font-bold font-display tracking-tight">Carvio</span>
         </div>
         <nav className="flex items-center gap-3">
           <a href="#pricing" className="px-4 py-2.5 text-sm font-semibold text-white/50 hover:text-white transition-[color] duration-150 hidden sm:block">
@@ -682,13 +682,13 @@ export default function LandingPage() {
                 {
                   n: '01', color: '#ff2a3f',
                   title: 'Ajoutez votre véhicule',
-                  desc: 'Scannez votre plaque d\'immatriculation ou saisissez les infos manuellement. CarVault récupère automatiquement les données du véhicule.',
+                  desc: 'Scannez votre plaque d\'immatriculation ou saisissez les infos manuellement. Carvio récupère automatiquement les données du véhicule.',
                   tag: '30 secondes',
                 },
                 {
                   n: '02', color: '#7c5cfc',
                   title: 'Uploadez vos documents',
-                  desc: 'Carte grise, assurance, CT, factures — ajoutez vos fichiers en quelques taps. CarVault détecte les dates d\'expiration automatiquement.',
+                  desc: 'Carte grise, assurance, CT, factures — ajoutez vos fichiers en quelques taps. Carvio détecte les dates d\'expiration automatiquement.',
                   tag: '2 minutes',
                 },
                 {
@@ -728,13 +728,13 @@ export default function LandingPage() {
       <section className="relative z-10 px-6 md:px-12 py-20">
         <div className="max-w-3xl mx-auto">
           <Motion.div {...fade()} className="text-center mb-12">
-            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/30 mb-4">Pourquoi CarVault ?</p>
+            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/30 mb-4">Pourquoi Carvio ?</p>
             <h2 className="text-4xl md:text-5xl font-black font-display tracking-tight mb-4 text-balance">
               Pas juste Google Drive<br />
               <span className="text-accent">+ un rappel calendrier.</span>
             </h2>
             <p className="text-white/35 font-medium text-lg text-pretty">
-              CarVault est construit spécifiquement pour la possession automobile.
+              Carvio est construit spécifiquement pour la possession automobile.
             </p>
           </Motion.div>
 
@@ -747,7 +747,7 @@ export default function LandingPage() {
                   <div className="w-4 h-4 rounded bg-accent flex items-center justify-center">
                     <span className="text-[8px] font-black text-white">CV</span>
                   </div>
-                  <span className="text-xs font-bold text-white">CarVault</span>
+                  <span className="text-xs font-bold text-white">Carvio</span>
                 </div>
               </div>
               <div className="text-center">
@@ -834,7 +834,7 @@ export default function LandingPage() {
                     Offre de lancement
                   </h3>
                   <p className="text-sm text-white/50 font-medium mt-1">
-                    CarVault vient de sortir — profitez de <span className="text-accent font-bold">14 jours d'essai gratuit</span> + le prix annuel le plus bas qu'on proposera jamais.
+                    Carvio vient de sortir — profitez de <span className="text-accent font-bold">14 jours d'essai gratuit</span> + le prix annuel le plus bas qu'on proposera jamais.
                     Une fois ce tarif verrouillé, il ne changera pas pour vous, même si nos prix augmentent.
                   </p>
                 </div>
@@ -951,13 +951,13 @@ export default function LandingPage() {
               <span className="text-[10px] font-black text-white font-display">CV</span>
             </div>
             <div>
-              <span className="text-sm font-bold font-display text-white">CarVault</span>
+              <span className="text-sm font-bold font-display text-white">Carvio</span>
               <p className="text-[10px] text-white/25 font-medium">Le coffre-fort de votre automobile</p>
             </div>
           </div>
 
           <p className="text-xs text-white/20 font-medium order-last md:order-none">
-            © {new Date().getFullYear()} CarVault
+            © {new Date().getFullYear()} Carvio
           </p>
 
           <div className="flex gap-6">

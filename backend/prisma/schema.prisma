@@ -237,10 +237,15 @@ model PushSubscription {
 }
 
 model ShareLink {
-  id        String    @id @default(uuid())
-  token     String    @unique @default(uuid())
-  expiresAt DateTime?
-  createdAt DateTime  @default(now())
+  id                String    @id @default(uuid())
+  token             String    @unique @default(uuid())
+  expiresAt         DateTime?
+  createdAt         DateTime  @default(now())
+  viewCount         Int       @default(0)
+  lastViewedAt      DateTime?
+  passwordHash      String?
+  hidePurchasePrice Boolean   @default(false)
+  label             String?
 
   vehicleId String
   vehicle   Vehicle   @relation(fields: [vehicleId], references: [id], onDelete: Cascade)

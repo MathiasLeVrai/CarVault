@@ -1,7 +1,7 @@
 {
-  "name": "carvault-backend",
+  "name": "carvio-backend",
   "version": "1.0.0",
-  "description": "CarVault API",
+  "description": "Carvio API",
   "main": "src/index.js",
   "scripts": {
     "dev": "nodemon src/index.js",

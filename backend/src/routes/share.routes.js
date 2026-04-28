@@ -9,6 +9,7 @@ router.get('/vehicle/:vehicleId', authenticate, shareController.getLinks);
 router.delete('/link/:id', authenticate, shareController.revokeLink);
 
 // Public routes (no auth) — must be after specific paths
+router.get('/:token/check', shareController.checkAccess);
 router.get('/:token', shareController.getPublicVehicle);
 router.get('/:token/pdf', shareController.getPublicPdf);
 

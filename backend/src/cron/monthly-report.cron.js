@@ -106,7 +106,7 @@ async function generateMonthlyReport() {
 }
 
 async function sendMonthlyEmail(email, firstName, monthName, data) {
-  const appUrl = process.env.APP_URL || 'https://carvault.fly.dev';
+  const appUrl = process.env.APP_URL || 'https://carvio.fr';
   const rows = [];
 
   if (data.total > 0) {
@@ -147,7 +147,7 @@ async function sendMonthlyEmail(email, firstName, monthName, data) {
     </div>
   </td></tr>
   <tr><td style="padding:16px 32px;background:#f9f9fb;border-top:1px solid #eeeeee;">
-    <p style="margin:0;font-size:11px;color:#aaaaaa;text-align:center;">CarVault · Rapport mensuel automatique</p>
+    <p style="margin:0;font-size:11px;color:#aaaaaa;text-align:center;">Carvio · Rapport mensuel automatique</p>
   </td></tr>
 </table></td></tr></table>
 </body></html>`;
@@ -158,7 +158,7 @@ async function sendMonthlyEmail(email, firstName, monthName, data) {
     await transporter.sendMail({
       from: emailService.smtpFromHeader(),
       to: email,
-      subject: `📊 CarVault — Votre récap de ${monthName}`,
+      subject: `📊 Carvio — Votre récap de ${monthName}`,
       html,
     });
   } catch (err) {

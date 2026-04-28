@@ -2,13 +2,44 @@ const shareService = require('../services/share.service');
 const healthService = require('../services/health.service');
 const pdfService = require('../services/pdf.service');
 
+function readPassword(req) {
+  return req.headers['x-share-password'] || req.query.p || null;
+}
+
+function sanitizeFilename(name) {
+  return String(name || '')
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-zA-Z0-9._-]+/g, '_')
+    .replace(/_+/g, '_')
+    .replace(/^_|_$/g, '');
+}
+
+function sanitizeVehicleForShare(vehicle, link) {
+  const v = {
+    brand: vehicle.brand, model: vehicle.model, year: vehicle.year,
+    mileage: vehicle.mileage, photo: vehicle.photo, color: vehicle.color,
+    fuelType: vehicle.fuelType, licensePlate: vehicle.licensePlate,
+    horsepower: vehicle.horsepower, engineSize: vehicle.engineSize,
+    transmission: vehicle.transmission, bodyType: vehicle.bodyType, doors: vehicle.doors,
+    fiscalPower: vehicle.fiscalPower, critAir: vehicle.critAir, co2: vehicle.co2,
+  };
+  if (!link.hidePurchasePrice) {
+    v.purchasePrice = vehicle.purchasePrice;
+  }
+  return v;
+}
+
 class ShareController {
   async createLink(req, res, next) {
     try {
-      const { vehicleId } = req.body;
+      const { vehicleId, expiresInDays, password, hidePurchasePrice, label } = req.body;
       if (!vehicleId) return res.status(400).json({ error: 'vehicleId requis' });
-      const link = await shareService.createLink(vehicleId, req.userId, req.body.expiresInDays || 30);
-      res.status(201).json(link);
+      const link = await shareService.createLink(vehicleId, req.userId, {
+        expiresInDays, password, hidePurchasePrice, label,
+      });
+      const { passwordHash, ...safe } = link;
+      res.status(201).json({ ...safe, hasPassword: !!passwordHash });
     } catch (error) { next(error); }
   }
 
@@ -16,6 +47,8 @@ class ShareController {
     try {
       const { token } = req.params;
       const link = await shareService.getByToken(token);
+      await shareService.verifyAccess(link, readPassword(req));
+
       const vehicle = link.vehicle;
 
       let health = null;
@@ -27,14 +60,10 @@ class ShareController {
         .filter(e => new Date(e.date).getFullYear() === currentYear)
         .reduce((s, e) => s + (e.amount || 0), 0);
 
+      shareService.trackView(link.id).catch(() => {});
+
       res.json({
-        vehicle: {
-          brand: vehicle.brand, model: vehicle.model, year: vehicle.year,
-          mileage: vehicle.mileage, photo: vehicle.photo, color: vehicle.color,
-          fuelType: vehicle.fuelType, licensePlate: vehicle.licensePlate,
-          horsepower: vehicle.horsepower, engineSize: vehicle.engineSize,
-          transmission: vehicle.transmission, bodyType: vehicle.bodyType, doors: vehicle.doors,
-        },
+        vehicle: sanitizeVehicleForShare(vehicle, link),
         documents: vehicle.documents.map(d => ({
           name: d.name, type: d.type, expirationDate: d.expirationDate, createdAt: d.createdAt,
         })),
@@ -44,6 +73,18 @@ class ShareController {
         stats: { totalExpenses, yearExpenses },
         health,
         expiresAt: link.expiresAt,
+        sharedAt: link.createdAt,
+      });
+    } catch (error) { next(error); }
+  }
+
+  async checkAccess(req, res, next) {
+    try {
+      const { token } = req.params;
+      const link = await shareService.getByToken(token);
+      res.json({
+        requiresPassword: !!link.passwordHash,
+        expiresAt: link.expiresAt,
       });
     } catch (error) { next(error); }
   }
@@ -52,17 +93,28 @@ class ShareController {
     try {
       const { token } = req.params;
       const link = await shareService.getByToken(token);
+      await shareService.verifyAccess(link, readPassword(req));
+
       const vehicle = link.vehicle;
 
       let health = null;
       try { health = await healthService.getHealthScore(vehicle.id, link.userId); } catch { /* ignore */ }
 
       const totalExpenses = vehicle.expenses.reduce((s, e) => s + (e.amount || 0), 0);
+      const sanitizedVehicle = {
+        ...vehicle,
+        ...sanitizeVehicleForShare(vehicle, link),
+        ...(link.hidePurchasePrice ? { purchasePrice: null } : {}),
+      };
       const pdfBuffer = await pdfService.generateVehicleDossier(
-        vehicle, vehicle.documents, vehicle.expenses, { totalExpensesAll: totalExpenses }, health,
+        sanitizedVehicle, vehicle.documents, vehicle.expenses,
+        { totalExpensesAll: totalExpenses }, health,
+        { sharedAt: link.createdAt },
       );
 
-      const filename = `CarVault_${vehicle.brand}_${vehicle.model}.pdf`.replace(/\s+/g, '_');
+      shareService.trackView(link.id).catch(() => {});
+
+      const filename = sanitizeFilename(`Carvio_${vehicle.brand}_${vehicle.model}`) + '.pdf';
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
       res.setHeader('Content-Length', pdfBuffer.length);

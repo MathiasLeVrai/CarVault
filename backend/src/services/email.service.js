@@ -53,11 +53,11 @@ class EmailService {
   }
 
   _getFrom() {
-    return process.env.RESEND_FROM || 'CarVault <noreply@carvault.fly.dev>';
+    return process.env.RESEND_FROM || 'Carvio <noreply@carvio.fr>';
   }
 
   smtpFromHeader() {
-    return process.env.SMTP_FROM || `CarVault <${process.env.SMTP_USER}>`;
+    return process.env.SMTP_FROM || `Carvio <${process.env.SMTP_USER}>`;
   }
 
   /**
@@ -140,7 +140,7 @@ class EmailService {
       daysLeft === 0         ? 'Expire aujourd\'hui' :
                                `Expire dans ${daysLeft} jour${daysLeft > 1 ? 's' : ''}`;
 
-    const appUrl = process.env.APP_URL || 'https://carvault.fly.dev';
+    const appUrl = process.env.APP_URL || 'https://carvio.fr';
 
     const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"></head>
@@ -162,19 +162,19 @@ class EmailService {
     <a href="${appUrl}/alerts" style="display:block;text-align:center;padding:14px 24px;background:#e63946;color:#fff;border-radius:12px;font-weight:700;text-decoration:none;font-size:14px;">Voir mes alertes</a>
   </td></tr>
   <tr><td style="padding:16px 32px;background:#f9f9fb;border-top:1px solid #eeeeee;">
-    <p style="margin:0;font-size:11px;color:#aaaaaa;text-align:center;">CarVault · <a href="${appUrl}/alerts" style="color:#aaaaaa;text-decoration:none;">Gérer mes notifications</a></p>
+    <p style="margin:0;font-size:11px;color:#aaaaaa;text-align:center;">Carvio · <a href="${appUrl}/alerts" style="color:#aaaaaa;text-decoration:none;">Gérer mes notifications</a></p>
   </td></tr>
 </table></td></tr></table>
 </body></html>`;
 
-    return this._sendMailDual(userEmail, `CarVault — ${alertTitle}`, html);
+    return this._sendMailDual(userEmail, `Carvio — ${alertTitle}`, html);
   }
 
   /**
    * Envoie un email de réinitialisation de mot de passe
    */
   async sendPasswordResetEmail(userEmail, userName, resetLink) {
-    const appUrl = process.env.APP_URL || 'https://carvault.fly.dev';
+    const appUrl = process.env.APP_URL || 'https://carvio.fr';
 
     const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"></head>
@@ -194,14 +194,14 @@ class EmailService {
     <a href="${resetLink}" style="display:block;text-align:center;padding:14px 24px;background:#e63946;color:#fff;border-radius:12px;font-weight:700;text-decoration:none;font-size:14px;">Réinitialiser mon mot de passe</a>
   </td></tr>
   <tr><td style="padding:16px 32px;background:#f9f9fb;border-top:1px solid #eeeeee;">
-    <p style="margin:0;font-size:11px;color:#aaaaaa;text-align:center;">CarVault · <a href="${appUrl}" style="color:#aaaaaa;text-decoration:none;">carvault.fly.dev</a></p>
+    <p style="margin:0;font-size:11px;color:#aaaaaa;text-align:center;">Carvio · <a href="${appUrl}" style="color:#aaaaaa;text-decoration:none;">carvio.fr</a></p>
   </td></tr>
 </table></td></tr></table>
 </body></html>`;
 
     return this._sendMailDual(
       userEmail,
-      'CarVault — Réinitialisation de votre mot de passe',
+      'Carvio — Réinitialisation de votre mot de passe',
       html,
     );
   }

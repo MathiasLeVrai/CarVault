@@ -50,7 +50,7 @@ export default function PricingPage() {
       if (url) {
         window.location.href = url;
       } else {
-        toast.info('Contactez hello@carvault.fr pour activer Premium.');
+        toast.info('Contactez hello@carvio.fr pour activer Premium.');
       }
     } catch (err) {
       toast.error(err.message || 'Erreur lors du paiement');
@@ -69,7 +69,7 @@ export default function PricingPage() {
           <div className="w-9 h-9 rounded-xl bg-accent flex items-center justify-center shadow-[0_0_20px_rgba(255,42,63,0.35)]">
             <span className="text-xs font-black text-white font-display">CV</span>
           </div>
-          <span className="text-lg font-bold font-display tracking-tight">CarVault</span>
+          <span className="text-lg font-bold font-display tracking-tight">Carvio</span>
         </Link>
         <nav className="flex items-center gap-3">
           <Link to="/" className="px-4 py-2 text-sm font-semibold text-ink-muted hover:text-ink transition-colors hidden sm:flex items-center gap-1.5">
@@ -275,12 +275,12 @@ export default function PricingPage() {
               <span className="text-[10px] font-black text-white font-display">CV</span>
             </div>
             <div>
-              <span className="text-sm font-bold font-display">CarVault</span>
+              <span className="text-sm font-bold font-display">Carvio</span>
               <p className="text-[10px] text-ink-muted font-medium">Le coffre-fort de votre automobile</p>
             </div>
           </div>
           <p className="text-xs text-ink-faint font-medium order-last md:order-none">
-            © {new Date().getFullYear()} CarVault
+            © {new Date().getFullYear()} Carvio
           </p>
           <div className="flex gap-6">
             <Link to="/login" className="text-xs text-ink-muted hover:text-ink transition-colors font-medium">Connexion</Link>

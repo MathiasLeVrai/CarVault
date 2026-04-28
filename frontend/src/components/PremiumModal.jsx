@@ -21,7 +21,7 @@ export default function PremiumModal({ onClose }) {
       if (url) {
         window.location.href = url;
       } else {
-        toast.info('Contactez hello@carvault.fr pour activer Premium.');
+        toast.info('Contactez hello@carvio.fr pour activer Premium.');
         onClose();
       }
     } catch (err) {

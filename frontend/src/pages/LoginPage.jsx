@@ -30,9 +30,9 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-bg flex">
       <Helmet>
-        <title>Connexion — CarVault</title>
-        <meta name="description" content="Connectez-vous a votre compte CarVault pour gerer vos vehicules, documents et depenses." />
-        <link rel="canonical" href="https://carvault.fly.dev/login" />
+        <title>Connexion — Carvio</title>
+        <meta name="description" content="Connectez-vous a votre compte Carvio pour gerer vos vehicules, documents et depenses." />
+        <link rel="canonical" href="https://carvio.fr/login" />
       </Helmet>
       {/* Left — Visual */}
       <div className="hidden lg:flex lg:w-1/2 bg-bg-alt relative overflow-hidden items-center justify-center p-16 border-r border-white/5">
@@ -45,7 +45,7 @@ export default function LoginPage() {
             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/[0.04] border border-white/10 mb-10"
           >
             <span className="text-sm font-black text-accent font-display">CV</span>
-            <span className="text-sm font-bold text-white/70">CarVault</span>
+            <span className="text-sm font-bold text-white/70">Carvio</span>
           </Motion.div>
 
           {/* Headline */}
@@ -91,7 +91,7 @@ export default function LoginPage() {
           <div className="lg:hidden mb-10">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/[0.03] border border-white/10">
               <span className="text-sm font-black text-accent font-display">CV</span>
-              <span className="text-sm font-bold text-white">CarVault</span>
+              <span className="text-sm font-bold text-white">Carvio</span>
             </div>
           </div>
 

@@ -1,6 +1,6 @@
 {
-  "name": "CarVault",
-  "short_name": "CarVault",
+  "name": "Carvio",
+  "short_name": "Carvio",
   "description": "Centre de gestion intelligent de véhicule",
   "start_url": "/",
   "display": "standalone",

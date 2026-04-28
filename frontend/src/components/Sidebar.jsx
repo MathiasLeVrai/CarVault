@@ -35,12 +35,9 @@ export default function Sidebar({ onFabPress }) {
     <>
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex fixed left-6 top-24 bottom-6 w-[260px] glass-panel rounded-2xl flex-col z-40 px-4 py-6">
-        <div className="flex items-center gap-3 px-4 mb-8">
-          <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center shadow-[0_0_20px_rgba(255,42,63,0.3)]">
-            <span className="text-sm font-black text-white font-display">CV</span>
-          </div>
+        <div className="flex items-center px-4 mb-8">
           <span className="text-xl font-bold tracking-tight text-white font-display">
-            CarVault
+            Carv<span className="text-accent">io</span>
           </span>
         </div>
 

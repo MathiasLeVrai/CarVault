@@ -1,17 +1,17 @@
 openapi: 3.0.3
 info:
-  title: CarVault API
+  title: Carvio API
   description: |
-    API REST de CarVault — gestion de véhicules, documents, dépenses, alertes, abonnement Stripe, push Web.
+    API REST de Carvio — gestion de véhicules, documents, dépenses, alertes, abonnement Stripe, push Web.
     Les routes protégées exigent un header `Authorization: Bearer <JWT>`.
   version: 1.0.0
   contact:
-    name: CarVault
+    name: Carvio
 
 servers:
   - url: http://localhost:3001
     description: Développement local
-  - url: https://carvault.fly.dev
+  - url: https://carvio.fr
     description: Production (exemple)
 
 tags:

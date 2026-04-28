@@ -1,8 +1,8 @@
-# CarVault — Gestion intelligente de véhicules
+# Carvio — Gestion intelligente de véhicules
 
 Application **PWA mobile-first** permettant aux particuliers de centraliser documents, dépenses et rappels liés à leurs véhicules. Installable sur l'écran d'accueil (iOS/Android), utilisable hors-ligne grâce au Service Worker. En moins de 5 minutes, l'utilisateur ajoute son véhicule, attache ses documents clés et reçoit automatiquement des alertes d'expiration.
 
-**Production :** [carvault.fly.dev](https://carvault.fly.dev)
+**Production :** [carvio.fr](https://carvio.fr)
 
 ---
 
@@ -87,7 +87,7 @@ Désactivation : `SWAGGER_ENABLED=false` dans `backend/.env`.
 ## Structure du projet
 
 ```
-CarVault/
+Carvio/
 ├── Dockerfile                  ← build multi-stage (frontend → backend → image unique)
 ├── fly.toml                    ← config Fly.io
 ├── backend/

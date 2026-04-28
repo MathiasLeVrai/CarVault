@@ -283,7 +283,7 @@ class VehicleController {
 
       const pdfBuffer = await pdfService.generateVehicleDossier(vehicle, documents, expenses, stats, health);
 
-      const filename = `CarVault_${vehicle.brand}_${vehicle.model}_${new Date().getFullYear()}.pdf`
+      const filename = `Carvio_${vehicle.brand}_${vehicle.model}_${new Date().getFullYear()}.pdf`
         .replace(/\s+/g, '_');
 
       res.setHeader('Content-Type', 'application/pdf');

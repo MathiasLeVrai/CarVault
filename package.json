@@ -1,7 +1,7 @@
 {
-  "name": "carvault",
+  "name": "carvio",
   "version": "1.0.0",
-  "description": "CarVault - Centre de gestion intelligent de véhicule",
+  "description": "Carvio - Centre de gestion intelligent de véhicule",
   "private": true,
   "scripts": {
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
@@ -12,9 +12,11 @@
     "db:seed": "cd backend && npx prisma db seed"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.3.1",
     "concurrently": "^9.1.0"
   },
   "dependencies": {
+    "@capacitor/core": "^8.3.1",
     "resend": "^6.11.0"
   }
 }
