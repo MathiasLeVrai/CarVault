@@ -2,6 +2,9 @@
   "plugins": {
     "notion-workspace": {
       "enabled": true
+    },
+    "sentry": {
+      "enabled": true
     }
   }
 }

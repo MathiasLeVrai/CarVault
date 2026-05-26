@@ -1,0 +1,63 @@
+@startuml sequence-stripe
+title Séquence — Souscription Premium Stripe
+
+actor User
+participant "PricingPage" as UI
+participant "ApiClient" as Api
+participant "subscription.controller" as Ctrl
+participant "stripe.service" as Svc
+participant "Stripe API" as Stripe
+participant "Stripe Checkout" as Checkout
+database "Prisma / Neon" as DB
+
+== 1. Création de la session ==
+
+User -> UI : clique "Passer Premium" (monthly)
+UI -> Api : POST /subscription/checkout { plan: 'monthly' }
+Api -> Ctrl : request (JWT)
+Ctrl -> Svc : createCheckoutSession(userId, plan)
+Svc -> DB : User { stripeCustomerId? }
+DB --> Svc : user
+
+alt customer absent
+  Svc -> Stripe : customers.create({ email })
+  Stripe --> Svc : { id: cus_xxx }
+  Svc -> DB : update User.stripeCustomerId
+end
+
+Svc -> Stripe : checkout.sessions.create\n(price, customer, trial_period_days: 14,\nsuccess_url, cancel_url)
+Stripe --> Svc : { url: checkout.stripe.com/... }
+Svc --> Ctrl : { url }
+Ctrl --> Api : 200
+Api --> UI : { url }
+UI -> Checkout : window.location = url
+
+== 2. Paiement ==
+
+User -> Checkout : saisit CB
+Checkout -> Stripe : confirm payment
+Stripe --> Checkout : success
+Checkout -> UI : redirect success_url\n(/dashboard?upgraded=1)
+
+== 3. Webhook (asynchrone) ==
+
+Stripe ->> Ctrl : POST /subscription/webhook\n(customer.subscription.created)
+Ctrl -> Svc : handleWebhook(rawBody, signature)
+Svc -> Svc : stripe.webhooks.constructEvent()\n→ vérifie signature HMAC
+Svc -> DB : update User {\n  isPremium: true,\n  stripeSubscriptionId,\n  premiumExpiresAt\n}
+DB --> Svc : ok
+Svc --> Ctrl : ok
+Ctrl --> Stripe : 200
+
+== 4. UI ==
+
+UI -> Api : GET /subscription/status
+Api -> Ctrl : request
+Ctrl -> Svc : getStatus(userId)
+Svc -> DB : User
+DB --> Svc : { isPremium: true, expiresAt }
+Svc --> Ctrl : status
+Ctrl --> Api : 200
+Api --> UI : affiche badge Premium ★
+
+@enduml

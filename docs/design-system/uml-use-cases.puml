@@ -1,0 +1,90 @@
+@startuml use-cases
+title CarVault — Diagramme de cas d'utilisation
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+
+actor "Utilisateur\n(anonyme)" as Guest
+actor "Utilisateur\nauthentifié" as User
+actor "Utilisateur\nPremium" as Premium
+actor "Destinataire\nlien partagé" as Viewer
+actor "Système Cron" as Cron
+
+actor "Stripe" as Stripe
+actor "API Gouv.\nCarburants" as FuelAPI
+actor "Overpass\n(OSM)" as Overpass
+actor "CarAPI /\nLaCentrale" as VehicleAPI
+actor "SMTP /\nResend" as Email
+
+Premium --|> User
+User --|> Guest
+
+rectangle "CarVault" {
+  usecase "S'inscrire" as UC_Register
+  usecase "Se connecter" as UC_Login
+  usecase "Rafraîchir le token" as UC_Refresh
+  usecase "Réinitialiser\nle mot de passe" as UC_Reset
+
+  usecase "Ajouter un véhicule" as UC_AddVehicle
+  usecase "Scanner\nune plaque" as UC_PlateScan
+  usecase "Consulter le\nscore de santé" as UC_Health
+  usecase "Gérer documents\n(assurance, CT...)" as UC_Docs
+  usecase "Suivre les\ndépenses" as UC_Expenses
+  usecase "Journaliser un\nplein carburant" as UC_Fuel
+  usecase "Enregistrer\nun kilométrage" as UC_Mileage
+
+  usecase "Consulter la carte\n(garages, CT, essence)" as UC_Map
+  usecase "Voir les alertes" as UC_Alerts
+  usecase "Débloquer\ndes badges" as UC_Badges
+
+  usecase "Gérer\nnotifications" as UC_Notif
+  usecase "Partager un\nvéhicule (PDF)" as UC_Share
+  usecase "Consulter\nun partage" as UC_ViewShare
+
+  usecase "Souscrire\nPremium" as UC_Subscribe
+  usecase "Gérer\nl'abonnement" as UC_Portal
+  usecase "Ajouter >1\nvéhicule" as UC_MultiVehicle
+
+  usecase "Envoyer alertes\n(J-30, J-7...)" as UC_SendAlert
+  usecase "Digest\nhebdomadaire" as UC_Digest
+}
+
+Guest --> UC_Register
+Guest --> UC_Login
+Guest --> UC_Reset
+Viewer --> UC_ViewShare
+
+User --> UC_Refresh
+User --> UC_AddVehicle
+User --> UC_Health
+User --> UC_Docs
+User --> UC_Expenses
+User --> UC_Fuel
+User --> UC_Mileage
+User --> UC_Map
+User --> UC_Alerts
+User --> UC_Badges
+User --> UC_Notif
+User --> UC_Share
+User --> UC_Subscribe
+
+Premium --> UC_MultiVehicle
+Premium --> UC_Portal
+
+UC_AddVehicle ..> UC_PlateScan : <<extend>>
+UC_AddVehicle ..> UC_MultiVehicle : <<extend>>\nsi > 1
+UC_Subscribe ..> Stripe
+UC_Portal ..> Stripe
+UC_Map ..> Overpass
+UC_Map ..> FuelAPI
+UC_PlateScan ..> VehicleAPI
+UC_Health ..> VehicleAPI : cote LaCentrale
+
+Cron --> UC_SendAlert
+Cron --> UC_Digest
+UC_SendAlert ..> Email
+UC_Digest ..> Email
+UC_Reset ..> Email
+
+@enduml

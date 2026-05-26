@@ -84,6 +84,31 @@ Désactivation : `SWAGGER_ENABLED=false` dans `backend/.env`.
 
 ---
 
+## Build mobile avec Capacitor
+
+L'app native iOS/Android embarque le build Vite de `frontend/dist` via Capacitor (`appId`: `fr.carvio.app`).
+
+```bash
+# 1. Variables frontend pour un build store/prod
+cp frontend/.env.example frontend/.env
+# Vérifier VITE_API_URL="https://carvio.fr/api"
+# Vérifier VITE_PUBLIC_APP_URL="https://carvio.fr"
+
+# 2. Générer le build web et synchroniser les projets natifs
+npm run cap:sync
+
+# 3. Ouvrir les projets natifs
+npm run cap:open:ios
+npm run cap:open:android
+```
+
+Notes publication :
+- iOS se finalise dans Xcode (`ios/App`) avec l'équipe Apple Developer, le signing et l'archive App Store.
+- Android se finalise dans Android Studio (`android`) avec le package `fr.carvio.app`, le keystore de release et l'AAB Play Store.
+- Les notifications actuelles restent du Web Push/PWA ; APNs/FCM natif est à traiter séparément.
+
+---
+
 ## Structure du projet
 
 ```

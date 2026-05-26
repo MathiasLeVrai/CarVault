@@ -1,6 +1,7 @@
 import { ArrowLeft, Pencil, Share2, FileDown, Trash2 } from 'lucide-react';
 import Button from '../ui/Button';
 import { motion as Motion } from 'framer-motion';
+import { getAssetUrl } from '../../services/api';
 
 const CRITAIR_COLORS = {
   0: '#4ade80', 1: '#a78bfa', 2: '#facc15', 3: '#f97316', 4: '#b45309', 5: '#6b7280',
@@ -29,7 +30,7 @@ export default function VehicleHero({ vehicle, onBack, onEdit, onShare, onDownlo
 
       {vehicle.photo && (
         <div className="absolute inset-0">
-          <img src={vehicle.photo} alt={`${vehicle.brand} ${vehicle.model}`} loading="lazy" className="w-full h-full object-cover opacity-40 group-hover:scale-105 transition-transform duration-1000 ease-out cv-img-outline" />
+          <img src={getAssetUrl(vehicle.photo)} alt={`${vehicle.brand} ${vehicle.model}`} loading="lazy" className="w-full h-full object-cover opacity-40 group-hover:scale-105 transition-transform duration-1000 ease-out cv-img-outline" />
           <div className="absolute inset-0 bg-gradient-to-t from-bg via-bg/80 to-transparent" />
         </div>
       )}

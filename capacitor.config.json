@@ -1,0 +1,5 @@
+{
+  "appId": "fr.carvio.app",
+  "appName": "Carvio",
+  "webDir": "frontend/dist"
+}

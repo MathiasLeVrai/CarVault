@@ -62,7 +62,7 @@ export default function PricingPage() {
   const isYearly = plan === 'yearly';
 
   return (
-    <div className="min-h-screen bg-bg text-ink overflow-x-hidden">
+    <div className="public-screen bg-bg text-ink overflow-x-hidden">
       {/* Navbar */}
       <header className="relative z-10 flex items-center justify-between px-6 md:px-12 py-5 border-b border-white/[0.05]">
         <Link to="/" className="flex items-center gap-2.5">

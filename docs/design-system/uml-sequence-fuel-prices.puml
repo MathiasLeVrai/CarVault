@@ -1,0 +1,53 @@
+@startuml sequence-fuel-prices
+title Séquence — Carte des carburants (prix + POI)
+
+actor User
+participant "MapPage" as Map
+participant "Leaflet" as Leaflet
+participant "ApiClient" as Api
+participant "fuel.controller" as Ctrl
+participant "fuel-price.service\n(cache 1h)" as Svc
+participant "Overpass API" as Overpass
+participant "API Gouv\nCarburants" as GovAPI
+
+User -> Map : ouvre /map\n(filter = 'fuel')
+Map -> Leaflet : init carte + géoloc
+Leaflet --> Map : bounds (lat,lng)
+
+par Requêtes en parallèle
+  Map -> Overpass : Overpass QL\n(amenity=fuel dans bbox)
+  Overpass --> Map : stations [lat,lng,name,brand]
+and
+  Map -> Api : GET /fuel/prices?type=Gazole
+  Api -> Ctrl : request (JWT)
+  Ctrl -> Svc : getPrices('Gazole')
+
+  alt cache frais (< 1h)
+    Svc --> Ctrl : cached { avg, byRegion, stations }
+  else cache expiré
+    Svc -> GovAPI : GET prix-des-carburants...\n?where=fuel='Gazole'
+    GovAPI --> Svc : records (milliers)
+    Svc -> Svc : compute avg last 7j\n+ agrégation par ville
+    Svc -> Svc : cache.set(key, 1h)
+    Svc --> Ctrl : prices
+  end
+
+  Ctrl --> Api : 200
+  Api --> Map : { avg, stations }
+end
+
+Map -> Map : merge POI Overpass\n× prix gouv (par ID station)
+Map -> Leaflet : addMarkers(stations)\navec label €/L
+Leaflet --> User : carte rendue
+
+note over Map
+  FilterBar affiche
+  "Gazole moyen: 1,78 €/L"
+  issu de l'API gouv
+end note
+
+User -> Leaflet : clic marker
+Leaflet -> Map : onMarkerClick(id)
+Map -> User : popup (adresse, horaires, prix)
+
+@enduml

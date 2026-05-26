@@ -5,6 +5,7 @@ import { X, Fuel, Receipt, Camera, Car, CheckCircle2, ChevronDown, ArrowLeft } f
 import { vehicleApi, fuelApi, expenseApi, documentApi } from '../services/api';
 import { useToast } from '../context/ToastContext';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
+import compressImage from '../utils/compressImage';
 
 const ACTIONS = [
   { id: 'fuel',     label: 'Plein',     icon: Fuel,    color: '#38bdf8', bg: 'rgba(56,189,248,0.08)', border: 'rgba(56,189,248,0.15)' },
@@ -28,20 +29,20 @@ const EXPENSE_CATS = [
   { value: 'OTHER',       label: 'Autre' },
 ];
 
-function Field({ label, children }) {
+function Field({ label, children, className = '' }) {
   return (
-    <div className="space-y-1.5">
+    <div className={`space-y-1.5 min-w-0 ${className}`}>
       <label className="block text-[11px] font-bold text-white/50 uppercase tracking-widest">{label}</label>
       {children}
     </div>
   );
 }
 
-function CvInput({ type = 'text', ...props }) {
+function CvInput({ type = 'text', className = '', ...props }) {
   return (
     <input
       type={type}
-      className="cv-input w-full px-4 py-3 text-base text-ink"
+      className={`cv-input w-full px-4 py-3 text-base text-ink min-w-0 ${className}`}
       {...props}
     />
   );
@@ -159,7 +160,7 @@ export default function QuickActionSheet({ onClose }) {
         fd.append('type', docForm.type);
         fd.append('vehicleId', docForm.vehicleId || vid);
         if (docForm.expirationDate) fd.append('expirationDate', docForm.expirationDate);
-        fd.append('file', docFile);
+        fd.append('file', docFile.type.startsWith('image/') ? await compressImage(docFile) : docFile);
         await documentApi.create(fd);
         toast.success('Document ajouté');
       }
@@ -310,13 +311,13 @@ export default function QuickActionSheet({ onClose }) {
                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
                   </div>
                 </Field>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <Field label="Montant (€)">
                     <CvInput type="number" step="0.01" placeholder="89.90" value={exp.amount}
                       onChange={e => setExp(p => ({ ...p, amount: e.target.value }))} />
                   </Field>
-                  <Field label="Date">
-                    <CvInput type="date" value={exp.date}
+                  <Field label="Date" className="items-start">
+                    <CvInput type="date" value={exp.date} className="max-w-46"
                       onChange={e => setExp(p => ({ ...p, date: e.target.value }))} />
                   </Field>
                 </div>
@@ -382,7 +383,7 @@ export default function QuickActionSheet({ onClose }) {
                 </Field>
                 {(docForm.type === 'TECHNICAL_INSPECTION' || docForm.type === 'INSURANCE') && (
                   <Field label="Date d'expiration">
-                    <CvInput type="date" value={docForm.expirationDate}
+                    <CvInput type="date" value={docForm.expirationDate} className="max-w-46"
                       onChange={e => setDocForm(p => ({ ...p, expirationDate: e.target.value }))} />
                   </Field>
                 )}
@@ -402,7 +403,7 @@ export default function QuickActionSheet({ onClose }) {
                     </label>
                     {docHasExpiration && (
                       <Field label="Date d'expiration">
-                        <CvInput type="date" value={docForm.expirationDate}
+                        <CvInput type="date" value={docForm.expirationDate} className="max-w-46"
                           onChange={e => setDocForm(p => ({ ...p, expirationDate: e.target.value }))} />
                       </Field>
                     )}

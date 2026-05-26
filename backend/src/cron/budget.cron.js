@@ -255,6 +255,14 @@ const FUEL_TYPE_TO_GOV = {
   LPG:      ['GPLc'],
 };
 
+const FUEL_DISPLAY_NAMES = {
+  Gazole: 'diesel',
+  SP95: 'SP95',
+  SP98: 'SP98',
+  E10: 'SP95-E10',
+  GPLc: 'GPL',
+};
+
 async function checkFuelPriceDrop() {
   let created = 0;
 
@@ -279,10 +287,13 @@ async function checkFuelPriceDrop() {
 
     for (const u of users) {
       if (await alertExists(u.id, 'FUEL_PRICE_DROP', drop.fuelName, { since: weekStart })) continue;
+      const displayName = FUEL_DISPLAY_NAMES[drop.fuelName] || drop.fuelName;
+      const dropCents = Math.max(1, Math.round((drop.previousPrice - drop.currentPrice) * 100));
+      const centsLabel = `${dropCents} centime${dropCents > 1 ? 's' : ''}`;
 
       await createAlert({
-        title: `${drop.fuelName} en baisse`,
-        message: `Le ${drop.fuelName} a baissé par rapport à la semaine dernière (${drop.previousPrice.toFixed(3)}€ → ${drop.currentPrice.toFixed(3)}€, -${drop.dropPercent}%). Le temps de faire le plein ?`,
+        title: `${displayName} en baisse`,
+        message: `Le prix du ${displayName} a baissé de ${centsLabel} depuis la semaine dernière (${drop.previousPrice.toFixed(3)}€ → ${drop.currentPrice.toFixed(3)}€). C'est peut-être le bon moment pour faire le plein.`,
         type: 'FUEL_PRICE_DROP',
         userId: u.id,
       }, {

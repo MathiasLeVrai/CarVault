@@ -1,25 +1,27 @@
+import './instrument'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { reactErrorHandler } from '@sentry/react'
 import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import { ThemeProvider } from './context/ThemeContext'
 import { ToastProvider } from './context/ToastContext'
 import { HelmetProvider } from 'react-helmet-async'
 import ErrorBoundary from './components/ErrorBoundary'
-import * as Sentry from '@sentry/react'
 import App from './App.jsx'
+import { isNativeCapacitor } from './instrument'
 import './index.css'
 
-// Init Sentry (frontend)
-if (import.meta.env.VITE_SENTRY_DSN) {
-  Sentry.init({
-    dsn: import.meta.env.VITE_SENTRY_DSN,
-    environment: import.meta.env.MODE,
-    tracesSampleRate: 0.1,
-  });
-}
+const sentryEnabled = Boolean(import.meta.env.VITE_SENTRY_DSN)
+const rootOptions = sentryEnabled
+  ? {
+      onUncaughtError: reactErrorHandler(),
+      onCaughtError: reactErrorHandler(),
+      onRecoverableError: reactErrorHandler(),
+    }
+  : undefined
 
-createRoot(document.getElementById('root')).render(
+createRoot(document.getElementById('root'), rootOptions).render(
   <StrictMode>
     <HelmetProvider>
       <ErrorBoundary>
@@ -38,7 +40,7 @@ createRoot(document.getElementById('root')).render(
 )
 
 // ===== Enregistrement du Service Worker (PWA — prod uniquement) =====
-if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+if (import.meta.env.PROD && !isNativeCapacitor() && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker
       .register('/sw.js')

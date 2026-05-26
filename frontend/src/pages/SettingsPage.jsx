@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
-import { notificationApi } from '../services/api';
+import { useEffect, useState } from 'react';
+import { getAssetUrl, notificationApi } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { PRICING } from '../constants/pricing';
 import usePush from '../hooks/usePush';
 import BadgesWidget from '../components/BadgesWidget';
+import compressImage from '../utils/compressImage';
 import {
   Bell, Mail, Smartphone, Calendar, Check, Settings, Sun, Moon, LogOut, Globe,
   Camera, Pencil, Crown, User as UserIcon, Zap, Loader2, ExternalLink,
@@ -55,7 +56,7 @@ function Avatar({ user, size = 80 }) {
   if (user?.avatar) {
     return (
       <img
-        src={user.avatar}
+        src={getAssetUrl(user.avatar)}
         alt="avatar"
         className="rounded-full object-cover border-2 border-white/10 cv-img-outline"
         style={{ width: size, height: size }}
@@ -85,7 +86,6 @@ function Avatar({ user, size = 80 }) {
 }
 
 function ProfileCard({ user, updateProfile, onSaved }) {
-  const fileRef = useRef(null);
   const [form, setForm] = useState({ firstName: user?.firstName || '', lastName: user?.lastName || '' });
   const [uploading, setUploading] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -97,7 +97,7 @@ function ProfileCard({ user, updateProfile, onSaved }) {
     setUploading(true);
     try {
       const fd = new FormData();
-      fd.append('avatar', file);
+      fd.append('avatar', await compressImage(file));
       await updateProfile(fd);
       onSaved();
     } catch { /* ignore */ }
@@ -127,14 +127,12 @@ function ProfileCard({ user, updateProfile, onSaved }) {
         {/* Avatar */}
         <div className="relative shrink-0">
           <Avatar user={user} size={80} />
-          <button
-            onClick={() => fileRef.current?.click()}
-            disabled={uploading}
-            className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-accent flex items-center justify-center shadow-lg shadow-accent/30 transition-transform active:scale-[0.96]"
+          <label
+            className={`absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-accent flex items-center justify-center shadow-lg shadow-accent/30 transition-transform active:scale-[0.96] cursor-pointer ${uploading ? 'pointer-events-none opacity-60' : ''}`}
           >
             <Camera className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
-          </button>
-          <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
+            <input type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
+          </label>
           {uploading && (
             <div className="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center">
               <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />

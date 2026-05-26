@@ -2,6 +2,8 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
 import { motion as Motion } from 'framer-motion';
 import { MapPin, Navigation, Wrench, ShieldCheck, Droplets, Fuel, Search, ExternalLink, Loader2 } from 'lucide-react';
+import { Capacitor } from '@capacitor/core';
+import { Geolocation } from '@capacitor/geolocation';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -67,7 +69,9 @@ function MapController({ center }) {
 function ViewportTracker({ onViewportChange, skipNextRef }) {
   const timerRef = useRef(null);
   const onChangeRef = useRef(onViewportChange);
-  onChangeRef.current = onViewportChange;
+  useEffect(() => {
+    onChangeRef.current = onViewportChange;
+  }, [onViewportChange]);
 
   useMapEvents({
     moveend(e) {
@@ -272,31 +276,55 @@ export default function MapPage() {
     setInitialLoad(false);
   }, []);
 
-  const locateUser = useCallback(() => {
+  const applyPosition = useCallback((coords) => {
+    const pos = [coords.latitude, coords.longitude];
+    setUserPos(pos);
+    userPosRef.current = pos;
+    viewportCenterRef.current = pos;
+    viewportRadiusRef.current = DEFAULT_RADIUS;
+    setMapCenter(pos);
+    loadPOIs(coords.latitude, coords.longitude, activeFiltersRef.current);
+  }, [loadPOIs]);
+
+  const locateUser = useCallback(async () => {
     setGeoError(null);
-    if (!navigator.geolocation) {
-      setGeoError("La géolocalisation n'est pas disponible sur cet appareil.");
-      return;
-    }
     setLoading(true);
     skipNextFetchRef.current = true;
+    if (Capacitor.isNativePlatform()) {
+      try {
+        let permissions = await Geolocation.checkPermissions();
+        if (permissions.location !== 'granted') {
+          permissions = await Geolocation.requestPermissions();
+        }
+        if (permissions.location !== 'granted') {
+          throw new Error('permission-denied');
+        }
+        const { coords } = await Geolocation.getCurrentPosition({
+          enableHighAccuracy: true,
+          timeout: 10000,
+        });
+        applyPosition(coords);
+      } catch {
+        setGeoError("Accès à la localisation refusé. Activez la position pour Carvio dans Réglages iOS.");
+        setLoading(false);
+      }
+      return;
+    }
+
+    if (!navigator.geolocation) {
+      setGeoError("La géolocalisation n'est pas disponible sur cet appareil.");
+      setLoading(false);
+      return;
+    }
     navigator.geolocation.getCurrentPosition(
-      ({ coords }) => {
-        const pos = [coords.latitude, coords.longitude];
-        setUserPos(pos);
-        userPosRef.current = pos;
-        viewportCenterRef.current = pos;
-        viewportRadiusRef.current = DEFAULT_RADIUS;
-        setMapCenter(pos);
-        loadPOIs(coords.latitude, coords.longitude, activeFiltersRef.current);
-      },
+      ({ coords }) => applyPosition(coords),
       () => {
         setGeoError("Accès à la localisation refusé.");
         setLoading(false);
       },
-      { timeout: 10000 }
+      { timeout: 10000, enableHighAccuracy: true }
     );
-  }, [loadPOIs]);
+  }, [applyPosition]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { locateUser(); }, []);

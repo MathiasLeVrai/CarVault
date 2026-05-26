@@ -1,7 +1,129 @@
-const API_URL = '/api';
+const DEFAULT_PUBLIC_APP_URL = 'https://carvio.fr';
+const DEFAULT_WEB_API_URL = '/api';
+const NATIVE_API_URL = `${DEFAULT_PUBLIC_APP_URL}/api`;
+
+const isNativeCapacitor = () =>
+  typeof window !== 'undefined' &&
+  (window.Capacitor?.isNativePlatform?.() === true ||
+    window.location.protocol === 'capacitor:');
+
+const trimTrailingSlashes = (value) => value.replace(/\/+$/, '');
+
+const normalizeBaseUrl = (value) => {
+  if (!value) return '';
+  const trimmed = trimTrailingSlashes(value.trim());
+  return trimmed || '/';
+};
+
+const joinUrl = (base, path = '') => {
+  if (!path) return base;
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  if (!base || base === '/') return normalizedPath;
+  return `${base}${normalizedPath}`;
+};
+
+const isAbsoluteAssetUrl = (value) =>
+  /^[a-z][a-z\d+\-.]*:\/\//i.test(value) ||
+  value.startsWith('data:') ||
+  value.startsWith('blob:');
+
+const isAbsoluteHttpUrl = (value) => /^https?:\/\//i.test(value);
+
+const resolveApiUrl = () => {
+  const configured = normalizeBaseUrl(import.meta.env.VITE_API_URL || '');
+  if (isNativeCapacitor()) {
+    return configured && isAbsoluteHttpUrl(configured) ? configured : NATIVE_API_URL;
+  }
+  return configured || DEFAULT_WEB_API_URL;
+};
+
+export const API_URL = resolveApiUrl();
+
+export const PUBLIC_APP_URL = normalizeBaseUrl(
+  import.meta.env.VITE_PUBLIC_APP_URL ||
+  (isNativeCapacitor() ? DEFAULT_PUBLIC_APP_URL : window.location.origin)
+);
+
+export const STORAGE_PUBLIC_URL = normalizeBaseUrl(import.meta.env.VITE_STORAGE_PUBLIC_URL || '');
+
+export const getApiUrl = (endpoint = '') => joinUrl(API_URL, endpoint);
+
+export const getBackendUrl = (path = '') => {
+  const backendBase = API_URL.endsWith('/api') ? API_URL.slice(0, -4) : API_URL;
+  return joinUrl(backendBase, path);
+};
+
+export const getAssetUrl = (path) => {
+  if (!path || isAbsoluteAssetUrl(path)) return path;
+  if (path.startsWith('/uploads/')) return getBackendUrl(path);
+  if (/^\/(vehicles|documents|avatars)\//.test(path) && STORAGE_PUBLIC_URL) {
+    return joinUrl(STORAGE_PUBLIC_URL, path);
+  }
+  if (isNativeCapacitor() && path.startsWith('/')) return getBackendUrl(path);
+  return path;
+};
+
+export const getPublicAppUrl = (path = '') => joinUrl(PUBLIC_APP_URL, path);
 
 const STORAGE_TOKEN = 'carvault_token';
 const STORAGE_REFRESH = 'carvault_refresh_token';
+
+const blobToBase64 = (blob) => new Promise((resolve, reject) => {
+  const reader = new FileReader();
+  reader.onloadend = () => {
+    const result = String(reader.result || '');
+    resolve(result.includes(',') ? result.split(',')[1] : result);
+  };
+  reader.onerror = reject;
+  reader.readAsDataURL(blob);
+});
+
+const downloadBlob = async (blob, filename) => {
+  if (isNativeCapacitor()) {
+    const [{ Filesystem, Directory }, { Share }] = await Promise.all([
+      import('@capacitor/filesystem'),
+      import('@capacitor/share'),
+    ]);
+    const saved = await Filesystem.writeFile({
+      path: filename,
+      data: await blobToBase64(blob),
+      directory: Directory.Cache,
+      recursive: true,
+    });
+    await Share.share({
+      title: filename,
+      text: 'Dossier PDF Carvio',
+      url: saved.uri,
+      dialogTitle: 'Partager ou enregistrer le PDF',
+    });
+    return;
+  }
+
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  window.setTimeout(() => window.URL.revokeObjectURL(url), 1000);
+  a.remove();
+};
+
+export const downloadPdfFromUrl = async (url, filename = 'Carvio_Dossier.pdf', headers = {}) => {
+  const response = await fetch(url, { headers });
+  if (!response.ok) {
+    const text = await response.text();
+    let msg = 'Erreur lors de la génération du PDF';
+    try {
+      const json = JSON.parse(text);
+      if (json?.error) msg = json.error;
+    } catch { /* ignore */ }
+    throw new Error(msg);
+  }
+  const blob = await response.blob();
+  const dispositionFilename = response.headers.get('Content-Disposition')?.match(/filename="(.+)"/)?.[1];
+  await downloadBlob(blob, dispositionFilename || filename);
+};
 
 /**
  * Client API centralisé pour Carvio
@@ -43,7 +165,7 @@ class ApiClient {
 
     this._refreshPromise = (async () => {
       try {
-        const res = await fetch(`${this.baseUrl}/auth/refresh`, {
+        const res = await fetch(joinUrl(this.baseUrl, '/auth/refresh'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ refreshToken }),
@@ -75,7 +197,7 @@ class ApiClient {
       config.body = isFormData ? body : JSON.stringify(body);
     }
 
-    let response = await fetch(`${this.baseUrl}${endpoint}`, config);
+    let response = await fetch(joinUrl(this.baseUrl, endpoint), config);
 
     // On 401, attempt a silent refresh and retry once
     if (response.status === 401 && !endpoint.includes('/auth/refresh')) {
@@ -83,7 +205,7 @@ class ApiClient {
       if (refreshed) {
         // Retry with new token
         config.headers = this.getHeaders(isFormData);
-        response = await fetch(`${this.baseUrl}${endpoint}`, config);
+        response = await fetch(joinUrl(this.baseUrl, endpoint), config);
       }
     }
 
@@ -157,28 +279,9 @@ export const vehicleApi = {
   updateMaintenancePlan: (id, intervals) => api.put(`/vehicles/${id}/maintenance`, { intervals }),
   downloadPdf: async (id) => {
     const token = localStorage.getItem('carvault_token');
-    const response = await fetch(`/api/vehicles/${id}/pdf`, {
-      headers: { Authorization: `Bearer ${token}` },
+    await downloadPdfFromUrl(getApiUrl(`/vehicles/${id}/pdf`), 'Carvio_Dossier.pdf', {
+      Authorization: `Bearer ${token}`,
     });
-    if (!response.ok) {
-      const text = await response.text();
-      let msg = 'Erreur lors de la génération du PDF';
-      try {
-        const json = JSON.parse(text);
-        if (json?.error) msg = json.error;
-      } catch { /* ignore */ }
-      throw new Error(msg);
-    }
-    const blob = await response.blob();
-    const url = window.URL.createObjectURL(blob);
-    const filename = response.headers.get('Content-Disposition')?.match(/filename="(.+)"/)?.[1] || 'Carvio_Dossier.pdf';
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    a.remove();
   },
 };
 

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { vehicleApi, brandApi } from '../services/api';
+import { brandApi, getAssetUrl, vehicleApi } from '../services/api';
 import compressImage from '../utils/compressImage';
 import { useToast } from '../context/ToastContext';
 import Button from '../components/ui/Button';
@@ -9,8 +9,7 @@ import Input from '../components/ui/Input';
 import Select from '../components/ui/Select';
 import Autocomplete from '../components/ui/Autocomplete';
 import EmptyState from '../components/ui/EmptyState';
-import PlateScanModal from '../components/PlateScanModal';
-import { Car, Plus, FileText, ArrowUpRight, Gauge, Zap, Search, CheckCircle2, ScanLine } from 'lucide-react';
+import { Car, Plus, FileText, ArrowUpRight, Gauge, Zap, Search, CheckCircle2 } from 'lucide-react';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
 import PremiumModal from '../components/PremiumModal';
 
@@ -69,7 +68,6 @@ export default function VehiclesPage() {
   const [plateFound, setPlateFound] = useState(false);
   const [plateError, setPlateError] = useState('');
   const [manualMode, setManualMode] = useState(false);
-  const [showScanner, setShowScanner] = useState(false);
   const [showPremium, setShowPremium] = useState(false);
 
   const [form, setForm] = useState({
@@ -242,7 +240,7 @@ export default function VehiclesPage() {
               onClick={() => navigate(`/vehicles/${v.id}`)}>
               <div className="aspect-[16/10] bg-[#121214] relative overflow-hidden">
                 {v.photo ? (
-                  <img src={v.photo} alt={`${v.brand} ${v.model}`} loading="lazy"
+                  <img src={getAssetUrl(v.photo)} alt={`${v.brand} ${v.model}`} loading="lazy"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out cv-img-outline" />
                 ) : (
                   <div className="absolute inset-0 flex items-center justify-center opacity-30 group-hover:opacity-50 transition-opacity duration-500">
@@ -292,46 +290,6 @@ export default function VehiclesPage() {
         </Motion.div>
       )}
 
-      {/* Plate scanner */}
-      {showScanner && (
-        <PlateScanModal
-          onPlateFound={(plate) => {
-            setPlateInput(plate);
-            setShowScanner(false);
-            // Auto-trigger lookup
-            setTimeout(() => {
-              setPlateLoading(true);
-              setPlateError('');
-              setPlateFound(false);
-              brandApi.lookupPlate(plate)
-                .then(data => {
-                  setForm(p => ({
-                    ...p,
-                    brand: data.brand || '',
-                    model: data.model || '',
-                    year: data.year ? String(data.year) : '',
-                    licensePlate: data.licensePlate || plate,
-                    color: data.color || '',
-                    fuelType: data.fuelType || 'GASOLINE',
-                    horsepower: data.horsepower ? String(data.horsepower) : '',
-                    engineSize: data.engineSize ? String(data.engineSize) : '',
-                    transmission: data.transmission || '',
-                    bodyType: data.bodyType || '',
-                    doors: data.doors ? String(data.doors) : '',
-                    fiscalPower: data.fiscalPower ? String(data.fiscalPower) : '',
-                    co2: data.co2 ? String(data.co2) : '',
-                    firstRegistrationDate: data.firstRegistrationDate || '',
-                  }));
-                  setPlateFound(true);
-                })
-                .catch(err => setPlateError(err.message || 'Plaque non trouvée.'))
-                .finally(() => setPlateLoading(false));
-            }, 0);
-          }}
-          onClose={() => setShowScanner(false)}
-        />
-      )}
-
       {/* Modal */}
       <Modal isOpen={showModal} onClose={() => { setShowModal(false); resetForm(); }} title="Nouveau véhicule">
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -343,10 +301,7 @@ export default function VehiclesPage() {
                     onChange={e => { setPlateInput(e.target.value); setPlateError(''); }}
                     onKeyDown={handlePlateKeyDown} />
                 </div>
-                <div className="flex items-end gap-2">
-                  <Button type="button" onClick={() => setShowScanner(true)} variant="dark" title="Scanner avec la caméra">
-                    <ScanLine className="w-4 h-4 text-accent" />
-                  </Button>
+                <div className="flex items-end">
                   <Button type="button" onClick={handlePlateLookup} loading={plateLoading} variant="accent">
                     <Search className="w-4 h-4" />
                   </Button>

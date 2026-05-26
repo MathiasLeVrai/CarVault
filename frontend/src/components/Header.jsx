@@ -1,6 +1,6 @@
 import { Bell, Sun, Moon } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { alertApi } from '../services/api';
+import { alertApi, getAssetUrl } from '../services/api';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -65,7 +65,7 @@ export default function Header() {
         >
           {user?.avatar ? (
             <img
-              src={user.avatar}
+              src={getAssetUrl(user.avatar)}
               alt="avatar"
               className="w-9 h-9 md:w-10 md:h-10 rounded-xl object-cover shadow-lg border border-white/10 cv-img-outline"
             />

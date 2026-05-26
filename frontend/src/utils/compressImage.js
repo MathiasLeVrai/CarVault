@@ -16,8 +16,8 @@ export default function compressImage(file, { maxWidth = 1920, quality = 0.8 } =
     img.onload = () => {
       URL.revokeObjectURL(url);
 
-      // No resize needed if already small
-      if (img.width <= maxWidth && file.size <= 2 * 1024 * 1024) {
+      // Keep small JPEGs as-is, but convert iPhone HEIC/HEIF and other image types to JPEG.
+      if (file.type === 'image/jpeg' && img.width <= maxWidth && file.size <= 2 * 1024 * 1024) {
         resolve(file);
         return;
       }
@@ -35,7 +35,12 @@ export default function compressImage(file, { maxWidth = 1920, quality = 0.8 } =
 
       canvas.toBlob(
         (blob) => {
-          const compressed = new File([blob], file.name, {
+          if (!blob) {
+            resolve(file);
+            return;
+          }
+          const jpegName = file.name.replace(/\.[^.]+$/, '') || 'image';
+          const compressed = new File([blob], `${jpegName}.jpg`, {
             type: 'image/jpeg',
             lastModified: Date.now(),
           });

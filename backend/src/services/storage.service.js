@@ -10,6 +10,8 @@ const isR2Configured = () =>
      process.env.R2_SECRET_ACCESS_KEY &&
      process.env.R2_BUCKET_NAME);
 
+const getR2PublicUrl = () => (process.env.R2_PUBLIC_URL || '').replace(/\/$/, '');
+
 let s3 = null;
 
 function getS3() {
@@ -31,6 +33,8 @@ const MIME_MAP = {
   '.jpeg': 'image/jpeg',
   '.png': 'image/png',
   '.webp': 'image/webp',
+  '.heic': 'image/heic',
+  '.heif': 'image/heif',
   '.pdf': 'application/pdf',
   '.doc': 'application/msword',
   '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -53,6 +57,11 @@ class StorageService {
     const key = `${folder}/${uuidv4()}${ext}`;
 
     if (this.isConfigured()) {
+      const baseUrl = getR2PublicUrl();
+      if (!baseUrl) {
+        throw new Error('R2_PUBLIC_URL est requis quand le stockage R2 est configure');
+      }
+
       const upload = new Upload({
         client: getS3(),
         params: {
@@ -64,7 +73,6 @@ class StorageService {
       });
       await upload.done();
 
-      const baseUrl = (process.env.R2_PUBLIC_URL || '').replace(/\/$/, '');
       return `${baseUrl}/${key}`;
     }
 
@@ -101,7 +109,7 @@ class StorageService {
 
   _extractKey(url) {
     try {
-      const baseUrl = (process.env.R2_PUBLIC_URL || '').replace(/\/$/, '');
+      const baseUrl = getR2PublicUrl();
       if (baseUrl && url.startsWith(baseUrl)) {
         return url.slice(baseUrl.length + 1);
       }

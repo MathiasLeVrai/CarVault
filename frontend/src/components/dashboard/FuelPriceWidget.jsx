@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Fuel } from 'lucide-react';
 import { motion as Motion } from 'framer-motion';
+import { getApiUrl } from '../../services/api';
 
 const FUEL_TYPE_MAP = {
   GASOLINE: 'E10',
@@ -26,7 +27,7 @@ export default function FuelPriceWidget({ userFuelType, variants }) {
 
   useEffect(() => {
     const token = localStorage.getItem('carvault_token');
-    fetch('/api/dashboard/fuel-prices', {
+    fetch(getApiUrl('/dashboard/fuel-prices'), {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then(r => r.ok ? r.json() : null)

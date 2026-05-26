@@ -1,0 +1,43 @@
+@startuml sequence-add-vehicle
+title Séquence — Ajout d'un véhicule (avec check premium)
+
+actor User
+participant "VehiclesPage" as UI
+participant "PremiumModal" as Modal
+participant "ApiClient" as Api
+participant "vehicle.controller" as Ctrl
+participant "vehicle.service" as Svc
+participant "stripe.service" as Stripe
+participant "badge.service" as Badges
+database "Prisma / Neon" as DB
+
+User -> UI : clique "+ Ajouter un véhicule"
+UI -> Api : POST /vehicles { brand, model, year, ... }
+Api -> Ctrl : request (JWT)
+Ctrl -> Svc : create(userId, payload)
+
+Svc -> Stripe : checkVehicleLimit(userId)
+Stripe -> DB : User { isPremium }\ncount(Vehicle where userId)
+DB --> Stripe : { isPremium: false, count: 1 }
+
+alt limite atteinte (free, déjà 1 véhicule)
+  Stripe --> Svc : throw AppError\n('PREMIUM_REQUIRED', 403)
+  Svc --> Ctrl : error
+  Ctrl --> Api : 403 { code: PREMIUM_REQUIRED }
+  Api --> UI : reject(err)
+  UI -> Modal : open(err.code)
+  Modal -> User : "Passez Premium pour\najouter plus de véhicules"
+else limite OK
+  Stripe --> Svc : ok
+  Svc -> DB : create Vehicle
+  DB --> Svc : Vehicle { id }
+  Svc -> Badges : checkFirstVehicleBadge(userId)
+  Badges -> DB : read user stats
+  Badges --> Svc : (badge attribué async)
+  Svc --> Ctrl : Vehicle
+  Ctrl --> Api : 201 Created
+  Api --> UI : vehicle
+  UI -> UI : toast('Véhicule ajouté')\nnavigate(/vehicles/:id)
+end
+
+@enduml

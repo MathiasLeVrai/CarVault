@@ -54,6 +54,31 @@ function resolvePhotoPath(photoUrl) {
   return null;
 }
 
+async function resolvePhotoSource(photoUrl) {
+  const localPath = resolvePhotoPath(photoUrl);
+  if (localPath) return localPath;
+  if (!photoUrl || typeof photoUrl !== 'string') return null;
+
+  let remoteUrl = photoUrl;
+  if (!/^https?:\/\//i.test(remoteUrl)) {
+    const publicStorageUrl = (process.env.R2_PUBLIC_URL || '').replace(/\/$/, '');
+    const appUrl = (process.env.APP_URL || '').replace(/\/$/, '');
+    const baseUrl = /^\/uploads\//.test(remoteUrl) ? appUrl : publicStorageUrl;
+    if (!baseUrl) return null;
+    remoteUrl = `${baseUrl}${remoteUrl.startsWith('/') ? remoteUrl : `/${remoteUrl}`}`;
+  }
+
+  try {
+    const response = await fetch(remoteUrl);
+    if (!response.ok) return null;
+    return Buffer.from(await response.arrayBuffer());
+  } catch {
+    return null;
+  }
+}
+
+const getPhotoSource = (vehicle) => vehicle?._pdfPhotoSource || resolvePhotoPath(vehicle?.photo);
+
 class PdfService {
   /**
    * Générer le dossier PDF complet d'un véhicule.
@@ -68,6 +93,7 @@ class PdfService {
       expenses: Array.isArray(expenses) ? expenses : [],
       stats: stats && typeof stats === 'object' ? stats : {},
     };
+    vehicle._pdfPhotoSource = await resolvePhotoSource(vehicle.photo);
     return new Promise((resolve, reject) => {
       const doc = new PDFDocument({
         size: 'A4',
@@ -126,7 +152,7 @@ class PdfService {
 
     // Photo du véhicule si disponible
     let photoY = 180;
-    const photoPath = resolvePhotoPath(vehicle.photo);
+    const photoPath = getPhotoSource(vehicle);
     if (photoPath) {
       try {
         doc.image(photoPath, 100, 140, { width: 400, height: 220, fit: [400, 220], align: 'center' });
@@ -168,7 +194,7 @@ class PdfService {
     doc.addPage();
     this._drawHeader(doc, 'Contenu du dossier revente');
 
-    const photoPath = resolvePhotoPath(vehicle.photo);
+    const photoPath = getPhotoSource(vehicle);
     const hasPhoto = !!photoPath;
     const byType = (documents || []).reduce((acc, d) => { acc[d.type] = (acc[d.type] || 0) + 1; return acc; }, {});
     const maintenanceCount = (expenses || []).filter(e => e.category === 'MAINTENANCE').length;

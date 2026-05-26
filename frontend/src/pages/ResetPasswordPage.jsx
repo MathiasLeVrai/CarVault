@@ -42,7 +42,7 @@ export default function ResetPasswordPage() {
 
   if (!token) {
     return (
-      <div className="min-h-screen bg-bg flex items-center justify-center p-8">
+      <div className="public-screen-auth bg-bg flex items-center justify-center p-8">
         <div className="w-full max-w-[400px] text-center">
           <h2 className="text-2xl font-black text-white mb-4 font-display">Lien invalide</h2>
           <p className="text-ink-muted mb-6">Ce lien de réinitialisation est invalide ou a expiré.</p>
@@ -55,7 +55,7 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-bg flex items-center justify-center p-8">
+    <div className="public-screen-auth bg-bg flex items-center justify-center p-8">
       <Helmet>
         <title>Nouveau mot de passe — Carvio</title>
       </Helmet>

@@ -28,7 +28,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-bg flex">
+    <div className="public-screen-auth bg-bg flex">
       <Helmet>
         <title>Connexion — Carvio</title>
         <meta name="description" content="Connectez-vous a votre compte Carvio pour gerer vos vehicules, documents et depenses." />

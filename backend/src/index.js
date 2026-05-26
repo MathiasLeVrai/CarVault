@@ -1,15 +1,4 @@
-require('dotenv').config();
-const Sentry = require('@sentry/node');
-
-// Init Sentry before everything else
-if (process.env.SENTRY_DSN) {
-  Sentry.init({
-    dsn: process.env.SENTRY_DSN,
-    environment: process.env.NODE_ENV || 'production',
-    tracesSampleRate: 0.2,
-    sendDefaultPii: false,
-  });
-}
+const Sentry = require('./instrument');
 
 const express = require('express');
 const cors = require('cors');
@@ -52,7 +41,11 @@ const { startBudgetCron } = require('./cron/budget.cron');
 
 const app = express();
 app.set('trust proxy', 1);
-const PORT = process.env.PORT || 3001;
+const PORT = Number(process.env.PORT) || (process.env.NODE_ENV === 'production' ? 8080 : 3001);
+if (!Number.isFinite(PORT) || PORT < 1 || PORT > 65535) {
+  console.error(`[FATAL] Invalid PORT: ${process.env.PORT}`);
+  process.exit(1);
+}
 
 // Ancienne URL Fly → domaine canonique (navigateurs, liens partagés). Ne pas rediriger le webhook Stripe
 // (POST + 301 peut faire perdre le corps côté client).
@@ -101,14 +94,22 @@ const apiLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-// CORS — allow configured origin or localhost in dev
-const allowedOrigins = process.env.CORS_ORIGIN
-  ? process.env.CORS_ORIGIN.split(',')
+// CORS — allow configured web origins plus native Capacitor origins.
+const configuredOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim()).filter(Boolean)
   : ['http://localhost:5173', 'http://localhost:5174'];
+const nativeAppOrigins = [
+  'capacitor://localhost',
+  'ionic://localhost',
+  'http://localhost',
+  'https://localhost',
+];
+const allowedOrigins = [...new Set([...configuredOrigins, ...nativeAppOrigins])];
 
 app.use(helmet({
   contentSecurityPolicy: false, // CSP géré par Vite/frontend
   crossOriginEmbedderPolicy: false, // Permet le chargement des images externes (map tiles, etc.)
+  crossOriginResourcePolicy: { policy: 'cross-origin' }, // Autorise l'app Capacitor à afficher /uploads depuis carvio.fr
 }));
 
 app.use(cors({
@@ -203,7 +204,7 @@ app.get('*', (req, res) => {
 });
 
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚗 Carvio API running on port ${PORT}`);
+  console.log(`🚗 Carvio API listening on http://0.0.0.0:${PORT} (NODE_ENV=${process.env.NODE_ENV || 'development'})`);
   startAlertCron();
   startMonthlyReportCron();
   startWeeklyDigestCron();

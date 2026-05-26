@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { documentApi, vehicleApi } from '../services/api';
+import { documentApi, getAssetUrl, vehicleApi } from '../services/api';
 import Button from '../components/ui/Button';
 import Badge from '../components/ui/Badge';
 import Modal from '../components/ui/Modal';
@@ -11,6 +11,7 @@ import { FileText, Plus, Trash2, Upload, Eye, Camera, Sparkles, Bell, X, Downloa
 import { formatDateShort, daysUntil, documentTypeLabels, documentTypeBadge } from '../utils/helpers';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
+import compressImage from '../utils/compressImage';
 
 const typeFilters = [
   { value: '', label: 'Tous' },
@@ -132,7 +133,7 @@ export default function DocumentsPage() {
       fd.append('vehicleId', form.vehicleId);
       if (form.expirationDate) fd.append('expirationDate', form.expirationDate);
       if (form.notes) fd.append('notes', form.notes);
-      if (file) fd.append('file', file);
+      if (file) fd.append('file', file.type.startsWith('image/') ? await compressImage(file) : file);
       fd.append('reminderDays', JSON.stringify(reminders));
       await documentApi.create(fd);
       setShowModal(false);
@@ -465,6 +466,7 @@ export default function DocumentsPage() {
       {createPortal(
         <AnimatePresence>
           {viewingDoc && (() => {
+            const fileUrl = getAssetUrl(viewingDoc.filePath);
             const isImage = /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(viewingDoc.filePath);
             const isPdf = /\.pdf$/i.test(viewingDoc.filePath) || viewingDoc.filePath.includes('.pdf');
 
@@ -490,7 +492,7 @@ export default function DocumentsPage() {
                     {viewingDoc.name}
                   </p>
                   <a
-                    href={viewingDoc.filePath}
+                    href={fileUrl}
                     download
                     className="flex items-center gap-2 px-3 py-2 rounded-xl cv-btn-dark text-sm font-semibold active:scale-[0.96] transition-transform"
                   >
@@ -502,14 +504,14 @@ export default function DocumentsPage() {
                 <div className="flex-1 flex items-center justify-center overflow-hidden px-4 pb-4" style={{ background: 'var(--color-bg)' }}>
                   {isImage ? (
                     <img
-                      src={viewingDoc.filePath}
+                      src={fileUrl}
                       alt={viewingDoc.name}
                       className="max-w-full max-h-full object-contain rounded-xl select-none cv-img-outline"
                       draggable={false}
                     />
                   ) : isPdf ? (
                     <iframe
-                      src={viewingDoc.filePath}
+                      src={fileUrl}
                       title={viewingDoc.name}
                       className="w-full h-full rounded-xl bg-white"
                     />
@@ -518,7 +520,7 @@ export default function DocumentsPage() {
                       <FileText className="w-16 h-16" style={{ color: 'var(--color-ink-muted)' }} />
                       <p className="text-sm" style={{ color: 'var(--color-ink-muted)' }}>Aperçu non disponible pour ce type de fichier.</p>
                       <a
-                        href={viewingDoc.filePath}
+                        href={fileUrl}
                         download
                         className="px-4 py-2 rounded-xl bg-accent text-white text-sm font-bold"
                       >

@@ -410,7 +410,7 @@ export default function LandingPage() {
   const { theme, toggleTheme } = useTheme();
 
   return (
-    <div className="min-h-screen bg-bg text-white overflow-x-hidden">
+    <div className="public-screen bg-bg text-white overflow-x-hidden">
       <Helmet>
         <title>Carvio — Carnet d'entretien numerique pour votre vehicule</title>
         <meta name="description" content="Gerez votre vehicule simplement : carnet d'entretien, alertes CT, suivi carburant et depenses, score de sante, carte des garages. Essayez gratuitement." />

@@ -31,7 +31,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-bg flex">
+    <div className="public-screen-auth bg-bg flex">
       <Helmet>
         <title>Inscription — Carvio</title>
         <meta name="description" content="Creez votre compte Carvio gratuitement et commencez a gerer votre vehicule en quelques secondes." />

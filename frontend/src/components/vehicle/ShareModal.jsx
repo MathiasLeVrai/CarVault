@@ -8,7 +8,7 @@ import Button from '../ui/Button';
 import Modal from '../ui/Modal';
 import Input from '../ui/Input';
 import Select from '../ui/Select';
-import { shareApi } from '../../services/api';
+import { downloadPdfFromUrl, getApiUrl, getPublicAppUrl, shareApi } from '../../services/api';
 
 const DURATION_OPTS = [
   { value: '7', label: '7 jours' },
@@ -69,12 +69,17 @@ export default function ShareModal({ isOpen, onClose, vehicleId, vehicleName }) 
     }
   };
 
-  const buildUrl = (token) => `${window.location.origin}/share/${token}`;
+  const buildUrl = (token) => getPublicAppUrl(`/share/${token}`);
 
   const copyUrl = (token) => {
     navigator.clipboard.writeText(buildUrl(token));
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const downloadPdf = async (token, e) => {
+    e.preventDefault();
+    await downloadPdfFromUrl(getApiUrl(`/share/${token}/pdf`), 'Carvio_Dossier.pdf');
   };
 
   const revokeLink = async (id) => {
@@ -216,7 +221,7 @@ export default function ShareModal({ isOpen, onClose, vehicleId, vehicleName }) 
                 <ExternalLink className="w-4 h-4" /> Aperçu
               </Button>
             </a>
-            <a href={`/api/share/${currentLink.token}/pdf`} target="_blank" rel="noopener noreferrer" className="flex-1">
+            <a href={getApiUrl(`/share/${currentLink.token}/pdf`)} onClick={(e) => downloadPdf(currentLink.token, e)} target="_blank" rel="noopener noreferrer" className="flex-1">
               <Button variant="outline" className="w-full border-white/20 text-white">
                 <FileDown className="w-4 h-4" /> PDF
               </Button>

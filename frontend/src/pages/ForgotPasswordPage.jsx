@@ -26,7 +26,7 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-bg flex items-center justify-center p-8">
+    <div className="public-screen-auth bg-bg flex items-center justify-center p-8">
       <Helmet>
         <title>Mot de passe oublié — Carvio</title>
       </Helmet>

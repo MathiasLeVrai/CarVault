@@ -36,4 +36,4 @@ EXPOSE 8080
 ENV NODE_ENV=production
 ENV PORT=8080
 
-CMD npx prisma migrate deploy && node src/index.js
+CMD ["node", "src/index.js"]

@@ -1,5 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useEffect } from 'react';
+import * as Sentry from '@sentry/react';
 import { authApi } from '../services/api';
 
 const AuthContext = createContext(null);
@@ -18,6 +19,16 @@ export function AuthProvider({ children }) {
     } catch { /* ignore */ }
     return null;
   });
+  useEffect(() => {
+    if (import.meta.env.VITE_SENTRY_DSN) {
+      if (user?.id) {
+        Sentry.setUser({ id: String(user.id), email: user.email });
+      } else {
+        Sentry.setUser(null);
+      }
+    }
+  }, [user]);
+
   useEffect(() => {
     let cancelled = false;
     if (!localStorage.getItem(STORAGE_TOKEN)) return;

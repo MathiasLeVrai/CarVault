@@ -6,6 +6,7 @@ import {
   Car, FileText, Wallet, Gauge, Heart, Wrench, FileCheck,
   PiggyBank, CheckCircle2, FileDown, Shield, Lock,
 } from 'lucide-react';
+import { downloadPdfFromUrl, getApiUrl } from '../services/api';
 
 const CRITAIR_COLORS = {
   0: '#4ade80', 1: '#a78bfa', 2: '#facc15', 3: '#f97316', 4: '#b45309', 5: '#6b7280',
@@ -53,7 +54,7 @@ export default function SharePage() {
 
   const fetchData = useCallback(async (pwd) => {
     const headers = pwd ? { 'X-Share-Password': pwd } : {};
-    const res = await fetch(`/api/share/${token}`, { headers });
+    const res = await fetch(getApiUrl(`/share/${token}`), { headers });
     if (!res.ok) {
       const body = await res.json().catch(() => ({}));
       const err = new Error(body.error || 'Lien invalide ou expiré');
@@ -69,7 +70,7 @@ export default function SharePage() {
     (async () => {
       try {
         // First: check whether password is needed
-        const check = await fetch(`/api/share/${token}/check`).then(r => r.ok ? r.json() : null);
+        const check = await fetch(getApiUrl(`/share/${token}/check`)).then(r => r.ok ? r.json() : null);
         if (cancelled) return;
         if (check?.requiresPassword) {
           setRequiresPassword(true);
@@ -151,8 +152,13 @@ export default function SharePage() {
   if (!data) return null;
   const { vehicle, documents, expenses, stats, health, expiresAt } = data;
   const pdfHref = password
-    ? `/api/share/${token}/pdf?p=${encodeURIComponent(password)}`
-    : `/api/share/${token}/pdf`;
+    ? getApiUrl(`/share/${token}/pdf?p=${encodeURIComponent(password)}`)
+    : getApiUrl(`/share/${token}/pdf`);
+
+  const handlePdfDownload = async (e) => {
+    e.preventDefault();
+    await downloadPdfFromUrl(pdfHref, 'Carvio_Dossier.pdf');
+  };
 
   return (
     <div className="min-h-screen bg-bg selection:bg-accent/30">
@@ -176,6 +182,7 @@ export default function SharePage() {
           </div>
           <a
             href={pdfHref}
+            onClick={handlePdfDownload}
             className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-accent text-white text-sm font-bold hover:bg-accent/80 transition-colors shadow-[0_0_20px_rgba(255,42,63,0.3)]"
           >
             <FileDown className="w-4 h-4" /> Télécharger le PDF
