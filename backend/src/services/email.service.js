@@ -207,6 +207,40 @@ class EmailService {
   }
 
   /**
+   * Envoie une idée / suggestion d'utilisateur vers la boîte de feedback.
+   */
+  async sendFeedbackEmail(user, message) {
+    const to = process.env.FEEDBACK_EMAIL || 'hello@carvio.fr';
+    const escape = (str) => String(str || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+    const safeMessage = escape(message).replace(/\n/g, '<br>');
+    const fullName = [user?.firstName, user?.lastName].filter(Boolean).join(' ') || '—';
+    const email = user?.email || '—';
+
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f4f4f5;font-family:Inter,-apple-system,BlinkMacSystemFont,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:40px 16px;">
+<table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+  <tr><td style="background:#1a1a1a;padding:24px 32px;">
+    <span style="color:#b9ff66;font-size:20px;font-weight:800;letter-spacing:-0.5px;">CAR<span style="color:#fff;">VAULT</span></span>
+  </td></tr>
+  <tr><td style="padding:32px;">
+    <h2 style="margin:0 0 16px;font-size:18px;font-weight:700;color:#1a1a1a;">Nouvelle idée utilisateur</h2>
+    <div style="padding:16px;background:#f9f9fb;border-radius:12px;border-left:4px solid #7c5cfc;margin-bottom:20px;">
+      <p style="margin:0;font-size:14px;color:#444444;line-height:1.6;">${safeMessage}</p>
+    </div>
+    <p style="margin:0;font-size:12px;color:#888888;">De : <strong>${escape(fullName)}</strong> &lt;${escape(email)}&gt;</p>
+  </td></tr>
+</table></td></tr></table>
+</body></html>`;
+
+    return this._sendMailDual(to, `Carvio — Nouvelle idée de ${email}`, html);
+  }
+
+  /**
    * Au démarrage du serveur : rappel en français si l’email « mot de passe oublié » risque de ne pas partir.
    */
   logStartupHint() {

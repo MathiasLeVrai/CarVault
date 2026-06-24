@@ -9,8 +9,8 @@ class AuthController {
         return res.status(400).json({ error: 'Tous les champs sont requis' });
       }
 
-      if (password.length < 6) {
-        return res.status(400).json({ error: 'Le mot de passe doit contenir au moins 6 caractères' });
+      if (password.length < 8) {
+        return res.status(400).json({ error: 'Le mot de passe doit contenir au moins 8 caractères' });
       }
 
       const result = await authService.register({ email, password, firstName, lastName });
@@ -86,8 +86,8 @@ class AuthController {
       if (!token || !password) {
         return res.status(400).json({ error: 'Token et nouveau mot de passe requis' });
       }
-      if (password.length < 6) {
-        return res.status(400).json({ error: 'Le mot de passe doit contenir au moins 6 caractères' });
+      if (password.length < 8) {
+        return res.status(400).json({ error: 'Le mot de passe doit contenir au moins 8 caractères' });
       }
       await authService.resetPassword(token, password);
       res.json({ message: 'Mot de passe réinitialisé avec succès.' });

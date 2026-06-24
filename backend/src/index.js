@@ -32,6 +32,7 @@ const subscriptionRoutes = require('./routes/subscription.routes');
 const badgeRoutes = require('./routes/badge.routes');
 const pushRoutes = require('./routes/push.routes');
 const coteRoutes = require('./routes/cote.routes');
+const feedbackRoutes = require('./routes/feedback.routes');
 const { errorHandler } = require('./middleware/error.middleware');
 const { startAlertCron } = require('./cron/alert.cron');
 const { startMonthlyReportCron } = require('./cron/monthly-report.cron');
@@ -94,6 +95,14 @@ const apiLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+const feedbackLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 10,
+  message: { error: 'Trop d\'idées envoyées. Réessayez dans 1 heure.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // CORS — allow configured web origins plus native Capacitor origins.
 const configuredOrigins = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim()).filter(Boolean)
@@ -137,6 +146,7 @@ app.use('/api', apiLimiter);
 app.use('/api/auth/login', loginLimiter);
 app.use('/api/auth/register', registerLimiter);
 app.use('/api/auth/forgot-password', registerLimiter);
+app.use('/api/feedback', feedbackLimiter);
 app.use('/api/share', publicLimiter);
 app.use('/api/brands/plate', publicLimiter);
 app.use('/api/auth', authRoutes);
@@ -154,14 +164,18 @@ app.use('/api/subscription', subscriptionRoutes);
 app.use('/api/badges', badgeRoutes);
 app.use('/api/push', pushRoutes);
 app.use('/api/cote', coteRoutes);  // GET /api/cote/:vehicleId
+app.use('/api/feedback', feedbackRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Swagger UI — documentation OpenAPI (désactiver avec SWAGGER_ENABLED=false)
-if (process.env.SWAGGER_ENABLED !== 'false') {
+// Swagger UI — désactivé en production par défaut (forcer avec SWAGGER_ENABLED=true).
+const swaggerEnabled = process.env.SWAGGER_ENABLED
+  ? process.env.SWAGGER_ENABLED === 'true'
+  : process.env.NODE_ENV !== 'production';
+if (swaggerEnabled) {
   const swaggerUi = require('swagger-ui-express');
   const YAML = require('yamljs');
   const openapiPath = path.join(__dirname, 'docs/openapi.yaml');

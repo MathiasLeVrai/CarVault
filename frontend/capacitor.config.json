@@ -1,0 +1,11 @@
+{
+  "appId": "fr.carvio.app",
+  "appName": "carvio",
+  "webDir": "dist",
+  "ios": {
+    "infoPlist": {
+      "NSLocationWhenInUseUsageDescription": "Carvio utilise votre position pour afficher la carte et trouver les stations-service et services automobiles à proximité.",
+      "NSLocationAlwaysAndWhenInUseUsageDescription": "Carvio utilise votre position pour afficher la carte et trouver les stations-service et services automobiles à proximité."
+    }
+  }
+}

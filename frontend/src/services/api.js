@@ -380,3 +380,7 @@ export const coteApi = {
   update: (vehicleId, estimatedValue) => api.put(`/cote/${vehicleId}`, { estimatedValue }),
 };
 
+export const feedbackApi = {
+  send: (message) => api.post('/feedback', { message }),
+};
+

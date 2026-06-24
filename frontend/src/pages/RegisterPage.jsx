@@ -23,7 +23,7 @@ export default function RegisterPage() {
   const handleSubmit = async (e) => {
     e.preventDefault(); setError('');
     if (form.password !== form.confirmPassword) return setError('Les mots de passe ne correspondent pas');
-    if (form.password.length < 6) return setError('Min. 6 caractères');
+    if (form.password.length < 8) return setError('Min. 8 caractères');
     setLoading(true);
     try { await register({ firstName: form.firstName, lastName: form.lastName, email: form.email, password: form.password }); }
     catch (err) { setError(err.message); }
@@ -128,7 +128,7 @@ export default function RegisterPage() {
             <div className="space-y-2">
               <label className="block text-sm font-semibold text-white/80">Mot de passe</label>
               <input type="password" name="password" value={form.password} onChange={handleChange}
-                placeholder="Min. 6 caractères" className="cv-input w-full px-4 py-3 text-base text-ink" required />
+                placeholder="Min. 8 caractères" className="cv-input w-full px-4 py-3 text-base text-ink" required minLength={8} />
             </div>
             <div className="space-y-2">
               <label className="block text-sm font-semibold text-white/80">Confirmer</label>

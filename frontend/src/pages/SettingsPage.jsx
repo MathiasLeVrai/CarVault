@@ -9,9 +9,10 @@ import compressImage from '../utils/compressImage';
 import {
   Bell, Mail, Smartphone, Calendar, Check, Settings, Sun, Moon, LogOut, Globe,
   Camera, Pencil, Crown, User as UserIcon, Zap, Loader2, ExternalLink,
+  Lightbulb, Send,
 } from 'lucide-react';
 import { motion as Motion } from 'framer-motion';
-import { subscriptionApi } from '../services/api';
+import { subscriptionApi, feedbackApi } from '../services/api';
 import { useToast } from '../context/ToastContext';
 
 const containerVariants = {
@@ -327,6 +328,80 @@ function SubscriptionCard({ user }) {
   );
 }
 
+function IdeaCard() {
+  const [open, setOpen] = useState(false);
+  const [message, setMessage] = useState('');
+  const [sending, setSending] = useState(false);
+  const toast = useToast();
+  const MAX = 2000;
+
+  const handleSend = async () => {
+    const trimmed = message.trim();
+    if (trimmed.length < 5) {
+      toast.error('Votre idée est un peu trop courte.');
+      return;
+    }
+    setSending(true);
+    try {
+      await feedbackApi.send(trimmed);
+      toast.success('Merci pour votre idée !');
+      setMessage('');
+      setOpen(false);
+    } catch (err) {
+      toast.error(err.message || "Impossible d'envoyer votre idée.");
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <div className="cv-card p-5">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="flex items-center gap-4 w-full text-left"
+      >
+        <div className="w-10 h-10 rounded-xl bg-lime/10 border border-lime/20 flex items-center justify-center shrink-0">
+          <Lightbulb className="w-5 h-5 text-lime" strokeWidth={2} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-bold text-ink font-display">Proposer une idée</p>
+          <p className="text-[11px] text-ink-muted mt-0.5 leading-relaxed">
+            Une suggestion pour améliorer Carvio ? Dites-nous tout.
+          </p>
+        </div>
+      </button>
+
+      {open && (
+        <Motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          className="mt-4 space-y-3 overflow-hidden"
+        >
+          <textarea
+            value={message}
+            onChange={e => setMessage(e.target.value.slice(0, MAX))}
+            placeholder="Votre idée, suggestion ou fonctionnalité souhaitée…"
+            rows={4}
+            className="cv-input w-full px-4 py-3 text-sm text-ink resize-none"
+            autoFocus
+          />
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-[11px] text-ink-muted">{message.length}/{MAX}</span>
+            <button
+              onClick={handleSend}
+              disabled={sending || message.trim().length < 5}
+              className="cv-btn-accent px-4 py-2.5 text-xs rounded-xl inline-flex items-center gap-1.5 font-bold disabled:opacity-50"
+            >
+              {sending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+              {sending ? 'Envoi…' : 'Envoyer votre idée'}
+            </button>
+          </div>
+        </Motion.div>
+      )}
+    </div>
+  );
+}
+
 export default function SettingsPage() {
   const { user, logout, updateProfile } = useAuth();
   const { theme, toggleTheme } = useTheme();
@@ -527,6 +602,17 @@ export default function SettingsPage() {
             </p>
           </div>
         </div>
+      </Motion.div>
+
+      {/* Proposer une idée */}
+      <Motion.div variants={itemVariants} className="space-y-3">
+        <div className="flex items-center gap-2.5 mb-2">
+          <div className="w-7 h-7 rounded-lg bg-lime/10 flex items-center justify-center">
+            <Lightbulb className="w-3.5 h-3.5 text-lime" strokeWidth={2.5} />
+          </div>
+          <h2 className="text-sm font-bold text-ink font-display tracking-tight">Votre avis</h2>
+        </div>
+        <IdeaCard />
       </Motion.div>
 
       {/* Déconnexion */}

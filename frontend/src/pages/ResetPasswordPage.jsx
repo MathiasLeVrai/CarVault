@@ -21,8 +21,8 @@ export default function ResetPasswordPage() {
     e.preventDefault();
     setError('');
 
-    if (password.length < 6) {
-      return setError('Le mot de passe doit contenir au moins 6 caractères.');
+    if (password.length < 8) {
+      return setError('Le mot de passe doit contenir au moins 8 caractères.');
     }
     if (password !== confirmPassword) {
       return setError('Les mots de passe ne correspondent pas.');
@@ -110,7 +110,7 @@ export default function ResetPasswordPage() {
                   placeholder="••••••••"
                   className="cv-input w-full px-4 py-3.5 text-base text-ink"
                   required
-                  minLength={6}
+                  minLength={8}
                 />
               </div>
               <div className="space-y-2">
@@ -122,7 +122,7 @@ export default function ResetPasswordPage() {
                   placeholder="••••••••"
                   className="cv-input w-full px-4 py-3.5 text-base text-ink"
                   required
-                  minLength={6}
+                  minLength={8}
                 />
               </div>
               <Button type="submit" loading={loading} className="w-full" size="lg" variant="accent">
