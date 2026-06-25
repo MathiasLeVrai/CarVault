@@ -961,6 +961,7 @@ export default function LandingPage() {
           </p>
 
           <div className="flex gap-6">
+            <Link to="/privacy" className="text-xs text-white/30 hover:text-white/60 transition-[color] duration-150 font-medium">Confidentialité</Link>
             <Link to="/login" className="text-xs text-white/30 hover:text-white/60 transition-[color] duration-150 font-medium">Connexion</Link>
             <Link to="/register" className="text-xs text-white/30 hover:text-white/60 transition-[color] duration-150 font-medium">Inscription</Link>
           </div>

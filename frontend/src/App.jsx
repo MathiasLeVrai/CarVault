@@ -12,6 +12,7 @@ const DashboardPage = lazy(() => import('./pages/DashboardPage'));
 const MapPage = lazy(() => import('./pages/MapPage'));
 const PricingPage = lazy(() => import('./pages/PricingPage'));
 const SharePage = lazy(() => import('./pages/SharePage'));
+const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
 const VehiclesPage = lazy(() => import('./pages/VehiclesPage'));
 const VehicleDetailPage = lazy(() => import('./pages/VehicleDetailPage'));
 const DocumentsPage = lazy(() => import('./pages/DocumentsPage'));
@@ -62,6 +63,7 @@ export default function App() {
         <Route path="/reset-password" element={<PublicRoute><ResetPasswordPage /></PublicRoute>} />
         <Route path="/logout" element={<LogoutRoute />} />
         <Route path="/pricing" element={<PricingPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/share/:token" element={<SharePage />} />
         <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
           <Route path="dashboard" element={<DashboardPage />} />

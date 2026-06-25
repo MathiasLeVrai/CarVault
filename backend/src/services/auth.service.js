@@ -4,6 +4,7 @@ const crypto = require('crypto');
 const prisma = require('../lib/prisma');
 const storageService = require('./storage.service');
 const emailService = require('./email.service');
+const stripeService = require('./stripe.service');
 const { AppError } = require('../middleware/error.middleware');
 
 const REFRESH_TOKEN_EXPIRY_DAYS = 30;
@@ -238,6 +239,59 @@ class AuthService {
     });
 
     return token;
+  }
+
+  /**
+   * Suppression définitive du compte (RGPD « droit à l'oubli »).
+   * Exige le mot de passe en confirmation. Supprime l'utilisateur — la cascade
+   * Prisma efface véhicules, documents, dépenses, alertes, liens de partage,
+   * abonnements push et tokens. Les fichiers téléversés (avatar, documents,
+   * photos de véhicules) sont retirés du stockage objet en best-effort.
+   */
+  async deleteAccount(userId, password) {
+    if (!password) {
+      throw new AppError('Mot de passe requis pour supprimer le compte', 400);
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, password: true, avatar: true, stripeSubscriptionId: true },
+    });
+    if (!user) {
+      throw new AppError('Utilisateur introuvable', 404);
+    }
+
+    const isValidPassword = await bcrypt.compare(password, user.password);
+    if (!isValidPassword) {
+      // 403 (et non 401) pour ne pas déclencher le refresh-token côté client
+      throw new AppError('Mot de passe incorrect', 403);
+    }
+
+    // Collecte des fichiers AVANT le delete (la cascade efface les lignes BDD)
+    const documents = await prisma.document.findMany({
+      where: { vehicle: { userId } },
+      select: { filePath: true },
+    });
+    const vehicles = await prisma.vehicle.findMany({
+      where: { userId },
+      select: { photo: true },
+    });
+    const fileUrls = [
+      user.avatar,
+      ...documents.map((d) => d.filePath),
+      ...vehicles.map((v) => v.photo),
+    ].filter(Boolean);
+
+    // Annule l'abonnement Stripe éventuel (best-effort, n'émet jamais d'erreur)
+    await stripeService.cancelSubscription(user.stripeSubscriptionId);
+
+    // Suppression de l'utilisateur — la cascade Prisma fait le reste en BDD
+    await prisma.user.delete({ where: { id: userId } });
+
+    // Best-effort : retire les fichiers du stockage objet
+    await Promise.allSettled(fileUrls.map((url) => storageService.delete(url)));
+
+    return { success: true };
   }
 }
 

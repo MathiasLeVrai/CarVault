@@ -111,6 +111,16 @@ class AuthController {
       next(error);
     }
   }
+
+  async deleteAccount(req, res, next) {
+    try {
+      const { password } = req.body;
+      await authService.deleteAccount(req.userId, password);
+      res.json({ message: 'Votre compte et toutes vos données ont été supprimés définitivement.' });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 module.exports = new AuthController();
