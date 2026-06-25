@@ -30,7 +30,7 @@ node "Stripe" <<saas>> as StripeNode {
   artifact "Webhook\nendpoint" as Webhook
 }
 
-node "Resend / SMTP" <<saas>> as Mail {
+node "SMTP" <<saas>> as Mail {
   artifact "Email transactionnel\n+ digests" as MailApp
 }
 

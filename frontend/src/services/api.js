@@ -259,6 +259,7 @@ export const authApi = {
   updateProfile: (formData) => api.request('/auth/profile', { method: 'PATCH', body: formData, isFormData: true }),
   forgotPassword: (email) => api.post('/auth/forgot-password', { email }),
   resetPassword: (token, password) => api.post('/auth/reset-password', { token, password }),
+  deleteAccount: (password) => api.request('/auth/account', { method: 'DELETE', body: { password } }),
 };
 
 // ===== Dashboard =====

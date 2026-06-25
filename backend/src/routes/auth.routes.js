@@ -12,5 +12,6 @@ router.post('/reset-password', authController.resetPassword);
 router.post('/logout', authenticate, authController.logout);
 router.get('/profile', authenticate, authController.getProfile);
 router.patch('/profile', authenticate, uploadVehiclePhoto.single('avatar'), authController.updateProfile);
+router.delete('/account', authenticate, authController.deleteAccount);
 
 module.exports = router;

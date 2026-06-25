@@ -50,7 +50,7 @@ export default function PricingPage() {
       if (url) {
         window.location.href = url;
       } else {
-        toast.info('Contactez hello@carvio.fr pour activer Premium.');
+        toast.info('Contactez contact@carvio.fr pour activer Premium.');
       }
     } catch (err) {
       toast.error(err.message || 'Erreur lors du paiement');

@@ -18,11 +18,11 @@ require.cache[prismaPath] = {
   },
 };
 
-// --- Isole le transport email (pas d'appel réseau Resend/SMTP) ---
+// --- Isole le transport email (pas d'appel réseau SMTP) ---
 const emailService = require('../src/services/email.service');
 let lastMail = null;
 let mailShouldSucceed = true;
-emailService._sendMailDual = async (to, subject, html) => {
+emailService._sendMail = async (to, subject, html) => {
   lastMail = { to, subject, html };
   return mailShouldSucceed;
 };

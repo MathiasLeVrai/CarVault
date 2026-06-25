@@ -9,10 +9,10 @@ import compressImage from '../utils/compressImage';
 import {
   Bell, Mail, Smartphone, Calendar, Check, Settings, Sun, Moon, LogOut, Globe,
   Camera, Pencil, Crown, User as UserIcon, Zap, Loader2, ExternalLink,
-  Lightbulb, Send,
+  Lightbulb, Send, Trash2, AlertTriangle,
 } from 'lucide-react';
 import { motion as Motion } from 'framer-motion';
-import { subscriptionApi, feedbackApi } from '../services/api';
+import { subscriptionApi, feedbackApi, authApi } from '../services/api';
 import { useToast } from '../context/ToastContext';
 
 const containerVariants = {
@@ -232,7 +232,7 @@ function SubscriptionCard({ user }) {
     try {
       const { url } = await subscriptionApi.createCheckout(plan);
       if (url) window.location.href = url;
-      else toast.info('Contactez hello@carvio.fr pour activer Premium.');
+      else toast.info('Contactez contact@carvio.fr pour activer Premium.');
     } catch (err) {
       toast.error(err.message || 'Erreur lors du paiement');
     } finally {
@@ -394,6 +394,123 @@ function IdeaCard() {
             >
               {sending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
               {sending ? 'Envoi…' : 'Envoyer votre idée'}
+            </button>
+          </div>
+        </Motion.div>
+      )}
+    </div>
+  );
+}
+
+const CONFIRM_WORD = 'SUPPRIMER';
+
+function DeleteAccountCard() {
+  const [open, setOpen] = useState(false);
+  const [password, setPassword] = useState('');
+  const [confirmText, setConfirmText] = useState('');
+  const [deleting, setDeleting] = useState(false);
+  const { logout } = useAuth();
+  const toast = useToast();
+
+  const canDelete = password.length > 0 && confirmText.trim().toUpperCase() === CONFIRM_WORD;
+
+  const reset = () => {
+    setPassword('');
+    setConfirmText('');
+    setOpen(false);
+  };
+
+  const handleDelete = async () => {
+    if (!canDelete) return;
+    setDeleting(true);
+    try {
+      await authApi.deleteAccount(password);
+      toast.success('Votre compte a été supprimé. Au revoir 👋');
+      // Vide la session : ProtectedRoute redirige automatiquement vers /login
+      logout();
+    } catch (err) {
+      if (err.status === 403) {
+        toast.error('Mot de passe incorrect.');
+      } else {
+        toast.error(err.message || 'Impossible de supprimer le compte.');
+      }
+      setDeleting(false);
+    }
+  };
+
+  return (
+    <div className="cv-card p-5 border-accent/20">
+      <button
+        onClick={() => (open ? reset() : setOpen(true))}
+        className="flex items-center gap-4 w-full text-left"
+      >
+        <div className="w-10 h-10 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center shrink-0">
+          <Trash2 className="w-5 h-5 text-accent" strokeWidth={2} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-bold text-ink font-display">Supprimer mon compte</p>
+          <p className="text-[11px] text-ink-muted mt-0.5 leading-relaxed">
+            Efface définitivement votre compte et toutes vos données.
+          </p>
+        </div>
+      </button>
+
+      {open && (
+        <Motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          className="mt-4 space-y-4 overflow-hidden"
+        >
+          <div className="flex items-start gap-3 p-4 rounded-xl bg-accent/[0.06] border border-accent/20">
+            <AlertTriangle className="w-5 h-5 text-accent shrink-0 mt-0.5" strokeWidth={2} />
+            <p className="text-[12px] text-ink-muted leading-relaxed">
+              Cette action est <span className="text-ink font-semibold">irréversible</span>. Tous vos
+              véhicules, documents, dépenses, entretiens et alertes seront définitivement supprimés.
+              Votre abonnement éventuel sera annulé.
+            </p>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-semibold text-ink-muted">Confirmez avec votre mot de passe</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Votre mot de passe"
+              autoComplete="current-password"
+              className="cv-input w-full px-4 py-3 text-sm text-ink"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-semibold text-ink-muted">
+              Tapez <span className="text-accent font-bold">{CONFIRM_WORD}</span> pour confirmer
+            </label>
+            <input
+              type="text"
+              value={confirmText}
+              onChange={(e) => setConfirmText(e.target.value)}
+              placeholder={CONFIRM_WORD}
+              autoCapitalize="characters"
+              className="cv-input w-full px-4 py-3 text-sm text-ink"
+            />
+          </div>
+
+          <div className="flex items-center justify-end gap-3">
+            <button
+              onClick={reset}
+              disabled={deleting}
+              className="px-4 py-2.5 text-xs rounded-xl font-bold text-ink-muted hover:text-ink transition-colors disabled:opacity-50"
+            >
+              Annuler
+            </button>
+            <button
+              onClick={handleDelete}
+              disabled={!canDelete || deleting}
+              className="cv-btn-danger px-4 py-2.5 text-xs rounded-xl inline-flex items-center gap-1.5 font-bold disabled:opacity-50"
+            >
+              {deleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+              {deleting ? 'Suppression…' : 'Supprimer définitivement'}
             </button>
           </div>
         </Motion.div>
@@ -624,6 +741,11 @@ export default function SettingsPage() {
           <LogOut className="w-5 h-5 shrink-0" />
           Se déconnecter
         </button>
+      </Motion.div>
+
+      {/* Suppression du compte */}
+      <Motion.div variants={itemVariants}>
+        <DeleteAccountCard />
       </Motion.div>
 
       {/* Save feedback */}

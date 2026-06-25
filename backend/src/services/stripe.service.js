@@ -82,6 +82,21 @@ class StripeService {
     return { url: session.url };
   }
 
+  /**
+   * Annule un abonnement Stripe (best-effort).
+   * No-op si Stripe n'est pas configuré ou si aucun abonnement n'est fourni.
+   * N'émet jamais d'erreur : la suppression de compte ne doit pas échouer
+   * parce que Stripe est indisponible.
+   */
+  async cancelSubscription(subscriptionId) {
+    if (!stripe || !subscriptionId) return;
+    try {
+      await stripe.subscriptions.cancel(subscriptionId);
+    } catch (err) {
+      console.error('[stripe] Échec annulation abonnement à la suppression du compte:', err.message);
+    }
+  }
+
   async handleWebhook(payload, sig) {
     if (!stripe || !process.env.STRIPE_WEBHOOK_SECRET) {
       throw new Error('Stripe webhook non configuré');
