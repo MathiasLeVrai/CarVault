@@ -4,7 +4,6 @@ import {
 } from 'lucide-react';
 import { motion as Motion, useReducedMotion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
-import CarvioLogo from './CarvioLogo';
 
 const BUBBLE_SPRING = { type: 'spring', stiffness: 300, damping: 28 };
 
@@ -36,11 +35,7 @@ export default function Sidebar({ onFabPress }) {
     <>
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex fixed left-6 top-24 bottom-6 w-[260px] glass-panel rounded-2xl flex-col z-40 px-4 py-6">
-        <div className="flex items-center px-4 mb-8">
-          <CarvioLogo className="h-9 w-9" />
-        </div>
-
-        <nav className="flex-1 space-y-1.5 mt-4">
+        <nav className="flex-1 space-y-1.5">
           {sidebarItems.map(({ to, icon, label }) => {
             const active = location.pathname === to || location.pathname.startsWith(to + '/');
             const IconComponent = icon;

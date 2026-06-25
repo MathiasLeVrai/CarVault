@@ -83,7 +83,7 @@ class EmailService {
 <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:40px 16px;">
 <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
   <tr><td style="background:#1a1a1a;padding:24px 32px;">
-    <span style="color:#b9ff66;font-size:20px;font-weight:800;letter-spacing:-0.5px;">CAR<span style="color:#fff;">VAULT</span></span>
+    <span style="color:#b9ff66;font-size:20px;font-weight:800;letter-spacing:-0.5px;">CAR<span style="color:#fff;">VIO</span></span>
   </td></tr>
   <tr><td style="padding:32px;">
     <p style="margin:0 0 8px;font-size:13px;color:#888888;">Bonjour ${userName || ''},</p>
@@ -117,7 +117,7 @@ class EmailService {
 <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:40px 16px;">
 <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
   <tr><td style="background:#1a1a1a;padding:24px 32px;">
-    <span style="color:#b9ff66;font-size:20px;font-weight:800;letter-spacing:-0.5px;">CAR<span style="color:#fff;">VAULT</span></span>
+    <span style="color:#b9ff66;font-size:20px;font-weight:800;letter-spacing:-0.5px;">CAR<span style="color:#fff;">VIO</span></span>
   </td></tr>
   <tr><td style="padding:32px;">
     <p style="margin:0 0 8px;font-size:13px;color:#888888;">Bonjour ${userName || ''},</p>
@@ -160,7 +160,7 @@ class EmailService {
 <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:40px 16px;">
 <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
   <tr><td style="background:#1a1a1a;padding:24px 32px;">
-    <span style="color:#b9ff66;font-size:20px;font-weight:800;letter-spacing:-0.5px;">CAR<span style="color:#fff;">VAULT</span></span>
+    <span style="color:#b9ff66;font-size:20px;font-weight:800;letter-spacing:-0.5px;">CAR<span style="color:#fff;">VIO</span></span>
   </td></tr>
   <tr><td style="padding:32px;">
     <h2 style="margin:0 0 16px;font-size:18px;font-weight:700;color:#1a1a1a;">Nouvelle idée utilisateur</h2>
