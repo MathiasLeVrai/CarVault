@@ -362,7 +362,7 @@ function AppMockup() {
 function FaqSection() {
   const [open, setOpen] = useState(null);
   return (
-    <section className="relative z-10 px-6 md:px-12 py-24">
+    <section id="faq" className="relative z-10 px-6 md:px-12 py-24">
       <div className="max-w-3xl mx-auto">
         <Motion.div {...fade()} className="text-center mb-12">
           <span className="text-[10px] font-black uppercase tracking-[0.2em] text-accent">FAQ</span>
@@ -960,7 +960,8 @@ export default function LandingPage() {
             © {new Date().getFullYear()} Carvio
           </p>
 
-          <div className="flex gap-6">
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
+            <Link to="/support" className="text-xs text-white/30 hover:text-white/60 transition-[color] duration-150 font-medium">Support</Link>
             <Link to="/privacy" className="text-xs text-white/30 hover:text-white/60 transition-[color] duration-150 font-medium">Confidentialité</Link>
             <Link to="/login" className="text-xs text-white/30 hover:text-white/60 transition-[color] duration-150 font-medium">Connexion</Link>
             <Link to="/register" className="text-xs text-white/30 hover:text-white/60 transition-[color] duration-150 font-medium">Inscription</Link>

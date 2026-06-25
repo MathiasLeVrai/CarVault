@@ -199,9 +199,10 @@ export default function PrivacyPage() {
           <p className="text-xs text-white/20 font-medium">
             © {new Date().getFullYear()} Carvio
           </p>
-          <Link to="/" className="text-xs text-white/30 hover:text-white/60 transition-colors font-medium">
-            Retour à l'accueil
-          </Link>
+          <div className="flex gap-4">
+            <Link to="/support" className="text-xs text-white/30 hover:text-white/60 transition-colors font-medium">Support</Link>
+            <Link to="/" className="text-xs text-white/30 hover:text-white/60 transition-colors font-medium">Accueil</Link>
+          </div>
         </div>
       </footer>
     </div>

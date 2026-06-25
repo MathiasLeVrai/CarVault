@@ -13,6 +13,7 @@ const MapPage = lazy(() => import('./pages/MapPage'));
 const PricingPage = lazy(() => import('./pages/PricingPage'));
 const SharePage = lazy(() => import('./pages/SharePage'));
 const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
+const SupportPage = lazy(() => import('./pages/SupportPage'));
 const VehiclesPage = lazy(() => import('./pages/VehiclesPage'));
 const VehicleDetailPage = lazy(() => import('./pages/VehicleDetailPage'));
 const DocumentsPage = lazy(() => import('./pages/DocumentsPage'));
@@ -64,6 +65,7 @@ export default function App() {
         <Route path="/logout" element={<LogoutRoute />} />
         <Route path="/pricing" element={<PricingPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/support" element={<SupportPage />} />
         <Route path="/share/:token" element={<SharePage />} />
         <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
           <Route path="dashboard" element={<DashboardPage />} />
