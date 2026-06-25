@@ -1,0 +1,46 @@
+# Pipeline unique : à chaque push sur main → on vérifie le code, puis on déploie.
+# Lecture de haut en bas : job "verifier" d'abord, job "deployer" ensuite.
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  # 1) Vérifie que le code est sain (lint + schéma Prisma + build frontend).
+  verifier:
+    name: Vérifier le code
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Backend — install, lint, Prisma
+        working-directory: backend
+        env:
+          DATABASE_URL: "postgresql://fake:fake@localhost:5432/fake"
+        run: |
+          npm ci
+          npm run lint
+          npx prisma validate
+
+      - name: Frontend — install, lint, build
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run lint -- --max-warnings 20
+          npm run build
+
+  # 2) Déploie sur Fly.io — uniquement si "verifier" a réussi.
+  deployer:
+    name: Déployer sur Fly.io
+    needs: verifier
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - run: flyctl deploy --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
