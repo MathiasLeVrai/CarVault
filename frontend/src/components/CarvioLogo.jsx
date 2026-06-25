@@ -1,8 +1,8 @@
 import { useTheme } from '../context/ThemeContext';
 
 const LOGOS = {
-  light: '/carvio-logo.png',
-  dark: '/carvio-logo-white.png',
+  light: '/icons/favicon-light-192.png',
+  dark: '/icons/favicon-dark-192.png',
 };
 
 /**
