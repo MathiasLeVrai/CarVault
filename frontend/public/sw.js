@@ -3,7 +3,7 @@
  * Cache les ressources statiques et les réponses API pour le mode offline.
  */
 
-const CACHE_VERSION = 'carvio-v1';
+const CACHE_VERSION = 'carvio-v2';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const API_CACHE = `${CACHE_VERSION}-api`;
 const UPLOADS_CACHE = `${CACHE_VERSION}-uploads`;
@@ -13,8 +13,10 @@ const PRECACHE_URLS = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/icons/icon-192.svg',
-  '/icons/icon-512.svg',
+  '/icons/icon-192.png',
+  '/icons/icon-512.png',
+  '/icons/favicon-light.png',
+  '/icons/favicon-dark.png',
 ];
 
 // ===== Installation =====
@@ -129,8 +131,8 @@ self.addEventListener('push', (event) => {
     event.waitUntil(
       self.registration.showNotification(data.title || 'Carvio', {
         body: data.body || '',
-        icon: data.icon || '/icons/icon-192.svg',
-        badge: data.badge || '/icons/icon-192.svg',
+        icon: data.icon || '/icons/icon-192.png',
+        badge: data.badge || '/icons/icon-192.png',
         data: { url: data.url || '/alerts' },
         vibrate: [100, 50, 100],
       })

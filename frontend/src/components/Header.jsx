@@ -4,6 +4,7 @@ import { alertApi, getAssetUrl } from '../services/api';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import CarvioLogo from './CarvioLogo';
 
 export default function Header() {
   const { user } = useAuth();
@@ -38,9 +39,7 @@ export default function Header() {
       <div className="h-16 md:h-20 flex items-center justify-between px-5 md:px-8">
       {/* Brand */}
       <div className="flex items-center">
-        <span className="text-lg font-bold tracking-tight text-white font-display">
-          Carv<span className="text-accent">io</span>
-        </span>
+        <CarvioLogo className="h-8 w-8 md:h-9 md:w-9" />
       </div>
 
       {/* Right */}

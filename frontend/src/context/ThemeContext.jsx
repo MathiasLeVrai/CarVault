@@ -1,5 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useEffect, useState } from 'react';
+import { syncBrandAssets } from '../utils/brandAssets';
 
 const ThemeContext = createContext();
 
@@ -26,6 +27,7 @@ export function ThemeProvider({ children }) {
       html.classList.remove('light');
     }
     localStorage.setItem('carvault_theme', theme);
+    syncBrandAssets(theme);
   }, [theme]);
 
   const toggleTheme = () => setTheme(t => (t === 'dark' ? 'light' : 'dark'));
