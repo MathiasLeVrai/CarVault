@@ -1,6 +1,6 @@
 const cron = require('node-cron');
 const prisma = require('../lib/prisma');
-const { getMaintenanceIntervals } = require('../data/vehicles');
+const { getMergedIntervals, findLastExpenseForType, getLastServiceKm } = require('../utils/maintenance.util');
 const { getBannedZones } = require('../data/zfe');
 const { alertExists, createAlert } = require('./helpers');
 
@@ -164,15 +164,13 @@ async function checkOilChange() {
   });
 
   for (const v of vehicles) {
-    const defaults = getMaintenanceIntervals(v.brand, v.fuelType || 'GASOLINE');
-    const intervals = { ...defaults, ...(v.maintenanceConfig || {}) };
-    const baselineMileage = v.purchaseMileage ?? v.mileage ?? 0;
+    const { intervals } = getMergedIntervals(v);
 
     // Pas de vidange pour les électriques
     if (!intervals.oilChange) continue;
 
     const lastOilChange = v.expenses[0];
-    const lastOilKm = lastOilChange?.mileage ?? baselineMileage;
+    const lastOilKm = getLastServiceKm(v, 'oilChange', lastOilChange);
     const kmSinceOil = v.mileage - lastOilKm;
 
     // Alerte quand on approche de 80% de l'intervalle
@@ -281,16 +279,14 @@ async function checkMileageService() {
   });
 
   for (const v of vehicles) {
-    const defaults = getMaintenanceIntervals(v.brand, v.fuelType || 'GASOLINE');
-    const intervals = { ...defaults, ...(v.maintenanceConfig || {}) };
+    const { intervals } = getMergedIntervals(v);
     const threeMonthsAgo = new Date();
     threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
-    const baselineMileage = v.purchaseMileage ?? v.mileage ?? 0;
 
     // -- Freins --
     if (intervals.brakes) {
-      const lastBrakeExp = v.expenses.find(e => e.category === 'BRAKES');
-      const lastBrakeKm = lastBrakeExp?.mileage ?? baselineMileage;
+      const lastBrakeExp = findLastExpenseForType(v.expenses, 'brakes');
+      const lastBrakeKm = getLastServiceKm(v, 'brakes', lastBrakeExp);
       const kmSinceBrake = v.mileage - lastBrakeKm;
 
       if (kmSinceBrake >= intervals.brakes * 0.85) {
@@ -314,10 +310,8 @@ async function checkMileageService() {
 
     // -- Courroie de distribution --
     if (intervals.timingBelt) {
-      const lastBeltExp = v.expenses.find(e =>
-        e.description && /courroie|distribution|timing|belt/i.test(e.description)
-      );
-      const lastBeltKm = lastBeltExp?.mileage ?? baselineMileage;
+      const lastBeltExp = findLastExpenseForType(v.expenses, 'timingBelt');
+      const lastBeltKm = getLastServiceKm(v, 'timingBelt', lastBeltExp);
       const kmSinceBelt = v.mileage - lastBeltKm;
 
       if (kmSinceBelt >= intervals.timingBelt * 0.85) {
@@ -341,8 +335,8 @@ async function checkMileageService() {
 
     // -- Révision générale par km --
     if (intervals.generalService) {
-      const lastServiceExp = v.expenses.find(e => e.category === 'MAINTENANCE');
-      const lastServiceKm = lastServiceExp?.mileage ?? baselineMileage;
+      const lastServiceExp = findLastExpenseForType(v.expenses, 'generalService');
+      const lastServiceKm = getLastServiceKm(v, 'generalService', lastServiceExp);
       const kmSinceService = v.mileage - lastServiceKm;
 
       if (kmSinceService >= intervals.generalService * 0.85) {

@@ -277,7 +277,8 @@ export const vehicleApi = {
   delete: (id) => api.delete(`/vehicles/${id}`),
   backfill: () => api.post('/vehicles/backfill'),
   getMaintenancePlan: (id) => api.get(`/vehicles/${id}/maintenance`),
-  updateMaintenancePlan: (id, intervals) => api.put(`/vehicles/${id}/maintenance`, { intervals }),
+  updateMaintenancePlan: (id, { intervals, lastKm } = {}) => api.put(`/vehicles/${id}/maintenance`, { intervals, lastKm }),
+  markMaintenanceDone: (id, key, lastKm) => api.post(`/vehicles/${id}/maintenance/${key}/mark-done`, lastKm != null ? { lastKm } : {}),
   downloadPdf: async (id) => {
     const token = localStorage.getItem('carvault_token');
     await downloadPdfFromUrl(getApiUrl(`/vehicles/${id}/pdf`), 'Carvio_Dossier.pdf', {

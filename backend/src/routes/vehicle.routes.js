@@ -68,6 +68,7 @@ router.post('/', uploadVehicleWithDoc.fields([{ name: 'photo', maxCount: 1 }, { 
 router.put('/:id', uploadVehiclePhoto.single('photo'), vehicleController.update);
 router.get('/:id/maintenance', vehicleController.getMaintenancePlan);
 router.put('/:id/maintenance', vehicleController.updateMaintenancePlan);
+router.post('/:id/maintenance/:key/mark-done', vehicleController.markMaintenanceDone);
 router.delete('/:id', vehicleController.delete);
 
 module.exports = router;

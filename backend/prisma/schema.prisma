@@ -63,6 +63,7 @@ model Vehicle {
   laCentraleVersionId     Int?       // versionId La Centrale pour la cote
   estimatedValue          Float?     // Valeur estimée saisie manuellement par l'utilisateur
   maintenanceConfig       Json?      // Intervalles personnalises par l'utilisateur
+  maintenanceLastKm       Json?      // Dernier km par type d'entretien (baselines manuels)
   monthlyFuelBudget       Float?     // Budget carburant mensuel en €
   annualKmGoal            Int?       // Objectif kilométrage annuel
   createdAt             DateTime   @default(now())

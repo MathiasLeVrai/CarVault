@@ -14,6 +14,15 @@ import { motion as Motion, AnimatePresence } from 'framer-motion';
 import PremiumModal from '../components/PremiumModal';
 
 
+const MAINTENANCE_ITEMS = [
+  { key: 'oilChange', label: 'Vidange' },
+  { key: 'brakes', label: 'Plaquettes de frein' },
+  { key: 'timingBelt', label: 'Courroie de distribution' },
+  { key: 'tires', label: 'Pneus' },
+  { key: 'generalService', label: 'Révision générale' },
+  { key: 'airFilter', label: 'Filtre à air' },
+];
+
 const fuelOpts = [
   { value: 'GASOLINE', label: 'Essence' },
   { value: 'DIESEL', label: 'Diesel' },
@@ -77,6 +86,8 @@ export default function VehiclesPage() {
   });
   const [photo, setPhoto] = useState(null);
   const [maintenanceUpToDate, setMaintenanceUpToDate] = useState(false);
+  const [maintenanceBaselines, setMaintenanceBaselines] = useState({});
+  const [showMaintenanceBaselines, setShowMaintenanceBaselines] = useState(false);
 
   const [brands, setBrands] = useState([]);
   const [models, setModels] = useState([]);
@@ -185,8 +196,19 @@ export default function VehiclesPage() {
 
   const resetForm = () => {
     setForm({ brand: '', model: '', year: '', mileage: '', licensePlate: '', color: '', fuelType: 'GASOLINE', purchasePrice: '', carapiTrimId: '', msrp: '', horsepower: '', engineSize: '', transmission: '', bodyType: '', doors: '', annualKmGoal: '' });
-    setPhoto(null); setMaintenanceUpToDate(false); setModels([]); setTrims([]);
+    setPhoto(null); setMaintenanceUpToDate(false); setMaintenanceBaselines({}); setShowMaintenanceBaselines(false); setModels([]); setTrims([]);
     setPlateInput(''); setPlateFound(false); setPlateError(''); setManualMode(false);
+  };
+
+  const handleMaintenanceUpToDate = (checked) => {
+    setMaintenanceUpToDate(checked);
+    if (checked) {
+      const m = form.mileage ? String(form.mileage) : '';
+      const all = {};
+      MAINTENANCE_ITEMS.forEach(({ key }) => { if (m) all[key] = m; });
+      setMaintenanceBaselines(all);
+      setShowMaintenanceBaselines(true);
+    }
   };
 
 
@@ -198,6 +220,13 @@ export default function VehiclesPage() {
       if (photo) fd.append('photo', await compressImage(photo));
 
       if (maintenanceUpToDate) fd.append('maintenanceUpToDate', 'true');
+      const baselines = {};
+      for (const [k, v] of Object.entries(maintenanceBaselines)) {
+        if (v) baselines[k] = parseInt(v, 10);
+      }
+      if (Object.keys(baselines).length > 0) {
+        fd.append('maintenanceLastKm', JSON.stringify(baselines));
+      }
       await vehicleApi.create(fd);
       setShowModal(false); resetForm(); loadVehicles();
     } catch (err) {
@@ -368,13 +397,40 @@ export default function VehiclesPage() {
                 <Input label="Objectif km annuel" type="number" step="100" placeholder="15000" value={form.annualKmGoal} onChange={e => setForm(p => ({ ...p, annualKmGoal: e.target.value }))} />
               </div>
               <label className="flex items-center gap-3 p-4 rounded-xl bg-white/[0.02] border border-white/5 cursor-pointer hover:bg-white/[0.04] transition-colors select-none">
-                <input type="checkbox" checked={maintenanceUpToDate} onChange={e => setMaintenanceUpToDate(e.target.checked)}
+                <input type="checkbox" checked={maintenanceUpToDate} onChange={e => handleMaintenanceUpToDate(e.target.checked)}
                   className="w-5 h-5 rounded-md border-2 border-white/20 bg-transparent accent-lime shrink-0" />
                 <div>
                   <p className="text-sm font-semibold text-white">Entretien à jour</p>
-                  <p className="text-[11px] text-ink-muted mt-0.5">Cochez si la vidange, révision, etc. sont récents</p>
+                  <p className="text-[11px] text-ink-muted mt-0.5">Tout a été fait au kilométrage actuel</p>
                 </div>
               </label>
+              <div className="rounded-xl bg-white/[0.02] border border-white/5 overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => setShowMaintenanceBaselines(!showMaintenanceBaselines)}
+                  className="w-full flex items-center justify-between p-4 text-left hover:bg-white/[0.02] transition-colors"
+                >
+                  <div>
+                    <p className="text-sm font-semibold text-white">Historique d'entretien (km)</p>
+                    <p className="text-[11px] text-ink-muted mt-0.5">Indiquez le km du dernier entretien par type</p>
+                  </div>
+                  <span className="text-xs text-white/40">{showMaintenanceBaselines ? 'Masquer' : 'Configurer'}</span>
+                </button>
+                {showMaintenanceBaselines && (
+                  <div className="px-4 pb-4 grid grid-cols-1 sm:grid-cols-2 gap-3 border-t border-white/5 pt-3">
+                    {MAINTENANCE_ITEMS.map(({ key, label }) => (
+                      <Input
+                        key={key}
+                        label={label}
+                        type="number"
+                        placeholder={form.mileage || 'Km dernier entretien'}
+                        value={maintenanceBaselines[key] || ''}
+                        onChange={e => setMaintenanceBaselines(p => ({ ...p, [key]: e.target.value }))}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
               <div className="space-y-1.5">
                 <label className="block text-sm font-semibold text-ink">Photo</label>
                 <label className="flex items-center justify-center gap-2 w-full py-4 bg-white/[0.02] border border-white/10 border-dashed rounded-xl cursor-pointer text-sm text-ink-muted hover:bg-white/[0.04] hover:border-accent/50 transition-colors">

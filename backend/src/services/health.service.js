@@ -1,5 +1,5 @@
 const prisma = require('../lib/prisma');
-const { getMaintenanceIntervals } = require('../data/vehicles');
+const { getMergedIntervals, findLastExpenseForType, getLastServiceKm } = require('../utils/maintenance.util');
 
 class HealthService {
   /**
@@ -35,58 +35,25 @@ class HealthService {
   // ============================================================
 
   _scoreMaintenance(vehicle) {
-    const intervals = getMaintenanceIntervals(vehicle.brand, vehicle.fuelType || 'GASOLINE');
-    const baselineMileage = vehicle.purchaseMileage ?? vehicle.mileage ?? 0;
+    const { intervals } = getMergedIntervals(vehicle);
     const details = [];
     let earned = 0;
     let checks = 0;
 
-    // Vidange
-    if (intervals.oilChange) {
+    const checkItem = (key, label) => {
+      if (!intervals[key]) return;
       checks++;
-      const lastOil = vehicle.expenses.find(e =>
-        e.category === 'MAINTENANCE' && e.description && /vidange|huile|oil/i.test(e.description)
-      );
-      const kmSince = vehicle.mileage - (lastOil?.mileage ?? baselineMileage);
-      const ratio = kmSince / intervals.oilChange;
-      const ok = ratio < 1;
+      const lastExpense = findLastExpenseForType(vehicle.expenses, key);
+      const kmSince = vehicle.mileage - getLastServiceKm(vehicle, key, lastExpense);
+      const ok = kmSince < intervals[key];
       if (ok) earned++;
-      details.push({ label: 'Vidange', ok, kmSince, interval: intervals.oilChange });
-    }
+      details.push({ label, ok, kmSince, interval: intervals[key] });
+    };
 
-    // Freins
-    if (intervals.brakes) {
-      checks++;
-      const lastBrake = vehicle.expenses.find(e =>
-        e.description && /frein|brake|plaquette/i.test(e.description)
-      );
-      const kmSince = vehicle.mileage - (lastBrake?.mileage ?? baselineMileage);
-      const ok = kmSince < intervals.brakes;
-      if (ok) earned++;
-      details.push({ label: 'Freins', ok, kmSince, interval: intervals.brakes });
-    }
-
-    // Courroie de distribution
-    if (intervals.timingBelt) {
-      checks++;
-      const lastBelt = vehicle.expenses.find(e =>
-        e.description && /courroie|distribution|timing|belt/i.test(e.description)
-      );
-      const kmSince = vehicle.mileage - (lastBelt?.mileage ?? baselineMileage);
-      const ok = kmSince < intervals.timingBelt;
-      if (ok) earned++;
-      details.push({ label: 'Courroie distribution', ok, kmSince, interval: intervals.timingBelt });
-    }
-
-    // Revision generale
-    if (intervals.generalService) {
-      checks++;
-      const lastService = vehicle.expenses.find(e => e.category === 'MAINTENANCE');
-      const kmSince = vehicle.mileage - (lastService?.mileage ?? baselineMileage);
-      const ok = kmSince < intervals.generalService;
-      if (ok) earned++;
-      details.push({ label: 'Révision générale', ok, kmSince, interval: intervals.generalService });
-    }
+    checkItem('oilChange', 'Vidange');
+    checkItem('brakes', 'Freins');
+    checkItem('timingBelt', 'Courroie distribution');
+    checkItem('generalService', 'Révision générale');
 
     const score = checks > 0 ? Math.round((earned / checks) * 57) : 28;
     return { score, max: 57, details };

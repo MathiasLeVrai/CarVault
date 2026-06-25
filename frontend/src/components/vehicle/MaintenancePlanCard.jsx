@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Settings, Pencil, Check, AlertTriangle, CheckCircle2, ChevronDown } from 'lucide-react';
+import { Settings, Pencil, Check, AlertTriangle, CheckCircle2, ChevronDown, RotateCcw } from 'lucide-react';
 import { vehicleApi } from '../../services/api';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
 
@@ -9,16 +9,42 @@ const statusLabels = { ok: 'OK', soon: 'Bientôt', overdue: 'Dépassé' };
 export default function MaintenancePlanCard({ vehicleId, brand, maintenancePlan, setMaintenancePlan, variants }) {
   const [editingInterval, setEditingInterval] = useState(null);
   const [editIntervalValue, setEditIntervalValue] = useState('');
+  const [editingLastKm, setEditingLastKm] = useState(null);
+  const [editLastKmValue, setEditLastKmValue] = useState('');
+  const [markingDone, setMarkingDone] = useState(null);
   const [showAll, setShowAll] = useState(false);
+
+  const refreshPlan = async () => {
+    const updated = await vehicleApi.getMaintenancePlan(vehicleId);
+    setMaintenancePlan(updated);
+  };
 
   const saveInterval = async (key, value) => {
     try {
       const intervals = { ...(maintenancePlan?.custom || {}), [key]: value === '' ? null : parseInt(value) };
-      await vehicleApi.updateMaintenancePlan(vehicleId, intervals);
-      const updated = await vehicleApi.getMaintenancePlan(vehicleId);
-      setMaintenancePlan(updated);
+      await vehicleApi.updateMaintenancePlan(vehicleId, { intervals });
+      await refreshPlan();
       setEditingInterval(null);
     } catch { /* ignore */ }
+  };
+
+  const saveLastKm = async (key, value) => {
+    try {
+      const n = parseInt(value, 10);
+      if (isNaN(n) || n < 0) return;
+      await vehicleApi.updateMaintenancePlan(vehicleId, { lastKm: { [key]: n } });
+      await refreshPlan();
+      setEditingLastKm(null);
+    } catch { /* ignore */ }
+  };
+
+  const markAsDone = async (key) => {
+    try {
+      setMarkingDone(key);
+      await vehicleApi.markMaintenanceDone(vehicleId, key);
+      await refreshPlan();
+    } catch { /* ignore */ }
+    finally { setMarkingDone(null); }
   };
 
   if (!maintenancePlan?.plan?.length) return null;
@@ -30,7 +56,8 @@ export default function MaintenancePlanCard({ vehicleId, brand, maintenancePlan,
 
   const renderItem = (item) => {
     const color = statusColors[item.status];
-    const isEditing = editingInterval === item.key;
+    const isEditingInterval = editingInterval === item.key;
+    const isEditingLastKm = editingLastKm === item.key;
 
     return (
       <Motion.div
@@ -59,20 +86,53 @@ export default function MaintenancePlanCard({ vehicleId, brand, maintenancePlan,
           <div className="h-1.5 rounded-full bg-white/5 overflow-hidden mb-2">
             <div className="h-full rounded-full transition-[width] duration-300" style={{ width: `${Math.min(100, item.pct)}%`, backgroundColor: color, boxShadow: `0 0 8px ${color}60` }} />
           </div>
-          <div className="flex items-center justify-between text-[11px] text-white/40">
-            <span>{item.remaining > 0 ? `${item.remaining.toLocaleString('fr-FR')} km restants` : `Dépassé de ${Math.abs(item.remaining).toLocaleString('fr-FR')} km`}</span>
-            {isEditing ? (
-              <div className="flex items-center gap-1">
-                <input type="number" className="w-20 bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-base text-white" value={editIntervalValue} onChange={(e) => setEditIntervalValue(e.target.value)} autoFocus />
-                <button onClick={() => saveInterval(item.key, editIntervalValue)} className="text-emerald-400 hover:text-emerald-300 p-2.5 -mr-1 rounded-lg"><Check className="w-4 h-4" /></button>
-                <button onClick={() => setEditingInterval(null)} className="text-white/30 hover:text-white/50 p-2.5 -mr-1 rounded-lg text-sm">✕</button>
-              </div>
-            ) : (
-              <button onClick={() => { setEditingInterval(item.key); setEditIntervalValue(String(item.intervalKm)); }} className="text-white/30 hover:text-white/50 flex items-center gap-1.5 py-1 px-2 -mr-2 rounded-lg hover:bg-white/5 transition-colors">
-                <Pencil className="w-3.5 h-3.5" />
-                <span>tous les {item.intervalKm.toLocaleString('fr-FR')} km</span>
-              </button>
-            )}
+          <div className="flex flex-col gap-2 text-[11px] text-white/40">
+            <div className="flex items-center justify-between">
+              <span>{item.remaining > 0 ? `${item.remaining.toLocaleString('fr-FR')} km restants` : `Dépassé de ${Math.abs(item.remaining).toLocaleString('fr-FR')} km`}</span>
+              {isEditingInterval ? (
+                <div className="flex items-center gap-1">
+                  <input type="number" className="w-20 bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-base text-white" value={editIntervalValue} onChange={(e) => setEditIntervalValue(e.target.value)} autoFocus />
+                  <button onClick={() => saveInterval(item.key, editIntervalValue)} className="text-emerald-400 hover:text-emerald-300 p-2.5 -mr-1 rounded-lg"><Check className="w-4 h-4" /></button>
+                  <button onClick={() => setEditingInterval(null)} className="text-white/30 hover:text-white/50 p-2.5 -mr-1 rounded-lg text-sm">✕</button>
+                </div>
+              ) : (
+                <button onClick={() => { setEditingInterval(item.key); setEditIntervalValue(String(item.intervalKm)); }} className="text-white/30 hover:text-white/50 flex items-center gap-1.5 py-1 px-2 -mr-2 rounded-lg hover:bg-white/5 transition-colors">
+                  <Pencil className="w-3.5 h-3.5" />
+                  <span>tous les {item.intervalKm.toLocaleString('fr-FR')} km</span>
+                </button>
+              )}
+            </div>
+            <div className="flex items-center justify-between">
+              {isEditingLastKm ? (
+                <div className="flex items-center gap-1 flex-1">
+                  <span className="text-white/30 shrink-0">Dernier à</span>
+                  <input type="number" className="w-24 bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-base text-white" value={editLastKmValue} onChange={(e) => setEditLastKmValue(e.target.value)} autoFocus />
+                  <span className="text-white/30">km</span>
+                  <button onClick={() => saveLastKm(item.key, editLastKmValue)} className="text-emerald-400 hover:text-emerald-300 p-2 rounded-lg"><Check className="w-4 h-4" /></button>
+                  <button onClick={() => setEditingLastKm(null)} className="text-white/30 hover:text-white/50 p-2 rounded-lg text-sm">✕</button>
+                </div>
+              ) : (
+                <>
+                  <button
+                    onClick={() => { setEditingLastKm(item.key); setEditLastKmValue(String(item.lastKm)); }}
+                    className="text-white/30 hover:text-white/50 flex items-center gap-1.5 py-1 rounded-lg hover:bg-white/5 transition-colors"
+                  >
+                    <Pencil className="w-3 h-3" />
+                    <span>Dernier entretien à {item.lastKm.toLocaleString('fr-FR')} km</span>
+                  </button>
+                  {(item.status === 'overdue' || item.status === 'soon') && (
+                    <button
+                      onClick={() => markAsDone(item.key)}
+                      disabled={markingDone === item.key}
+                      className="flex items-center gap-1 text-emerald-400 hover:text-emerald-300 font-semibold py-1 px-2 rounded-lg hover:bg-emerald-500/10 transition-colors disabled:opacity-50"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      {markingDone === item.key ? '...' : 'Marquer fait'}
+                    </button>
+                  )}
+                </>
+              )}
+            </div>
           </div>
         </div>
       </Motion.div>
