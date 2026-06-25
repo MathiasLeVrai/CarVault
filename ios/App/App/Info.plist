@@ -27,7 +27,7 @@
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Carvio utilise votre position pour afficher les garages, centres de contrôle technique, stations de lavage et carburants proches de vous.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>Carvio utilise votre position pour afficher les services automobiles proches de vous.</string>
+	<string>Carvio utilise votre position pour afficher les services automobiles proches de vous lorsque vous utilisez la carte.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Carvio utilise l'appareil photo pour ajouter des photos de véhicules et documents.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

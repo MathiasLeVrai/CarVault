@@ -1,5 +1,14 @@
 {
   "appId": "fr.carvio.app",
   "appName": "Carvio",
-  "webDir": "frontend/dist"
+  "webDir": "frontend/dist",
+  "ios": {
+    "infoPlist": {
+      "NSLocationWhenInUseUsageDescription": "Carvio utilise votre position pour afficher les garages, centres de contrôle technique, stations de lavage et carburants proches de vous.",
+      "NSLocationAlwaysAndWhenInUseUsageDescription": "Carvio utilise votre position pour afficher les services automobiles proches de vous lorsque vous utilisez la carte.",
+      "NSCameraUsageDescription": "Carvio utilise l'appareil photo pour ajouter des photos de véhicules et documents.",
+      "NSPhotoLibraryUsageDescription": "Carvio utilise votre photothèque pour sélectionner des photos de véhicules et documents.",
+      "NSPhotoLibraryAddUsageDescription": "Carvio peut enregistrer des exports PDF ou images si vous le demandez."
+    }
+  }
 }
