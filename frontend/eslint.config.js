@@ -5,7 +5,16 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist']),
+  // Ignore build output and native (Capacitor) projects — these contain minified
+  // bundles that are build artifacts, not source we lint.
+  globalIgnores(['dist', 'ios', 'android']),
+  // Node-context config files (Vite, ESLint, etc.) need Node globals like `process`.
+  {
+    files: ['*.config.{js,mjs,cjs}'],
+    languageOptions: {
+      globals: globals.node,
+    },
+  },
   {
     files: ['**/*.{js,jsx}'],
     extends: [

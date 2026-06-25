@@ -107,7 +107,7 @@ export default function Sidebar({ onFabPress }) {
             { to: null, isFab: true },
             navItems[2],
             navItems[3],
-          ].map((item, index) => {
+          ].map((item) => {
             if (item.isFab) {
               return (
                 <button

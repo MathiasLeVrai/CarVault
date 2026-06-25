@@ -31,11 +31,4 @@ function getBannedZones(critAir) {
   return ZFE_ZONES.filter(z => critAir >= z.minCritAirBanned);
 }
 
-/**
- * Retourne le seuil le plus restrictif parmi toutes les ZFE
- */
-function getMostRestrictiveThreshold() {
-  return Math.min(...ZFE_ZONES.map(z => z.minCritAirBanned));
-}
-
 module.exports = { getBannedZones };
