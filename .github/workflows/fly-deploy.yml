@@ -21,7 +21,9 @@ jobs:
 
       - uses: superfly/flyctl-actions/setup-flyctl@master
 
-      - run: flyctl deploy --remote-only
+      # Deploy the image already built & pushed by the CI workflow (tagged by
+      # commit SHA). No rebuild on Fly's remote builder → deploy is ~30-60s.
+      - run: flyctl deploy --image registry.fly.io/carvault:${{ github.event.workflow_run.head_sha }}
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
