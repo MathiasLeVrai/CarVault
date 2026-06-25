@@ -15,7 +15,7 @@ actor "Stripe" as Stripe
 actor "API Gouv.\nCarburants" as FuelAPI
 actor "Overpass\n(OSM)" as Overpass
 actor "CarAPI /\nLaCentrale" as VehicleAPI
-actor "SMTP /\nResend" as Email
+actor "SMTP" as Email
 
 Premium --|> User
 User --|> Guest

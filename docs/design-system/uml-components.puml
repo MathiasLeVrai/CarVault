@@ -65,7 +65,7 @@ cloud "Stripe" as Stripe
 cloud "API Gouv\nCarburants" as FuelAPI
 cloud "Overpass OSM" as Overpass
 cloud "CarAPI /\nLaCentrale" as CarAPI
-cloud "SMTP /\nResend" as Mail
+cloud "SMTP" as Mail
 cloud "Web Push\n(VAPID)" as WebPush
 
 User --> Browser

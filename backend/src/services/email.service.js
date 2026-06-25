@@ -1,22 +1,13 @@
 const nodemailer = require('nodemailer');
-const { Resend } = require('resend');
 
 class EmailService {
   constructor() {
-    this._client = null;
     this._smtpInit = false;
     this._smtpTransporter = null;
   }
 
-  _getClient() {
-    if (this._client) return this._client;
-    if (!process.env.RESEND_API_KEY) return null;
-    this._client = new Resend(process.env.RESEND_API_KEY);
-    return this._client;
-  }
-
   /**
-   * Transporter Nodemailer (Gmail, Brevo, etc.) — utilisé par les crons digest/rapport.
+   * Transporter Nodemailer (SMTP) — réutilisé par tous les envois, crons digest/rapport inclus.
    */
   _getTransporter() {
     if (this._smtpInit) return this._smtpTransporter;
@@ -39,21 +30,8 @@ class EmailService {
     return this._smtpTransporter;
   }
 
-  /** Resend « onboarding » n’autorise pas l’envoi vers n’importe quel destinataire — préférer SMTP si configuré. */
-  _usesResendOnboarding() {
-    const from = process.env.RESEND_FROM || '';
-    return from.includes('onboarding@resend.dev');
-  }
-
   isConfigured() {
-    return !!(
-      process.env.RESEND_API_KEY
-      || (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS)
-    );
-  }
-
-  _getFrom() {
-    return process.env.RESEND_FROM || 'Carvio <noreply@carvio.fr>';
+    return !!(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS);
   }
 
   smtpFromHeader() {
@@ -61,72 +39,29 @@ class EmailService {
   }
 
   /**
-   * Resend puis SMTP (ou SMTP d’abord si expéditeur onboarding Resend + SMTP dispo).
+   * Envoi d'un email via SMTP. Renvoie true si l'envoi a réussi, false sinon.
    */
-  async _sendMailDual(to, subject, html) {
+  async _sendMail(to, subject, html) {
     const smtp = this._getTransporter();
-    const client = this._getClient();
-    const preferSmtpFirst = !!(smtp && this._usesResendOnboarding());
-
-    const attemptSmtp = async () => {
-      if (!smtp) return false;
-      try {
-        await smtp.sendMail({
-          from: this.smtpFromHeader(),
-          to,
-          subject,
-          html,
-        });
-        return true;
-      } catch (err) {
-        console.error('[EMAIL] SMTP:', err.message);
-        return false;
-      }
-    };
-
-    const attemptResend = async () => {
-      if (!client) return false;
-      try {
-        await client.emails.send({
-          from: this._getFrom(),
-          to,
-          subject,
-          html,
-        });
-        return true;
-      } catch (err) {
-        console.error('[EMAIL] Resend:', err.message);
-        return false;
-      }
-    };
-
-    if (preferSmtpFirst) {
-      if (await attemptSmtp()) return true;
-      if (await attemptResend()) return true;
-      console.error(
-        '[EMAIL] Échec envoi (SMTP puis Resend). Vérifie SMTP_* ou domaine Resend vérifié + RESEND_FROM.',
-      );
+    if (!smtp) {
+      console.error('[EMAIL] Aucun transport configuré (SMTP_HOST/SMTP_USER/SMTP_PASS).');
       return false;
     }
-
-    if (await attemptResend()) return true;
-    if (await attemptSmtp()) return true;
-
-    if (!client && !smtp) {
-      console.error('[EMAIL] Aucun transport configuré (RESEND_API_KEY ou SMTP_HOST/SMTP_USER/SMTP_PASS).');
-    } else {
-      console.error('[EMAIL] Échec envoi (Resend puis SMTP).');
+    try {
+      await smtp.sendMail({ from: this.smtpFromHeader(), to, subject, html });
+      return true;
+    } catch (err) {
+      console.error('[EMAIL] SMTP:', err.message);
+      return false;
     }
-    return false;
   }
 
   /**
    * Envoie un email d'alerte document/entretien à un utilisateur
    */
   async sendAlertEmail(userEmail, userName, alertTitle, alertMessage, dueDate = null) {
-    const client = this._getClient();
     const smtp = this._getTransporter();
-    if (!client && !smtp) return false;
+    if (!smtp) return false;
 
     const daysLeft = dueDate ? Math.ceil((new Date(dueDate) - new Date()) / 864e5) : null;
     const urgencyColor =
@@ -167,7 +102,7 @@ class EmailService {
 </table></td></tr></table>
 </body></html>`;
 
-    return this._sendMailDual(userEmail, `Carvio — ${alertTitle}`, html);
+    return this._sendMail(userEmail, `Carvio — ${alertTitle}`, html);
   }
 
   /**
@@ -199,7 +134,7 @@ class EmailService {
 </table></td></tr></table>
 </body></html>`;
 
-    return this._sendMailDual(
+    return this._sendMail(
       userEmail,
       'Carvio — Réinitialisation de votre mot de passe',
       html,
@@ -210,7 +145,7 @@ class EmailService {
    * Envoie une idée / suggestion d'utilisateur vers la boîte de feedback.
    */
   async sendFeedbackEmail(user, message) {
-    const to = process.env.FEEDBACK_EMAIL || 'hello@carvio.fr';
+    const to = process.env.FEEDBACK_EMAIL || 'contact@carvio.fr';
     const escape = (str) => String(str || '')
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
@@ -237,7 +172,7 @@ class EmailService {
 </table></td></tr></table>
 </body></html>`;
 
-    return this._sendMailDual(to, `Carvio — Nouvelle idée de ${email}`, html);
+    return this._sendMail(to, `Carvio — Nouvelle idée de ${email}`, html);
   }
 
   /**
@@ -247,9 +182,6 @@ class EmailService {
     const user = (process.env.SMTP_USER || '').trim();
     const pass = process.env.SMTP_PASS || '';
     const hasSmtp = !!(process.env.SMTP_HOST && user && pass);
-    const onboarding = this._usesResendOnboarding();
-    const exampleUser = /^(ton|your)@/i.test(user) || user === 'your@gmail.com';
-    const examplePass = /xxxx/i.test(pass) || /^your-app-password$/i.test(String(pass).trim());
 
     if (!process.env.APP_URL) {
       console.log(
@@ -257,23 +189,14 @@ class EmailService {
       );
     }
 
-    if (onboarding && !hasSmtp) {
+    if (!hasSmtp) {
       console.warn(
-        '[EMAIL] Problème : Resend « onboarding » ne peut pas envoyer le reset à tous les utilisateurs. Remplis SMTP_USER + SMTP_PASS (Gmail : mot de passe d’application).',
+        '[EMAIL] SMTP non configuré : les emails (reset, alertes, idées) ne partiront pas. Remplis SMTP_HOST/SMTP_USER/SMTP_PASS.',
       );
       return;
     }
 
-    if (hasSmtp && (exampleUser || examplePass)) {
-      console.warn(
-        '[EMAIL] SMTP a l’air encore être un exemple (ton@gmail / xxxx…). Ouvre .env et mets ton vrai Gmail + mot de passe d’application Google (16 caractères). Guide : https://support.google.com/accounts/answer/185833',
-      );
-      return;
-    }
-
-    if (hasSmtp || process.env.RESEND_API_KEY) {
-      console.log('[EMAIL] OK — envoi possible (SMTP et/ou Resend).');
-    }
+    console.log('[EMAIL] OK — envoi SMTP possible.');
   }
 }
 
