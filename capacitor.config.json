@@ -8,7 +8,8 @@
       "NSLocationAlwaysAndWhenInUseUsageDescription": "Carvio utilise votre position pour afficher les services automobiles proches de vous lorsque vous utilisez la carte.",
       "NSCameraUsageDescription": "Carvio utilise l'appareil photo pour ajouter des photos de véhicules et documents.",
       "NSPhotoLibraryUsageDescription": "Carvio utilise votre photothèque pour sélectionner des photos de véhicules et documents.",
-      "NSPhotoLibraryAddUsageDescription": "Carvio peut enregistrer des exports PDF ou images si vous le demandez."
+      "NSPhotoLibraryAddUsageDescription": "Carvio peut enregistrer des exports PDF ou images si vous le demandez.",
+      "ITSAppUsesNonExemptEncryption": false
     }
   }
 }

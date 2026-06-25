@@ -34,6 +34,8 @@
 	<string>Carvio utilise votre photothèque pour sélectionner des photos de véhicules et documents.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Carvio peut enregistrer des exports PDF ou images si vous le demandez.</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
