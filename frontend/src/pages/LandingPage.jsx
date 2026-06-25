@@ -23,7 +23,7 @@ const FAQ_ITEMS = [
   },
   {
     q: 'Comment lire une carte grise ?',
-    a: 'La carte grise (certificat d\'immatriculation) contient toutes les informations essentielles : champ A (numéro d\'immatriculation), B (date de 1ère immatriculation), D.1 (marque), D.2 (type/variante), P.6 (puissance fiscale). Avec Carvio, scannez votre plaque et toutes ces infos sont automatiquement importées.',
+    a: 'La carte grise (certificat d\'immatriculation) contient toutes les informations essentielles : champ A (numéro d\'immatriculation), B (date de 1ère immatriculation), D.1 (marque), D.2 (type/variante), P.6 (puissance fiscale). Avec Carvio, enregistrez ces informations dans la fiche de votre véhicule pour les retrouver à tout moment.',
   },
   {
     q: 'Combien coûte l\'entretien d\'une voiture par an ?',
@@ -31,7 +31,7 @@ const FAQ_ITEMS = [
   },
   {
     q: 'Comment calculer la puissance fiscale ?',
-    a: 'La puissance fiscale (CV) est calculée selon la formule officielle française prenant en compte la puissance du moteur et les émissions de CO₂. Carvio récupère automatiquement la puissance fiscale lors du scan de plaque d\'immatriculation.',
+    a: 'La puissance fiscale (CV) est calculée selon la formule officielle française prenant en compte la puissance du moteur et les émissions de CO₂. Vous la trouvez au champ P.6 de votre carte grise, et Carvio la conserve dans la fiche de votre véhicule.',
   },
   {
     q: 'Qu\'est-ce que la vignette Crit\'Air ?',

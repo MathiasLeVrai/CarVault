@@ -5,7 +5,7 @@
     <key>CAPACITOR_DEBUG</key>
 	<string>$(CAPACITOR_DEBUG)</string>
 	<key>CFBundleDevelopmentRegion</key>
-	<string>en</string>
+	<string>fr</string>
 	<key>CFBundleDisplayName</key>
         <string>carvio</string>
 	<key>CFBundleExecutable</key>
@@ -48,8 +48,6 @@
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Carvio utilise votre position pour afficher la carte et trouver les stations-service et services automobiles à proximité.</string>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>Carvio utilise votre position pour afficher la carte et trouver les stations-service et services automobiles à proximité.</string>
 </dict>
 </plist>
