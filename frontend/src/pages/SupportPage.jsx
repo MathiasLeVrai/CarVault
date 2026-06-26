@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { ArrowLeft, ArrowRight, LifeBuoy, Mail, Clock } from 'lucide-react';
+import { mustUseAppleIap } from '../services/purchases';
 
 const CONTACT_EMAIL = 'contact@carvio.fr';
 const RESPONSE_TIME = '48 heures ouvrées';
@@ -8,15 +9,17 @@ const RESPONSE_TIME = '48 heures ouvrées';
 const FAQ_ITEMS = [
   {
     q: 'Comment contacter le support ?',
-    a: `Écrivez-nous à ${CONTACT_EMAIL} en décrivant votre problème et, si possible, l’adresse e-mail de votre compte. Nous répondons sous ${RESPONSE_TIME}.`,
+    a: `Écrivez-nous à ${CONTACT_EMAIL} en décrivant votre problème et, si possible, l'adresse e-mail de votre compte. Nous répondons sous ${RESPONSE_TIME}.`,
   },
   {
-    q: 'J’ai oublié mon mot de passe',
-    a: 'Utilisez la page « Mot de passe oublié » depuis l’écran de connexion. Vous recevrez un lien de réinitialisation par e-mail.',
+    q: "J'ai oublié mon mot de passe",
+    a: "Utilisez la page « Mot de passe oublié » depuis l'écran de connexion. Vous recevrez un lien de réinitialisation par e-mail.",
   },
   {
     q: 'Comment annuler mon abonnement Premium ?',
-    a: 'Depuis l’application, ouvrez Réglages → Abonnement pour accéder au portail de gestion Stripe. Vous pouvez annuler à tout moment ; l’accès Premium reste actif jusqu’à la fin de la période en cours.',
+    a: mustUseAppleIap()
+      ? "Sur iOS, ouvrez Réglages > Apple ID > Abonnements, sélectionnez Carvio Premium et désactivez le renouvellement. L'accès Premium reste actif jusqu'à la fin de la période en cours."
+      : "Depuis l'application, ouvrez Réglages → Abonnement pour accéder au portail de gestion Stripe. Vous pouvez annuler à tout moment ; l'accès Premium reste actif jusqu'à la fin de la période en cours.",
   },
   {
     q: 'Comment supprimer mon compte ?',

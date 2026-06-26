@@ -9,6 +9,8 @@ const subscriptionController = require('../controllers/subscription.controller')
 router.get('/status', authenticate, subscriptionController.getStatus);
 router.post('/checkout', authenticate, subscriptionController.createCheckout);
 router.post('/portal', authenticate, subscriptionController.createPortal);
+router.post('/sync-apple', authenticate, subscriptionController.syncApple);
 router.post('/webhook', subscriptionController.webhook);
+router.post('/revenuecat-webhook', subscriptionController.revenueCatWebhook);
 
 module.exports = router;

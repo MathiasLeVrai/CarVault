@@ -79,6 +79,7 @@ class AuthService {
         avatar: true,
         createdAt: true,
         isPremium: true,
+        premiumSource: true,
         _count: {
           select: { vehicles: true },
         },

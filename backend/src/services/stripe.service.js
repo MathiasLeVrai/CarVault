@@ -20,7 +20,15 @@ class StripeService {
   async getUserWithPremium(userId) {
     return prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true, email: true, isPremium: true, stripeCustomerId: true, stripeSubscriptionId: true, premiumExpiresAt: true },
+      select: {
+        id: true,
+        email: true,
+        isPremium: true,
+        premiumSource: true,
+        stripeCustomerId: true,
+        stripeSubscriptionId: true,
+        premiumExpiresAt: true,
+      },
     });
   }
 
@@ -118,6 +126,7 @@ class StripeService {
           where: { id: userId },
           data: {
             isPremium: true,
+            premiumSource: 'stripe',
             stripeSubscriptionId: session.subscription,
           },
         });

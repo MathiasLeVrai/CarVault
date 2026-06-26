@@ -33,10 +33,65 @@ jobs:
           npm run lint -- --max-warnings 20
           npm run build
 
-  # 2) Déploie sur Fly.io — uniquement si "verifier" a réussi.
+  # 2) Tests E2E (8 parcours) + rapport d'exécution.
+  e2e:
+    name: Tests E2E
+    needs: verifier
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: carvault_e2e
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          cd backend && npm ci
+          cd ../frontend && npm ci
+
+      - name: Install Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Run E2E tests
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/carvault_e2e
+          JWT_SECRET: e2e-ci-secret
+          CI: true
+        run: npm run test:e2e
+
+      - name: Upload rapport HTML
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-report-html
+          path: e2e/reports/html/
+
+      - name: Upload rapport JUnit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-report-junit
+          path: e2e/reports/junit.xml
+
+  # 3) Déploie sur Fly.io — uniquement si vérification et E2E ont réussi.
   deployer:
     name: Déployer sur Fly.io
-    needs: verifier
+    needs: [verifier, e2e]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

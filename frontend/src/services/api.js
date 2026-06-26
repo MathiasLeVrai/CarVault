@@ -1,6 +1,13 @@
+import { Capacitor } from '@capacitor/core';
+
 const DEFAULT_PUBLIC_APP_URL = 'https://carvio.fr';
 const DEFAULT_WEB_API_URL = '/api';
 const NATIVE_API_URL = `${DEFAULT_PUBLIC_APP_URL}/api`;
+
+const isIosNativeClient = () =>
+  typeof window !== 'undefined' &&
+  Capacitor.isNativePlatform() &&
+  Capacitor.getPlatform() === 'ios';
 
 const isNativeCapacitor = () =>
   typeof window !== 'undefined' &&
@@ -146,6 +153,9 @@ class ApiClient {
     const token = this.getToken();
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
+    }
+    if (isIosNativeClient()) {
+      headers['X-Carvio-Client'] = 'ios-native';
     }
     return headers;
   }
@@ -369,6 +379,7 @@ export const subscriptionApi = {
   getStatus: () => api.get('/subscription/status'),
   createCheckout: (plan = 'yearly') => api.post('/subscription/checkout', { plan }),
   createPortal: () => api.post('/subscription/portal'),
+  syncApple: () => api.post('/subscription/sync-apple'),
 };
 
 export const pushApi = {

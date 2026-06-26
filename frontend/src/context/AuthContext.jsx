@@ -2,6 +2,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import * as Sentry from '@sentry/react';
 import { authApi } from '../services/api';
+import { configurePurchases, logoutPurchases } from '../services/purchases';
 
 const AuthContext = createContext(null);
 
@@ -59,12 +60,18 @@ export function AuthProvider({ children }) {
     return () => { cancelled = true; };
   }, []);
 
+  useEffect(() => {
+    if (!user?.id) return;
+    configurePurchases(user.id).catch(() => {});
+  }, [user?.id]);
+
   const login = async (email, password) => {
     const { user: userData, token, refreshToken } = await authApi.login({ email, password });
     localStorage.setItem(STORAGE_TOKEN, token);
     localStorage.setItem(STORAGE_REFRESH, refreshToken);
     localStorage.setItem(STORAGE_USER, JSON.stringify(userData));
     setUser(userData);
+    await configurePurchases(userData.id).catch(() => {});
     return userData;
   };
 
@@ -74,12 +81,14 @@ export function AuthProvider({ children }) {
     localStorage.setItem(STORAGE_REFRESH, refreshToken);
     localStorage.setItem(STORAGE_USER, JSON.stringify(userData));
     setUser(userData);
+    await configurePurchases(userData.id).catch(() => {});
     return userData;
   };
 
   const logout = () => {
     // Revoke refresh tokens server-side (best effort)
     authApi.logout().catch(() => {});
+    logoutPurchases().catch(() => {});
     localStorage.removeItem(STORAGE_TOKEN);
     localStorage.removeItem(STORAGE_REFRESH);
     localStorage.removeItem(STORAGE_USER);

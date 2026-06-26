@@ -13,10 +13,13 @@
     "cap:open:ios": "npx cap open ios",
     "cap:open:android": "npx cap open android",
     "db:migrate": "cd backend && npx prisma migrate dev",
-    "db:seed": "cd backend && npx prisma db seed"
+    "db:seed": "cd backend && npx prisma db seed",
+    "test:e2e": "playwright test",
+    "test:e2e:report": "playwright show-report e2e/reports/html"
   },
   "devDependencies": {
     "@capacitor/cli": "^8.3.1",
+    "@playwright/test": "^1.55.0",
     "concurrently": "^9.1.0"
   },
   "dependencies": {
@@ -25,6 +28,7 @@
     "@capacitor/filesystem": "^8.1.2",
     "@capacitor/geolocation": "^8.2.0",
     "@capacitor/ios": "^8.3.1",
-    "@capacitor/share": "^8.0.1"
+    "@capacitor/share": "^8.0.1",
+    "@revenuecat/purchases-capacitor": "^13.2.0"
   }
 }

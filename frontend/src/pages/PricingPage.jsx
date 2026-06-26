@@ -3,8 +3,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion as Motion } from 'framer-motion';
 import { Check, ArrowRight, ArrowLeft, Shield, Zap, Car, FileText, Bell, TrendingUp, Wrench, MapPin, Share2, Fuel, Loader2, Clock } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { subscriptionApi } from '../services/api';
-import { useToast } from '../context/ToastContext';
+import { useSubscriptionCheckout } from '../hooks/useSubscriptionCheckout';
+import SubscriptionLegalLinks from '../components/SubscriptionLegalLinks';
+import SubscriptionProductInfo from '../components/SubscriptionProductInfo';
+import { useSubscriptionPricing } from '../hooks/useSubscriptionPricing';
 import { PRICING } from '../constants/pricing';
 
 const fade = (delay = 0) => ({
@@ -25,41 +27,38 @@ const FEATURES = [
   { icon: MapPin, color: '#38bdf8', title: 'Carte interactive', desc: 'Garages, centres CT, prix du carburant en temps réel.' },
 ];
 
-const FAQ = [
+const WEB_FAQ = [
   { q: 'L\'essai est-il vraiment gratuit ?', a: 'Oui, pendant 14 jours vous accédez à toutes les fonctionnalités sans être débité. Vous pouvez annuler à tout moment avant la fin de l\'essai.' },
   { q: 'Puis-je changer de formule ?', a: 'Oui, passez du mensuel à l\'annuel (ou inversement) à tout moment depuis votre espace de gestion Stripe.' },
   { q: 'Que se passe-t-il après l\'essai ?', a: 'Votre abonnement démarre automatiquement. Si vous annulez avant, vous repassez sur le plan gratuit (1 véhicule).' },
   { q: 'Mes documents sont-ils en sécurité ?', a: 'Vos fichiers sont stockés de manière sécurisée. L\'accès nécessite votre authentification. Aucun partage sans votre accord.' },
 ];
 
+const IOS_FAQ = [
+  { q: 'L\'essai est-il vraiment gratuit ?', a: 'Si un essai gratuit est proposé par l\'App Store, vous accédez à toutes les fonctionnalités Premium sans être débité pendant la période d\'essai. Vous pouvez annuler à tout moment avant sa fin.' },
+  { q: 'Puis-je changer de formule ?', a: 'Oui, annulez votre abonnement actuel puis souscrivez à la nouvelle formule (mensuelle ou annuelle) depuis l\'application.' },
+  { q: 'Comment annuler ?', a: 'Ouvrez Réglages > Apple ID > Abonnements sur votre appareil, sélectionnez Carvio Premium et annulez le renouvellement.' },
+  { q: 'Mes documents sont-ils en sécurité ?', a: 'Vos fichiers sont stockés de manière sécurisée. L\'accès nécessite votre authentification. Aucun partage sans votre accord.' },
+];
+
 export default function PricingPage() {
   const [plan, setPlan] = useState('yearly');
-  const [loading, setLoading] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
-  const toast = useToast();
+  const { subscribe, restore, loading, restoring, useAppleIap } = useSubscriptionCheckout();
+  const pricing = useSubscriptionPricing();
+  const FAQ = useAppleIap ? IOS_FAQ : WEB_FAQ;
 
   const handleSubscribe = async () => {
     if (!user) {
       navigate('/register');
       return;
     }
-    setLoading(true);
-    try {
-      const { url } = await subscriptionApi.createCheckout(plan);
-      if (url) {
-        window.location.href = url;
-      } else {
-        toast.info('Contactez contact@carvio.fr pour activer Premium.');
-      }
-    } catch (err) {
-      toast.error(err.message || 'Erreur lors du paiement');
-    } finally {
-      setLoading(false);
-    }
+    await subscribe(plan);
   };
 
   const isYearly = plan === 'yearly';
+  const activePricing = pricing.forPlan(plan);
 
   return (
     <div className="public-screen bg-bg text-ink overflow-x-hidden">
@@ -138,24 +137,42 @@ export default function PricingPage() {
 
             {/* Price */}
             <div className="text-center mb-6">
+              <p className="text-sm font-semibold text-white/60 mb-3">
+                {activePricing.title} · Abonnement {isYearly ? 'annuel' : 'mensuel'}
+              </p>
               <div className="flex items-baseline justify-center gap-1">
-                <span className="text-5xl font-black font-display text-white">
-                  {isYearly ? PRICING.yearly : PRICING.monthly}
-                </span>
-                <span className="text-lg font-bold text-white/60">€</span>
-                <span className="text-sm text-white/40 ml-1">
-                  / {isYearly ? 'an' : 'mois'}
-                </span>
+                {useAppleIap && activePricing.priceString ? (
+                  <>
+                    <span className="text-5xl font-black font-display text-white">{activePricing.priceString}</span>
+                    {activePricing.periodLabel && (
+                      <span className="text-sm text-white/40 ml-1">/ {activePricing.periodLabel}</span>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <span className="text-5xl font-black font-display text-white">
+                      {isYearly ? PRICING.yearly : PRICING.monthly}
+                    </span>
+                    <span className="text-lg font-bold text-white/60">€</span>
+                    <span className="text-sm text-white/40 ml-1">
+                      / {isYearly ? 'an' : 'mois'}
+                    </span>
+                  </>
+                )}
               </div>
-              {isYearly && (
+              {!useAppleIap && isYearly && (
                 <p className="text-sm text-white/40 mt-2">
                   soit {PRICING.yearlyPerMonth}€/mois — <span className="text-lime font-semibold">économisez {PRICING.yearlySavings}€/an</span>
                 </p>
               )}
               <p className="text-xs text-white/30 mt-2">
-                Après 14 jours d'essai gratuit · Annulable à tout moment
+                {useAppleIap
+                  ? 'Essai gratuit si éligible · Renouvellement automatique'
+                  : 'Après 14 jours d\'essai gratuit · Annulable à tout moment'}
               </p>
             </div>
+
+            <SubscriptionProductInfo plan={plan} className="text-center text-[11px] text-white/45 mb-6 leading-relaxed" />
 
             {/* Features */}
             <div className="space-y-2.5 mb-8">
@@ -174,12 +191,26 @@ export default function PricingPage() {
               className="w-full py-4 rounded-2xl cv-btn-accent text-sm font-black flex items-center justify-center gap-2 disabled:opacity-50"
             >
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" fill="white" strokeWidth={0} />}
-              {loading ? 'Redirection…' : 'Démarrer mon essai gratuit'}
+              {loading ? 'Traitement…' : 'Démarrer mon essai gratuit'}
             </button>
 
-            <p className="text-center text-[10px] text-white/25 mt-3">
-              Paiement sécurisé par Stripe · Aucun prélèvement pendant 14 jours
-            </p>
+            {useAppleIap && user && (
+              <button
+                type="button"
+                onClick={restore}
+                disabled={restoring}
+                className="w-full mt-2 py-2 text-[11px] font-semibold text-white/40 hover:text-white/60 disabled:opacity-50"
+              >
+                {restoring ? 'Restauration…' : 'Restaurer les achats'}
+              </button>
+            )}
+
+            <SubscriptionLegalLinks />
+            {!useAppleIap && (
+              <p className="text-center text-[10px] text-white/25 mt-2">
+                Paiement sécurisé par Stripe · Aucun prélèvement pendant 14 jours
+              </p>
+            )}
           </Motion.div>
         </div>
       </section>
@@ -285,6 +316,8 @@ export default function PricingPage() {
           <div className="flex gap-6">
             <Link to="/login" className="text-xs text-ink-muted hover:text-ink transition-colors font-medium">Connexion</Link>
             <Link to="/register" className="text-xs text-ink-muted hover:text-ink transition-colors font-medium">Inscription</Link>
+            <Link to="/privacy" className="text-xs text-ink-muted hover:text-ink transition-colors font-medium">Confidentialité</Link>
+            <Link to="/terms" className="text-xs text-ink-muted hover:text-ink transition-colors font-medium">CGU</Link>
           </div>
         </div>
       </footer>

@@ -13,6 +13,11 @@ import {
 } from 'lucide-react';
 import { motion as Motion } from 'framer-motion';
 import { subscriptionApi, feedbackApi, authApi } from '../services/api';
+import { useSubscriptionCheckout } from '../hooks/useSubscriptionCheckout';
+import SubscriptionLegalLinks from '../components/SubscriptionLegalLinks';
+import SubscriptionProductInfo from '../components/SubscriptionProductInfo';
+import { openAppleSubscriptionManagement } from '../services/purchases';
+import { useSubscriptionPricing } from '../hooks/useSubscriptionPricing';
 import { useToast } from '../context/ToastContext';
 
 const containerVariants = {
@@ -222,33 +227,32 @@ function ProfileCard({ user, updateProfile, onSaved }) {
 }
 
 function SubscriptionCard({ user }) {
-  const [loading, setLoading] = useState(false);
   const [plan, setPlan] = useState('yearly');
+  const [portalLoading, setPortalLoading] = useState(false);
+  const { subscribe, restore, loading, restoring, useAppleIap } = useSubscriptionCheckout();
+  const pricing = useSubscriptionPricing();
   const toast = useToast();
   const isYearly = plan === 'yearly';
-
-  const handleUpgrade = async () => {
-    setLoading(true);
-    try {
-      const { url } = await subscriptionApi.createCheckout(plan);
-      if (url) window.location.href = url;
-      else toast.info('Contactez contact@carvio.fr pour activer Premium.');
-    } catch (err) {
-      toast.error(err.message || 'Erreur lors du paiement');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const activePricing = pricing.forPlan(plan);
 
   const handleManage = async () => {
-    setLoading(true);
+    if (useAppleIap) {
+      if (user?.premiumSource === 'stripe') {
+        toast.info('Cet abonnement a été souscrit sur carvio.fr. Gérez-le depuis le site web.');
+        return;
+      }
+      openAppleSubscriptionManagement();
+      return;
+    }
+
+    setPortalLoading(true);
     try {
       const { url } = await subscriptionApi.createPortal();
       if (url) window.location.href = url;
     } catch (err) {
       toast.error(err.message || 'Erreur');
     } finally {
-      setLoading(false);
+      setPortalLoading(false);
     }
   };
 
@@ -270,10 +274,10 @@ function SubscriptionCard({ user }) {
           </div>
           <button
             onClick={handleManage}
-            disabled={loading}
+            disabled={portalLoading}
             className="cv-btn-dark px-4 py-2.5 text-xs rounded-xl inline-flex items-center gap-1.5 font-bold shrink-0"
           >
-            {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ExternalLink className="w-3.5 h-3.5" />}
+            {portalLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ExternalLink className="w-3.5 h-3.5" />}
             Gérer
           </button>
         </div>
@@ -292,37 +296,61 @@ function SubscriptionCard({ user }) {
           </div>
           <div>
             <p className="text-sm font-bold text-white font-display">Passer à Premium</p>
-            <p className="text-[11px] text-white/40">14 jours d'essai gratuit</p>
+            <p className="text-[11px] text-white/40">
+              {activePricing.title} · Abonnement {isYearly ? 'annuel' : 'mensuel'}
+              {activePricing.label ? ` · ${activePricing.label}` : ''}
+            </p>
           </div>
         </div>
 
-        {/* Toggle */}
         <div className="flex items-center justify-center mb-4">
           <div className="inline-flex rounded-xl bg-white/[0.06] border border-white/10 p-1">
             <button
               onClick={() => setPlan('monthly')}
               className={`px-4 py-2 rounded-lg text-xs font-bold transition-[background-color,color] ${!isYearly ? 'bg-white/10 text-white' : 'text-white/40'}`}
             >
-              {PRICING.monthly}€/mois
+              {useAppleIap && pricing.monthly.label ? pricing.monthly.label : `${PRICING.monthly}€/mois`}
             </button>
             <button
               onClick={() => setPlan('yearly')}
               className={`px-4 py-2 rounded-lg text-xs font-bold transition-[background-color,color] flex items-center gap-1.5 ${isYearly ? 'bg-white/10 text-white' : 'text-white/40'}`}
             >
-              {PRICING.yearly}€/an
-              <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-lime/20 text-lime">{PRICING.discount}</span>
+              {useAppleIap && pricing.yearly.label ? pricing.yearly.label : `${PRICING.yearly}€/an`}
+              {!useAppleIap && (
+                <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-lime/20 text-lime">{PRICING.discount}</span>
+              )}
             </button>
           </div>
         </div>
 
+        <SubscriptionProductInfo plan={plan} className="text-center text-[11px] text-white/45 mb-3 leading-relaxed" />
+
         <button
-          onClick={handleUpgrade}
+          onClick={() => subscribe(plan)}
           disabled={loading}
           className="w-full py-3.5 rounded-2xl cv-btn-accent text-sm font-black flex items-center justify-center gap-2 disabled:opacity-50"
         >
           {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" fill="white" strokeWidth={0} />}
-          {loading ? 'Redirection…' : 'Démarrer l\'essai gratuit'}
+          {loading ? 'Traitement…' : 'Démarrer l\'essai gratuit'}
         </button>
+
+        {useAppleIap && (
+          <button
+            type="button"
+            onClick={restore}
+            disabled={restoring}
+            className="w-full mt-2 py-2 text-[11px] font-semibold text-white/40 hover:text-white/60 disabled:opacity-50"
+          >
+            {restoring ? 'Restauration…' : 'Restaurer les achats'}
+          </button>
+        )}
+
+        <SubscriptionLegalLinks />
+        {!useAppleIap && (
+          <p className="text-center text-[10px] text-white/25 mt-2">
+            Paiement sécurisé par Stripe · Aucun prélèvement pendant 14 jours
+          </p>
+        )}
       </div>
     </div>
   );

@@ -52,7 +52,8 @@ if (!Number.isFinite(PORT) || PORT < 1 || PORT > 65535) {
 // (POST + 301 peut faire perdre le corps côté client).
 app.use((req, res, next) => {
   if (req.hostname !== 'carvault.fly.dev') return next();
-  if (req.path.startsWith('/api/subscription/webhook')) return next();
+  if (req.path.startsWith('/api/subscription/webhook')
+    || req.path.startsWith('/api/subscription/revenuecat-webhook')) return next();
   let host = 'carvio.fr';
   try {
     if (process.env.APP_URL) host = new URL(process.env.APP_URL).host;
@@ -65,7 +66,7 @@ app.use((req, res, next) => {
 // Rate limiters
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 10,
+  max: process.env.NODE_ENV === 'test' ? 100 : 10,
   message: { error: 'Trop de tentatives de connexion. Réessayez dans 15 minutes.' },
   standardHeaders: true,
   legacyHeaders: false,
@@ -73,7 +74,7 @@ const loginLimiter = rateLimit({
 
 const registerLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
-  max: 5,
+  max: process.env.NODE_ENV === 'test' ? 100 : 5,
   message: { error: 'Trop de comptes créés depuis cette adresse. Réessayez dans 1 heure.' },
   standardHeaders: true,
   legacyHeaders: false,
@@ -130,8 +131,9 @@ app.use(cors({
   credentials: true,
 }));
 
-// Stripe webhook needs raw body — must be registered BEFORE express.json()
+// Webhooks need raw body — must be registered BEFORE express.json()
 app.use('/api/subscription/webhook', express.raw({ type: 'application/json' }));
+app.use('/api/subscription/revenuecat-webhook', express.raw({ type: 'application/json' }));
 
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
