@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, Navigate } from 'react-router-dom';
 import { motion as Motion } from 'framer-motion';
 import { Check, ArrowRight, ArrowLeft, Shield, Zap, Car, FileText, Bell, TrendingUp, Wrench, MapPin, Share2, Fuel, Loader2, Clock } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -8,6 +8,7 @@ import SubscriptionLegalLinks from '../components/SubscriptionLegalLinks';
 import SubscriptionProductInfo from '../components/SubscriptionProductInfo';
 import { useSubscriptionPricing } from '../hooks/useSubscriptionPricing';
 import { PRICING } from '../constants/pricing';
+import { shouldShowSubscriptions } from '../services/purchases';
 
 const fade = (delay = 0) => ({
   initial: { opacity: 0, y: 20 },
@@ -48,6 +49,10 @@ export default function PricingPage() {
   const { subscribe, restore, loading, restoring, useAppleIap } = useSubscriptionCheckout();
   const pricing = useSubscriptionPricing();
   const FAQ = useAppleIap ? IOS_FAQ : WEB_FAQ;
+
+  if (!shouldShowSubscriptions()) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   const handleSubscribe = async () => {
     if (!user) {

@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { dashboardApi, vehicleApi } from '../services/api';
 import { PRICING } from '../constants/pricing';
 import { useAuth } from '../context/AuthContext';
+import { shouldShowSubscriptions } from '../services/purchases';
 import Badge from '../components/ui/Badge';
 import StatCard from '../components/ui/StatCard';
 import Button from '../components/ui/Button';
@@ -154,7 +155,7 @@ export default function DashboardPage() {
       </Motion.div>
 
       {/* ─── Premium banner ─── */}
-      {!user?.isPremium && (
+      {!user?.isPremium && shouldShowSubscriptions() && (
         <Motion.div variants={itemVariants}>
           <Link
             to="/settings"

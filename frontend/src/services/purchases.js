@@ -12,11 +12,20 @@ export const isIosNative = () =>
   Capacitor.isNativePlatform() &&
   Capacitor.getPlatform() === 'ios';
 
+/** Active les achats iOS (IAP). Désactivé par défaut — v1 App Store sans payant. */
+export const areIosSubscriptionsEnabled = () =>
+  import.meta.env.VITE_IOS_SUBSCRIPTIONS_ENABLED === 'true';
+
+/** Afficher les écrans / boutons d'abonnement (web ou iOS si activé). */
+export const shouldShowSubscriptions = () =>
+  !isIosNative() || areIosSubscriptionsEnabled();
+
 /** iOS App Store exige IAP — jamais Stripe côté client. */
-export const mustUseAppleIap = () => isIosNative();
+export const mustUseAppleIap = () =>
+  isIosNative() && areIosSubscriptionsEnabled();
 
 export const isPurchasesAvailable = () =>
-  isIosNative() && Boolean(import.meta.env.VITE_REVENUECAT_IOS_API_KEY);
+  mustUseAppleIap() && Boolean(import.meta.env.VITE_REVENUECAT_IOS_API_KEY);
 
 function formatSubscriptionPeriod(period) {
   if (!period) return null;

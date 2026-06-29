@@ -4,6 +4,7 @@ import {
 } from 'lucide-react';
 import { motion as Motion, useReducedMotion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
+import { shouldShowSubscriptions } from '../services/purchases';
 
 const BUBBLE_SPRING = { type: 'spring', stiffness: 300, damping: 28 };
 
@@ -62,7 +63,7 @@ export default function Sidebar({ onFabPress }) {
           })}
         </nav>
 
-        {!user?.isPremium && (
+        {!user?.isPremium && shouldShowSubscriptions() && (
           <>
             <div className="cv-divider mx-4 my-4" />
             <NavLink

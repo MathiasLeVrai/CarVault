@@ -16,7 +16,7 @@ import { subscriptionApi, feedbackApi, authApi } from '../services/api';
 import { useSubscriptionCheckout } from '../hooks/useSubscriptionCheckout';
 import SubscriptionLegalLinks from '../components/SubscriptionLegalLinks';
 import SubscriptionProductInfo from '../components/SubscriptionProductInfo';
-import { openAppleSubscriptionManagement } from '../services/purchases';
+import { openAppleSubscriptionManagement, shouldShowSubscriptions } from '../services/purchases';
 import { useSubscriptionPricing } from '../hooks/useSubscriptionPricing';
 import { useToast } from '../context/ToastContext';
 
@@ -227,6 +227,7 @@ function ProfileCard({ user, updateProfile, onSaved }) {
 }
 
 function SubscriptionCard({ user }) {
+  const showSubscriptions = shouldShowSubscriptions();
   const [plan, setPlan] = useState('yearly');
   const [portalLoading, setPortalLoading] = useState(false);
   const { subscribe, restore, loading, restoring, useAppleIap } = useSubscriptionCheckout();
@@ -256,6 +257,8 @@ function SubscriptionCard({ user }) {
     }
   };
 
+  if (!showSubscriptions && !user?.isPremium) return null;
+
   if (user?.isPremium) {
     return (
       <div className="cv-card p-5 relative overflow-hidden">
@@ -272,18 +275,22 @@ function SubscriptionCard({ user }) {
               <p className="text-[11px] text-ink-muted mt-0.5">Actif — toutes les fonctionnalités débloquées</p>
             </div>
           </div>
-          <button
-            onClick={handleManage}
-            disabled={portalLoading}
-            className="cv-btn-dark px-4 py-2.5 text-xs rounded-xl inline-flex items-center gap-1.5 font-bold shrink-0"
-          >
-            {portalLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ExternalLink className="w-3.5 h-3.5" />}
-            Gérer
-          </button>
+          {showSubscriptions && (
+            <button
+              onClick={handleManage}
+              disabled={portalLoading}
+              className="cv-btn-dark px-4 py-2.5 text-xs rounded-xl inline-flex items-center gap-1.5 font-bold shrink-0"
+            >
+              {portalLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ExternalLink className="w-3.5 h-3.5" />}
+              Gérer
+            </button>
+          )}
         </div>
       </div>
     );
   }
+
+  if (!showSubscriptions) return null;
 
   return (
     <div className="cv-card-accent p-6 relative overflow-hidden">

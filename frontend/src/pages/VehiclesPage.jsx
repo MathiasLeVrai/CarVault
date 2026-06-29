@@ -12,6 +12,7 @@ import EmptyState from '../components/ui/EmptyState';
 import { Car, Plus, FileText, ArrowUpRight, Gauge, Zap, Search, CheckCircle2 } from 'lucide-react';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
 import PremiumModal from '../components/PremiumModal';
+import { shouldShowSubscriptions } from '../services/purchases';
 
 
 const MAINTENANCE_ITEMS = [
@@ -232,7 +233,11 @@ export default function VehiclesPage() {
     } catch (err) {
       if (err.code === 'PREMIUM_REQUIRED') {
         setShowModal(false);
-        setShowPremium(true);
+        if (shouldShowSubscriptions()) {
+          setShowPremium(true);
+        } else {
+          toast.info('Le plan gratuit est limité à 1 véhicule.');
+        }
       } else if (err.code === 'PLATE_TAKEN') {
         toast.error('Ce véhicule est déjà enregistré par un autre utilisateur');
       } else {
