@@ -6,11 +6,38 @@ function uniqueEmail(prefix = 'e2e') {
   return `${prefix}+${Date.now()}-${Math.random().toString(36).slice(2, 7)}@carvio.test`;
 }
 
-async function skipOnboarding(page) {
-  const skip = page.getByRole('button', { name: /passer/i });
-  if (await skip.isVisible({ timeout: 5000 }).catch(() => false)) {
-    await skip.click();
+async function markOnboardingDone(page) {
+  await page.waitForFunction(() => {
+    try {
+      const user = JSON.parse(localStorage.getItem('carvault_user') || 'null');
+      return Boolean(user?.id);
+    } catch {
+      return false;
+    }
+  });
+  await page.evaluate(() => {
+    const user = JSON.parse(localStorage.getItem('carvault_user'));
+    localStorage.setItem(`carvault_tour_done_${user.id}`, '1');
+  });
+}
+
+async function dismissOnboarding(page) {
+  await markOnboardingDone(page);
+
+  const overlay = page.locator('div.fixed.inset-0').filter({
+    has: page.getByRole('button', { name: /^passer$/i }),
+  });
+
+  for (let attempt = 0; attempt < 12; attempt += 1) {
+    const skip = page.getByRole('button', { name: /^passer$/i });
+    if (await skip.isVisible({ timeout: 1500 }).catch(() => false)) {
+      await skip.click();
+    }
+    if (!(await overlay.isVisible({ timeout: 500 }).catch(() => false))) return;
+    await page.waitForTimeout(250);
   }
+
+  throw new Error('Impossible de fermer l’onboarding E2E');
 }
 
 async function registerUser(page, { firstName = 'E2E', lastName = 'Test', email, password = TEST_PASSWORD } = {}) {
@@ -23,7 +50,7 @@ async function registerUser(page, { firstName = 'E2E', lastName = 'Test', email,
   await page.getByPlaceholder('••••••••').fill(password);
   await page.getByRole('button', { name: /créer mon compte/i }).click();
   await expect(page).toHaveURL(/\/dashboard$/, { timeout: 15_000 });
-  await skipOnboarding(page);
+  await dismissOnboarding(page);
   return { email: userEmail, password, firstName, lastName };
 }
 
@@ -33,7 +60,7 @@ async function loginUser(page, email, password = TEST_PASSWORD) {
   await page.locator('input[type="password"]').fill(password);
   await page.getByRole('button', { name: /se connecter/i }).click();
   await expect(page).toHaveURL(/\/dashboard$/, { timeout: 15_000 });
-  await skipOnboarding(page);
+  await dismissOnboarding(page);
 }
 
 async function fillAutocomplete(page, label, value) {
@@ -41,7 +68,12 @@ async function fillAutocomplete(page, label, value) {
   await field.getByRole('button').click();
   const search = field.locator('input[type="text"]').last();
   await search.fill(value);
-  await search.press('Enter');
+  const option = page.getByRole('button', { name: new RegExp(value, 'i') }).first();
+  if (await option.isVisible({ timeout: 3000 }).catch(() => false)) {
+    await option.click();
+  } else {
+    await search.press('Enter');
+  }
 }
 
 async function selectField(page, label, value) {
@@ -50,6 +82,7 @@ async function selectField(page, label, value) {
 
 async function addVehicleManual(page, { brand = 'Renault', model = 'Clio', year = '2020' } = {}) {
   await page.goto('/vehicles');
+  await dismissOnboarding(page);
   await page.getByRole('button', { name: /^ajouter$/i }).first().click();
   await page.getByRole('button', { name: /saisir manuellement/i }).click();
   await selectField(page, 'Année', year);
@@ -62,7 +95,7 @@ async function addVehicleManual(page, { brand = 'Renault', model = 'Clio', year 
 module.exports = {
   TEST_PASSWORD,
   uniqueEmail,
-  skipOnboarding,
+  dismissOnboarding,
   registerUser,
   loginUser,
   addVehicleManual,

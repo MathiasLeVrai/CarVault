@@ -66,7 +66,7 @@ class FuelPriceService {
       this._cacheExpiry = Date.now() + 60 * 60 * 1000; // 1h
       return results;
     } catch (err) {
-      console.error('[FuelPrice] Erreur:', err.message);
+      if (process.env.NODE_ENV !== 'test') console.error('[FuelPrice] Erreur:', err.message);
       // Retourner le cache expire si dispo
       if (this._cache) return this._cache;
       return {};
@@ -101,7 +101,7 @@ class FuelPriceService {
       }
       return drops;
     } catch (err) {
-      console.error('[FuelPrice] Erreur getPriceDrops:', err.message);
+      if (process.env.NODE_ENV !== 'test') console.error('[FuelPrice] Erreur getPriceDrops:', err.message);
       return [];
     }
   }

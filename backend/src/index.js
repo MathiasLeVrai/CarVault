@@ -82,7 +82,7 @@ const registerLimiter = rateLimit({
 
 const publicLimiter = rateLimit({
   windowMs: 60 * 1000,
-  max: 30,
+  max: process.env.NODE_ENV === 'test' ? 10_000 : 30,
   message: { error: 'Trop de requêtes. Réessayez dans une minute.' },
   standardHeaders: true,
   legacyHeaders: false,
@@ -90,7 +90,7 @@ const publicLimiter = rateLimit({
 
 const apiLimiter = rateLimit({
   windowMs: 60 * 1000,
-  max: 60,
+  max: process.env.NODE_ENV === 'test' ? 10_000 : 60,
   message: { error: 'Trop de requêtes. Réessayez dans une minute.' },
   standardHeaders: true,
   legacyHeaders: false,

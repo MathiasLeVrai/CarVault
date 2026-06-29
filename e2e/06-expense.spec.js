@@ -14,6 +14,6 @@ test('ajout d\'une dépense', async ({ page }) => {
   await page.getByPlaceholder('Description...').fill('Vidange E2E');
   await page.getByRole('button', { name: /^ajouter$/i }).last().click();
 
-  await expect(page.getByText(/85,50/)).toBeVisible({ timeout: 15_000 });
-  await expect(page.getByText('Vidange E2E')).toBeVisible();
+  await expect(page.getByText('Vidange E2E')).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText('85,50 €').first()).toBeVisible();
 });
