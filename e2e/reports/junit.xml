@@ -1,0 +1,34 @@
+<testsuites id="" name="" tests="8" failures="0" skipped="0" errors="0" time="32.301446">
+<testsuite name="01-public.spec.js" timestamp="2026-06-29T16:58:43.217Z" hostname="chromium" tests="1" failures="0" skipped="0" time="2.46" errors="0">
+<testcase name="pages publiques accessibles" classname="01-public.spec.js" time="2.46">
+</testcase>
+</testsuite>
+<testsuite name="02-register.spec.js" timestamp="2026-06-29T16:58:43.217Z" hostname="chromium" tests="1" failures="0" skipped="0" time="1.567" errors="0">
+<testcase name="inscription redirige vers le dashboard" classname="02-register.spec.js" time="1.567">
+</testcase>
+</testsuite>
+<testsuite name="03-login.spec.js" timestamp="2026-06-29T16:58:43.217Z" hostname="chromium" tests="1" failures="0" skipped="0" time="2.809" errors="0">
+<testcase name="connexion avec un compte existant" classname="03-login.spec.js" time="2.809">
+</testcase>
+</testsuite>
+<testsuite name="04-vehicle.spec.js" timestamp="2026-06-29T16:58:43.217Z" hostname="chromium" tests="1" failures="0" skipped="0" time="6.322" errors="0">
+<testcase name="ajout manuel d&apos;un véhicule" classname="04-vehicle.spec.js" time="6.322">
+</testcase>
+</testsuite>
+<testsuite name="05-document.spec.js" timestamp="2026-06-29T16:58:43.217Z" hostname="chromium" tests="1" failures="0" skipped="0" time="5.928" errors="0">
+<testcase name="upload d&apos;un document" classname="05-document.spec.js" time="5.928">
+</testcase>
+</testsuite>
+<testsuite name="06-expense.spec.js" timestamp="2026-06-29T16:58:43.217Z" hostname="chromium" tests="1" failures="0" skipped="0" time="5.392" errors="0">
+<testcase name="ajout d&apos;une dépense" classname="06-expense.spec.js" time="5.392">
+</testcase>
+</testsuite>
+<testsuite name="07-alerts.spec.js" timestamp="2026-06-29T16:58:43.217Z" hostname="chromium" tests="1" failures="0" skipped="0" time="2.418" errors="0">
+<testcase name="consultation de la page alertes" classname="07-alerts.spec.js" time="2.418">
+</testcase>
+</testsuite>
+<testsuite name="08-auth-guard.spec.js" timestamp="2026-06-29T16:58:43.217Z" hostname="chromium" tests="1" failures="0" skipped="0" time="0.459" errors="0">
+<testcase name="page protégée redirige vers la connexion" classname="08-auth-guard.spec.js" time="0.459">
+</testcase>
+</testsuite>
+</testsuites>
