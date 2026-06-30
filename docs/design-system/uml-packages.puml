@@ -24,7 +24,6 @@ package "CarVault (monorepo)" {
         package "vehicle" { [VehicleHero,\nHealthCard,\nMaintenancePlan,\nValuation] }
         [OnboardingTour]
         [PremiumModal]
-        [PlateScanModal]
       }
       package "context" as FCtx { [AuthContext] \n[ThemeContext]\n[ToastContext] }
       package "services" as FSvc { [api.js — ApiClient] }

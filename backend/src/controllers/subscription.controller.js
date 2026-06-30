@@ -21,7 +21,7 @@ class SubscriptionController {
         req.userId,
         plan,
         `${origin}/dashboard?upgraded=1`,
-        `${origin}/upgrade?cancelled=1`,
+        `${origin}/pricing?cancelled=1`,
       );
       res.json(result);
     } catch (error) {
