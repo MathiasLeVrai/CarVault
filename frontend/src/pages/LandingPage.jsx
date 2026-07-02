@@ -11,6 +11,7 @@ import {
 
 import { PRICING } from '../constants/pricing';
 import { useTheme } from '../context/ThemeContext';
+import { showPremiumUi } from '../utils/platform';
 
 /* ─── Data ──────────────────────────────────────────────────── */
 
@@ -408,6 +409,45 @@ function FaqSection() {
 export default function LandingPage() {
   const prefersReduced = useReducedMotion();
   const { theme, toggleTheme } = useTheme();
+  const premiumUi = showPremiumUi();
+
+  const schemaOffers = [
+    {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'EUR',
+      name: 'Gratuit',
+      description: '1 vehicule, fonctionnalites de base',
+    },
+    ...(premiumUi ? [
+      {
+        '@type': 'Offer',
+        price: '4.99',
+        priceCurrency: 'EUR',
+        name: 'Premium mensuel',
+        description: 'Vehicules illimites, toutes les fonctionnalites, 14 jours d\'essai gratuit',
+        priceSpecification: {
+          '@type': 'UnitPriceSpecification',
+          price: '4.99',
+          priceCurrency: 'EUR',
+          billingDuration: 'P1M',
+        },
+      },
+      {
+        '@type': 'Offer',
+        price: '39.99',
+        priceCurrency: 'EUR',
+        name: 'Premium annuel',
+        description: 'Vehicules illimites, toutes les fonctionnalites, 14 jours d\'essai gratuit',
+        priceSpecification: {
+          '@type': 'UnitPriceSpecification',
+          price: '39.99',
+          priceCurrency: 'EUR',
+          billingDuration: 'P1Y',
+        },
+      },
+    ] : []),
+  ];
 
   return (
     <div className="public-screen bg-bg text-white overflow-x-hidden">
@@ -423,41 +463,7 @@ export default function LandingPage() {
           "operatingSystem": "Web",
           "url": "https://carvio.fr",
           "description": "Carnet d'entretien numerique pour votre vehicule. Suivi entretien, alertes CT, depenses carburant, score de sante et carte des garages.",
-          "offers": [
-            {
-              "@type": "Offer",
-              "price": "0",
-              "priceCurrency": "EUR",
-              "name": "Gratuit",
-              "description": "1 vehicule, fonctionnalites de base"
-            },
-            {
-              "@type": "Offer",
-              "price": "4.99",
-              "priceCurrency": "EUR",
-              "name": "Premium mensuel",
-              "description": "Vehicules illimites, toutes les fonctionnalites, 14 jours d'essai gratuit",
-              "priceSpecification": {
-                "@type": "UnitPriceSpecification",
-                "price": "4.99",
-                "priceCurrency": "EUR",
-                "billingDuration": "P1M"
-              }
-            },
-            {
-              "@type": "Offer",
-              "price": "39.99",
-              "priceCurrency": "EUR",
-              "name": "Premium annuel",
-              "description": "Vehicules illimites, toutes les fonctionnalites, 14 jours d'essai gratuit",
-              "priceSpecification": {
-                "@type": "UnitPriceSpecification",
-                "price": "39.99",
-                "priceCurrency": "EUR",
-                "billingDuration": "P1Y"
-              }
-            }
-          ],
+          "offers": schemaOffers,
           "screenshot": "https://carvio.fr/og-image.png"
         })}</script>
         <script type="application/ld+json">{JSON.stringify({
@@ -483,9 +489,11 @@ export default function LandingPage() {
           <span className="text-lg font-bold font-display tracking-tight">Carvio</span>
         </div>
         <nav className="flex items-center gap-3">
-          <a href="#pricing" className="px-4 py-2.5 text-sm font-semibold text-white/50 hover:text-white transition-[color] duration-150 hidden sm:block">
-            Tarifs
-          </a>
+          {premiumUi && (
+            <a href="#pricing" className="px-4 py-2.5 text-sm font-semibold text-white/50 hover:text-white transition-[color] duration-150 hidden sm:block">
+              Tarifs
+            </a>
+          )}
           <Link to="/login" className="px-4 py-2.5 text-sm font-semibold text-white/50 hover:text-white transition-[color] duration-150 hidden sm:block">
             Se connecter
           </Link>
@@ -805,7 +813,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── Pricing ──────────────────────────────────────────── */}
+      {premiumUi && (
       <section id="pricing" className="relative z-10 px-6 md:px-12 py-24">
         <div className="max-w-4xl mx-auto">
           <Motion.div {...fade()} className="text-center mb-14">
@@ -914,6 +922,7 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+      )}
 
       {/* ── FAQ ────────────────────────────────────────────────── */}
       <FaqSection />
@@ -927,16 +936,32 @@ export default function LandingPage() {
                 <div className="w-14 h-14 rounded-2xl bg-accent/20 border border-accent/30 flex items-center justify-center mx-auto mb-6">
                   <Shield className="w-7 h-7 text-accent" />
                 </div>
-                <h2 className="text-4xl md:text-5xl font-black font-display tracking-tight mb-4 text-balance">
-                  14 jours pour tout tester.
-                </h2>
-                <p className="text-white/45 font-medium mb-8 text-lg text-pretty">
-                  Aucun prélèvement pendant l'essai.<br />
-                  Annulable en un clic, sans engagement.
-                </p>
-                <Link to="/register" className="cv-btn-accent px-10 py-4 text-base rounded-xl inline-flex items-center gap-2 active:scale-[0.96] transition-transform">
-                  Démarrer l'essai gratuit <ArrowRight className="w-4 h-4" />
-                </Link>
+                {premiumUi ? (
+                  <>
+                    <h2 className="text-4xl md:text-5xl font-black font-display tracking-tight mb-4 text-balance">
+                      14 jours pour tout tester.
+                    </h2>
+                    <p className="text-white/45 font-medium mb-8 text-lg text-pretty">
+                      Aucun prélèvement pendant l'essai.<br />
+                      Annulable en un clic, sans engagement.
+                    </p>
+                    <Link to="/register" className="cv-btn-accent px-10 py-4 text-base rounded-xl inline-flex items-center gap-2 active:scale-[0.96] transition-transform">
+                      Démarrer l'essai gratuit <ArrowRight className="w-4 h-4" />
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <h2 className="text-4xl md:text-5xl font-black font-display tracking-tight mb-4 text-balance">
+                      Gérez votre véhicule gratuitement.
+                    </h2>
+                    <p className="text-white/45 font-medium mb-8 text-lg text-pretty">
+                      Documents, alertes, entretiens et dépenses — tout au même endroit.
+                    </p>
+                    <Link to="/register" className="cv-btn-accent px-10 py-4 text-base rounded-xl inline-flex items-center gap-2 active:scale-[0.96] transition-transform">
+                      Créer mon compte <ArrowRight className="w-4 h-4" />
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           </Motion.div>

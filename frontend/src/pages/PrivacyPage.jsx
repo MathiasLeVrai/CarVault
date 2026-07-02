@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Shield } from 'lucide-react';
+import { showPremiumUi } from '../utils/platform';
 
 const CONTACT_EMAIL = 'contact@carvio.fr';
 const LAST_UPDATED = '25 juin 2026';
@@ -16,6 +17,8 @@ function Section({ id, title, children }) {
 }
 
 export default function PrivacyPage() {
+  const premiumUi = showPremiumUi();
+
   return (
     <div className="public-screen bg-bg text-ink overflow-x-hidden">
       {/* Navbar */}
@@ -74,7 +77,9 @@ export default function PrivacyPage() {
             <li><span className="text-ink font-medium">Véhicules&nbsp;:</span> marque, modèle, immatriculation, kilométrage et caractéristiques que vous saisissez.</li>
             <li><span className="text-ink font-medium">Documents&nbsp;:</span> fichiers que vous téléversez (carte grise, assurance, contrôle technique, factures, photos).</li>
             <li><span className="text-ink font-medium">Suivi&nbsp;:</span> dépenses, pleins de carburant, entretiens et alertes que vous enregistrez.</li>
-            <li><span className="text-ink font-medium">Paiement&nbsp;:</span> en cas d'abonnement Premium, les données de paiement sont traitées directement par notre prestataire de paiement sécurisé — nous ne stockons jamais votre numéro de carte.</li>
+            {premiumUi && (
+              <li><span className="text-ink font-medium">Paiement&nbsp;:</span> en cas d'abonnement Premium, les données de paiement sont traitées directement par notre prestataire de paiement sécurisé — nous ne stockons jamais votre numéro de carte.</li>
+            )}
             <li><span className="text-ink font-medium">Localisation&nbsp;:</span> si vous utilisez la carte, votre position est utilisée localement pour afficher les points d'intérêt proches. Elle n'est ni stockée ni transmise à nos serveurs.</li>
             <li><span className="text-ink font-medium">Données techniques&nbsp;:</span> informations strictement nécessaires à la sécurité et au bon fonctionnement (journaux d'erreurs, type d'appareil).</li>
           </ul>
@@ -84,7 +89,7 @@ export default function PrivacyPage() {
           <ul className="list-disc pl-5 space-y-1.5 marker:text-accent/70">
             <li>Fournir et maintenir le service (afficher vos véhicules, documents et historiques).</li>
             <li>Vous envoyer des alertes et rappels d'échéance (contrôle technique, assurance…).</li>
-            <li>Gérer votre abonnement et les paiements.</li>
+            {premiumUi && <li>Gérer votre abonnement et les paiements.</li>}
             <li>Sécuriser votre compte et prévenir la fraude.</li>
             <li>Répondre à vos demandes de support.</li>
           </ul>
@@ -110,7 +115,9 @@ export default function PrivacyPage() {
             faire fonctionner le service :
           </p>
           <ul className="list-disc pl-5 space-y-1.5 marker:text-accent/70">
-            <li><span className="text-ink font-medium">Notre prestataire de paiement</span> — traitement sécurisé des transactions et abonnements.</li>
+            {premiumUi && (
+              <li><span className="text-ink font-medium">Notre prestataire de paiement</span> — traitement sécurisé des transactions et abonnements.</li>
+            )}
             <li><span className="text-ink font-medium">Notre hébergeur</span> — hébergement de l'application, de la base de données et stockage des fichiers que vous téléversez.</li>
             <li><span className="text-ink font-medium">Services cartographiques tiers</span> — affichage des points d'intérêt et des prix des carburants sur la carte (aucune donnée personnelle ne leur est transmise).</li>
           </ul>

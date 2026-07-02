@@ -4,6 +4,7 @@ import {
 } from 'lucide-react';
 import { motion as Motion, useReducedMotion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
+import { showPremiumUi } from '../utils/platform';
 import CarvioLogo from './CarvioLogo';
 
 const BUBBLE_SPRING = { type: 'spring', stiffness: 300, damping: 28 };
@@ -67,7 +68,7 @@ export default function Sidebar({ onFabPress }) {
           })}
         </nav>
 
-        {!user?.isPremium && (
+        {showPremiumUi() && !user?.isPremium && (
           <>
             <div className="cv-divider mx-4 my-4" />
             <NavLink

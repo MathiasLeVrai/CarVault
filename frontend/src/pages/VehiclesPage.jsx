@@ -12,6 +12,7 @@ import EmptyState from '../components/ui/EmptyState';
 import { Car, Plus, FileText, ArrowUpRight, Gauge, Zap, Search, CheckCircle2 } from 'lucide-react';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
 import PremiumModal from '../components/PremiumModal';
+import { showPremiumUi } from '../utils/platform';
 
 
 const fuelOpts = [
@@ -203,7 +204,11 @@ export default function VehiclesPage() {
     } catch (err) {
       if (err.code === 'PREMIUM_REQUIRED') {
         setShowModal(false);
-        setShowPremium(true);
+        if (showPremiumUi()) {
+          setShowPremium(true);
+        } else {
+          toast.error('Limite atteinte : un seul véhicule par compte.');
+        }
       } else if (err.code === 'PLATE_TAKEN') {
         toast.error('Ce véhicule est déjà enregistré par un autre utilisateur');
       } else {
@@ -392,7 +397,7 @@ export default function VehiclesPage() {
       </Modal>
 
       <AnimatePresence>
-        {showPremium && <PremiumModal onClose={() => setShowPremium(false)} />}
+        {showPremiumUi() && showPremium && <PremiumModal onClose={() => setShowPremium(false)} />}
       </AnimatePresence>
     </Motion.div>
   );

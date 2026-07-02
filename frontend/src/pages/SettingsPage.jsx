@@ -3,6 +3,7 @@ import { getAssetUrl, notificationApi } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { PRICING } from '../constants/pricing';
+import { showPremiumUi } from '../utils/platform';
 import usePush from '../hooks/usePush';
 import BadgesWidget from '../components/BadgesWidget';
 import compressImage from '../utils/compressImage';
@@ -65,7 +66,7 @@ function Avatar({ user, size = 80 }) {
     );
   }
   const initials = [user?.firstName?.[0], user?.lastName?.[0]].filter(Boolean).join('').toUpperCase() || '?';
-  const isPremium = user?.isPremium;
+  const isPremium = showPremiumUi() && user?.isPremium;
   return (
     <div
       className="rounded-full flex items-center justify-center border-2 border-white/10 shrink-0"
@@ -194,15 +195,17 @@ function ProfileCard({ user, updateProfile, onSaved }) {
 
           {/* Status badges */}
           <div className="flex flex-wrap items-center gap-2 mt-3">
-            {user?.isPremium ? (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-black"
-                style={{ background: 'rgba(245,158,11,0.15)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.25)' }}>
-                <Crown className="w-3 h-3" /> Premium
-              </span>
-            ) : (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-black bg-white/5 text-white/40 border border-white/8">
-                <UserIcon className="w-3 h-3" /> Free
-              </span>
+            {showPremiumUi() && (
+              user?.isPremium ? (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-black"
+                  style={{ background: 'rgba(245,158,11,0.15)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.25)' }}>
+                  <Crown className="w-3 h-3" /> Premium
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-black bg-white/5 text-white/40 border border-white/8">
+                  <UserIcon className="w-3 h-3" /> Free
+                </span>
+              )
             )}
             {user?._count?.vehicles != null && (
               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white/5 text-white/50 border border-white/8">
@@ -581,10 +584,12 @@ export default function SettingsPage() {
         <ProfileCard user={user} updateProfile={updateProfile} onSaved={handleProfileSaved} />
       </Motion.div>
 
-      {/* Subscription */}
-      <Motion.div variants={itemVariants}>
-        <SubscriptionCard user={user} />
-      </Motion.div>
+      {/* Subscription (web only) */}
+      {showPremiumUi() && (
+        <Motion.div variants={itemVariants}>
+          <SubscriptionCard user={user} />
+        </Motion.div>
+      )}
 
       {/* Badges */}
       <Motion.div variants={itemVariants} className="space-y-3">

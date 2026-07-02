@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import { useEffect, lazy, Suspense } from 'react';
+import { showPremiumUi } from './utils/platform';
 import DashboardLayout from './layouts/DashboardLayout';
 const LoginPage = lazy(() => import('./pages/LoginPage'));
 const RegisterPage = lazy(() => import('./pages/RegisterPage'));
@@ -52,6 +53,14 @@ function LogoutRoute() {
   return null;
 }
 
+function WebOnlyRoute({ children }) {
+  const { user } = useAuth();
+  if (!showPremiumUi()) {
+    return <Navigate to={user ? '/dashboard' : '/login'} replace />;
+  }
+  return children;
+}
+
 export default function App() {
   return (
     <Suspense fallback={<LazyFallback />}>
@@ -62,7 +71,7 @@ export default function App() {
         <Route path="/forgot-password" element={<PublicRoute><ForgotPasswordPage /></PublicRoute>} />
         <Route path="/reset-password" element={<PublicRoute><ResetPasswordPage /></PublicRoute>} />
         <Route path="/logout" element={<LogoutRoute />} />
-        <Route path="/pricing" element={<PricingPage />} />
+        <Route path="/pricing" element={<WebOnlyRoute><PricingPage /></WebOnlyRoute>} />
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/share/:token" element={<SharePage />} />
         <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
