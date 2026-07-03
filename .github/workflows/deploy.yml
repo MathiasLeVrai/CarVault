@@ -96,6 +96,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: superfly/flyctl-actions/setup-flyctl@master
-      - run: flyctl deploy --remote-only
+      # Fly renvoie parfois un 408 en provisionnant la VM du release_command
+      # (migrations Prisma) : panne transitoire côté infra, pas une erreur de code.
+      # On réessaie jusqu'à 3 fois avec une pause avant d'abandonner.
+      - name: Déployer (avec retry sur les 408 transitoires de Fly)
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          for tentative in 1 2 3; do
+            echo "▶ Tentative de déploiement n°$tentative"
+            if flyctl deploy --remote-only; then
+              echo "✔ Déploiement réussi à la tentative n°$tentative"
+              exit 0
+            fi
+            echo "✖ Échec de la tentative n°$tentative"
+            if [ "$tentative" -lt 3 ]; then
+              echo "⏳ Nouvelle tentative dans 20s…"
+              sleep 20
+            fi
+          done
+          echo "✖ Déploiement échoué après 3 tentatives."
+          exit 1
