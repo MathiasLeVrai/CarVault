@@ -27,7 +27,7 @@ class PushService {
 
   async subscribe(userId, subscription) {
     const { endpoint, keys } = subscription;
-    await prisma.pushSubscription.upsert({
+    await prisma.abonnementPush.upsert({
       where: { userId_endpoint: { userId, endpoint } },
       update: { p256dh: keys.p256dh, auth: keys.auth },
       create: { userId, endpoint, p256dh: keys.p256dh, auth: keys.auth },
@@ -35,7 +35,7 @@ class PushService {
   }
 
   async unsubscribe(userId, endpoint) {
-    await prisma.pushSubscription.deleteMany({
+    await prisma.abonnementPush.deleteMany({
       where: { userId, endpoint },
     });
   }
@@ -43,7 +43,7 @@ class PushService {
   async sendToUser(userId, title, body, url = '/alerts') {
     if (!this.isConfigured()) return 0;
 
-    const subs = await prisma.pushSubscription.findMany({ where: { userId } });
+    const subs = await prisma.abonnementPush.findMany({ where: { userId } });
     let sent = 0;
 
     for (const sub of subs) {
@@ -63,7 +63,7 @@ class PushService {
       } catch (err) {
         // 410 Gone = subscription expired, clean up
         if (err.statusCode === 410 || err.statusCode === 404) {
-          await prisma.pushSubscription.delete({ where: { id: sub.id } });
+          await prisma.abonnementPush.delete({ where: { id: sub.id } });
         }
       }
     }

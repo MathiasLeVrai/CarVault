@@ -15,7 +15,7 @@ router.get('/maintenance-types', vehicleController.getMaintenanceTypes);
 // POST /api/vehicles/backfill — Met à jour Crit'Air, puissance fiscale, CO2 pour les véhicules existants
 router.post('/backfill', async (req, res, next) => {
   try {
-    const vehicles = await prisma.vehicle.findMany({
+    const vehicles = await prisma.vehicule.findMany({
       where: {
         userId: req.user.id,
         licensePlate: { not: null },
@@ -40,7 +40,7 @@ router.post('/backfill', async (req, res, next) => {
 
         const critAir = computeCritAir(plateData.fuelType || v.fuelType, plateData.firstRegistrationDate);
 
-        await prisma.vehicle.update({
+        await prisma.vehicule.update({
           where: { id: v.id },
           data: {
             fiscalPower: plateData.fiscalPower ?? undefined,

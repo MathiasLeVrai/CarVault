@@ -51,7 +51,7 @@ class RevenueCatService {
     const payload = await this.fetchSubscriber(userId);
     const premium = this.parsePremiumFromSubscriber(payload);
 
-    await prisma.user.update({
+    await prisma.utilisateur.update({
       where: { id: userId },
       data: {
         isPremium: premium.isPremium,
@@ -78,7 +78,7 @@ class RevenueCatService {
     }
 
     const userId = event.app_user_id;
-    const user = await prisma.user.findUnique({ where: { id: userId }, select: { id: true } });
+    const user = await prisma.utilisateur.findUnique({ where: { id: userId }, select: { id: true } });
     if (!user) {
       return { received: true, ignored: true };
     }
@@ -94,7 +94,7 @@ class RevenueCatService {
         break;
 
       case 'EXPIRATION':
-        await prisma.user.update({
+        await prisma.utilisateur.update({
           where: { id: userId },
           data: { isPremium: false, premiumExpiresAt: null, premiumSource: null },
         });
@@ -103,7 +103,7 @@ class RevenueCatService {
       case 'CANCELLATION':
         // L'accès reste actif jusqu'à expiration_at_ms ; EXPIRATION fermera le compte.
         if (event.expiration_at_ms) {
-          await prisma.user.update({
+          await prisma.utilisateur.update({
             where: { id: userId },
             data: {
               isPremium: true,

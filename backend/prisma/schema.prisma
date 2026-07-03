@@ -7,7 +7,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
+model Utilisateur {
   id        String   @id @default(uuid())
   email     String   @unique
   password  String
@@ -27,60 +27,60 @@ model User {
   stripeSubscriptionId String?
   premiumExpiresAt     DateTime?
 
-  vehicles       Vehicle[]
-  alerts         Alert[]
-  shareLinks     ShareLink[]
-  pushSubscriptions PushSubscription[]
+  vehicles            Vehicule[]
+  alerts              Alerte[]
+  shareLinks          LienPartage[]
+  pushSubscriptions   AbonnementPush[]
   refreshTokens       RefreshToken[]
   passwordResetTokens PasswordResetToken[]
 
   @@index([stripeSubscriptionId])
-  @@map("users")
+  @@map("utilisateurs")
 }
 
-model Vehicle {
-  id            String   @id @default(uuid())
-  brand         String
-  model         String
-  year          Int
-  mileage       Int      @default(0)
+model Vehicule {
+  id              String   @id @default(uuid())
+  brand           String
+  model           String
+  year            Int
+  mileage         Int      @default(0)
   purchaseMileage Int?
-  photo         String?
-  licensePlate  String?
-  color         String?
-  fuelType      FuelType @default(GASOLINE)
-  purchasePrice Float?
-  carapiTrimId  Int?
-  msrp          Float?
-  horsepower    Int?
-  engineSize    Float?
-  transmission  String?
-  bodyType      String?
-  doors              Int?
+  photo           String?
+  licensePlate    String?
+  color           String?
+  fuelType        FuelType @default(GASOLINE)
+  purchasePrice   Float?
+  carapiTrimId    Int?
+  msrp            Float?
+  horsepower      Int?
+  engineSize      Float?
+  transmission    String?
+  bodyType        String?
+  doors                 Int?
   fiscalPower           Int?
   co2                   Int?
-  critAir               Int?       // Vignette Crit'Air 0-5, null si inconnu
-  firstRegistrationDate   DateTime?
-  laCentraleVersionId     Int?       // versionId La Centrale pour la cote
-  estimatedValue          Float?     // Valeur estimée saisie manuellement par l'utilisateur
-  maintenanceConfig       Json?      // Intervalles personnalises par l'utilisateur
-  maintenanceLastKm       Json?      // Dernier km par type d'entretien (baselines manuels)
-  monthlyFuelBudget       Float?     // Budget carburant mensuel en €
-  annualKmGoal            Int?       // Objectif kilométrage annuel
-  createdAt             DateTime   @default(now())
-  updatedAt     DateTime @updatedAt
+  critAir               Int? // Vignette Crit'Air 0-5, null si inconnu
+  firstRegistrationDate DateTime?
+  laCentraleVersionId   Int? // versionId La Centrale pour la cote
+  estimatedValue        Float? // Valeur estimée saisie manuellement par l'utilisateur
+  maintenanceConfig     Json? // Intervalles personnalises par l'utilisateur
+  maintenanceLastKm     Json? // Dernier km par type d'entretien (baselines manuels)
+  monthlyFuelBudget     Float? // Budget carburant mensuel en €
+  annualKmGoal          Int? // Objectif kilométrage annuel
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
 
-  userId        String
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  user   Utilisateur @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   documents      Document[]
-  expenses       Expense[]
-  mileageEntries MileageEntry[]
-  fuelEntries    FuelEntry[]
-  shareLinks     ShareLink[]
+  expenses       Depense[]
+  mileageEntries EntreeKilometrage[]
+  fuelEntries    EntreeCarburant[]
+  shareLinks     LienPartage[]
 
   @@index([userId])
-  @@map("vehicles")
+  @@map("vehicules")
 }
 
 model Document {
@@ -95,15 +95,15 @@ model Document {
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
-  vehicleId      String
-  vehicle        Vehicle      @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  vehicleId String
+  vehicle   Vehicule @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
 
   @@index([vehicleId])
   @@index([vehicleId, expirationDate])
   @@map("documents")
 }
 
-model Expense {
+model Depense {
   id          String          @id @default(uuid())
   amount      Float
   category    ExpenseCategory
@@ -113,14 +113,14 @@ model Expense {
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
 
-  vehicleId   String
-  vehicle     Vehicle         @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  vehicleId String
+  vehicle   Vehicule @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
 
   @@index([vehicleId, date])
-  @@map("expenses")
+  @@map("depenses")
 }
 
-model Alert {
+model Alerte {
   id           String    @id @default(uuid())
   title        String
   message      String
@@ -131,15 +131,15 @@ model Alert {
   emailSent    Boolean   @default(false)
   createdAt    DateTime  @default(now())
 
-  userId       String
-  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  user   Utilisateur @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([userId, isRead])
-  @@map("alerts")
+  @@map("alertes")
 }
 
-model MileageEntry {
+model EntreeKilometrage {
   id        String   @id @default(uuid())
   mileage   Int
   date      DateTime
@@ -147,10 +147,10 @@ model MileageEntry {
   createdAt DateTime @default(now())
 
   vehicleId String
-  vehicle   Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  vehicle   Vehicule @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
 
   @@index([vehicleId])
-  @@map("mileage_entries")
+  @@map("entrees_kilometrage")
 }
 
 enum DocumentType {
@@ -205,7 +205,7 @@ enum FuelType {
   OTHER
 }
 
-model FuelEntry {
+model EntreeCarburant {
   id            String   @id @default(uuid())
   date          DateTime
   mileage       Int
@@ -216,29 +216,29 @@ model FuelEntry {
   notes         String?
   createdAt     DateTime @default(now())
 
-  vehicleId     String
-  vehicle       Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  vehicleId String
+  vehicle   Vehicule @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
 
   @@index([vehicleId, date])
-  @@map("fuel_entries")
+  @@map("entrees_carburant")
 }
 
-model PushSubscription {
+model AbonnementPush {
   id        String   @id @default(uuid())
   endpoint  String
   p256dh    String
   auth      String
   createdAt DateTime @default(now())
 
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  user   Utilisateur @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([userId])
   @@unique([userId, endpoint])
-  @@map("push_subscriptions")
+  @@index([userId])
+  @@map("abonnements_push")
 }
 
-model ShareLink {
+model LienPartage {
   id                String    @id @default(uuid())
   token             String    @unique @default(uuid())
   expiresAt         DateTime?
@@ -250,20 +250,20 @@ model ShareLink {
   label             String?
 
   vehicleId String
-  vehicle   Vehicle   @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  vehicle   Vehicule @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
 
-  userId    String
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  user   Utilisateur @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([vehicleId, userId])
-  @@map("share_links")
+  @@map("liens_partage")
 }
 
 model RefreshToken {
   id        String   @id @default(uuid())
   token     String   @unique
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      Utilisateur @relation(fields: [userId], references: [id], onDelete: Cascade)
   expiresAt DateTime
   createdAt DateTime @default(now())
 
@@ -275,11 +275,10 @@ model PasswordResetToken {
   id        String   @id @default(uuid())
   token     String   @unique
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      Utilisateur @relation(fields: [userId], references: [id], onDelete: Cascade)
   expiresAt DateTime
   createdAt DateTime @default(now())
 
   @@index([userId])
   @@map("password_reset_tokens")
 }
-

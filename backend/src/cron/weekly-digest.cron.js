@@ -17,7 +17,7 @@ async function generateWeeklyDigest() {
   const lastWeek = new Date(now);
   lastWeek.setDate(lastWeek.getDate() - 7);
 
-  const users = await prisma.user.findMany({
+  const users = await prisma.utilisateur.findMany({
     where: {
       notifWeekly: true,
       vehicles: { some: {} },
@@ -57,12 +57,12 @@ async function generateWeeklyDigest() {
       });
 
       // Alertes actives non lues
-      const activeAlerts = await prisma.alert.count({
+      const activeAlerts = await prisma.alerte.count({
         where: { userId: user.id, isRead: false },
       });
 
       // Dépenses de la semaine passée
-      const weekExpenses = await prisma.expense.aggregate({
+      const weekExpenses = await prisma.depense.aggregate({
         where: {
           vehicle: { userId: user.id },
           date: { gte: lastWeek, lte: now },
@@ -72,7 +72,7 @@ async function generateWeeklyDigest() {
       });
 
       // Carburant de la semaine
-      const weekFuel = await prisma.fuelEntry.aggregate({
+      const weekFuel = await prisma.entreeCarburant.aggregate({
         where: {
           vehicle: { userId: user.id },
           date: { gte: lastWeek, lte: now },

@@ -13,7 +13,7 @@ class ExpenseService {
       where.category = filters.category;
     }
 
-    return prisma.expense.findMany({
+    return prisma.depense.findMany({
       where,
       orderBy: { date: 'desc' },
     });
@@ -35,7 +35,7 @@ class ExpenseService {
       where.date = { gte: yearStart, lt: yearEnd };
     }
 
-    return prisma.expense.findMany({
+    return prisma.depense.findMany({
       where,
       include: {
         vehicle: {
@@ -52,7 +52,7 @@ class ExpenseService {
   async create(data, vehicleId, userId) {
     await this.verifyOwnership(vehicleId, userId);
 
-    return prisma.expense.create({
+    return prisma.depense.create({
       data: {
         ...data,
         date: new Date(data.date),
@@ -65,7 +65,7 @@ class ExpenseService {
    * Supprimer une dépense
    */
   async delete(id, userId) {
-    const expense = await prisma.expense.findFirst({
+    const expense = await prisma.depense.findFirst({
       where: { id },
       include: { vehicle: true },
     });
@@ -74,7 +74,7 @@ class ExpenseService {
       throw new AppError('Dépense non trouvée', 404);
     }
 
-    return prisma.expense.delete({ where: { id } });
+    return prisma.depense.delete({ where: { id } });
   }
 
   /**
@@ -84,7 +84,7 @@ class ExpenseService {
     const currentYear = new Date().getFullYear();
     const yearStart = new Date(currentYear, 0, 1);
 
-    const totalYear = await prisma.expense.aggregate({
+    const totalYear = await prisma.depense.aggregate({
       where: {
         vehicle: { userId },
         date: { gte: yearStart },
@@ -98,8 +98,8 @@ class ExpenseService {
       SELECT 
         EXTRACT(MONTH FROM e.date) as month,
         SUM(e.amount) as total
-      FROM expenses e
-      JOIN vehicles v ON e."vehicleId" = v.id
+      FROM depenses e
+      JOIN vehicules v ON e."vehicleId" = v.id
       WHERE v."userId" = ${userId}
         AND e.date >= ${yearStart}
       GROUP BY EXTRACT(MONTH FROM e.date)
@@ -111,8 +111,8 @@ class ExpenseService {
         e.category,
         SUM(e.amount) as total,
         COUNT(*) as count
-      FROM expenses e
-      JOIN vehicles v ON e."vehicleId" = v.id
+      FROM depenses e
+      JOIN vehicules v ON e."vehicleId" = v.id
       WHERE v."userId" = ${userId}
         AND e.date >= ${yearStart}
       GROUP BY e.category
@@ -136,7 +136,7 @@ class ExpenseService {
   }
 
   async verifyOwnership(vehicleId, userId) {
-    const vehicle = await prisma.vehicle.findFirst({
+    const vehicle = await prisma.vehicule.findFirst({
       where: { id: vehicleId, userId },
     });
     if (!vehicle) {

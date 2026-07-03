@@ -23,7 +23,7 @@ async function checkSpendingSpike() {
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 6, 1);
 
-  const vehicles = await prisma.vehicle.findMany({
+  const vehicles = await prisma.vehicule.findMany({
     include: {
       user: { select: { id: true, email: true, firstName: true, notifEmail: true } },
     },
@@ -32,11 +32,11 @@ async function checkSpendingSpike() {
   for (const v of vehicles) {
     // Current month total (expenses + fuel)
     const [expenseSum, fuelSum] = await Promise.all([
-      prisma.expense.aggregate({
+      prisma.depense.aggregate({
         where: { vehicleId: v.id, date: { gte: startOfMonth } },
         _sum: { amount: true },
       }),
-      prisma.fuelEntry.aggregate({
+      prisma.entreeCarburant.aggregate({
         where: { vehicleId: v.id, date: { gte: startOfMonth } },
         _sum: { totalCost: true },
       }),
@@ -46,11 +46,11 @@ async function checkSpendingSpike() {
 
     // Average of previous 6 months
     const [prevExpenses, prevFuel] = await Promise.all([
-      prisma.expense.aggregate({
+      prisma.depense.aggregate({
         where: { vehicleId: v.id, date: { gte: sixMonthsAgo, lt: startOfMonth } },
         _sum: { amount: true },
       }),
-      prisma.fuelEntry.aggregate({
+      prisma.entreeCarburant.aggregate({
         where: { vehicleId: v.id, date: { gte: sixMonthsAgo, lt: startOfMonth } },
         _sum: { totalCost: true },
       }),
@@ -85,7 +85,7 @@ async function checkSpendingSpike() {
 async function checkCostPerKm() {
   let created = 0;
 
-  const vehicles = await prisma.vehicle.findMany({
+  const vehicles = await prisma.vehicule.findMany({
     where: { mileage: { gt: 0 } },
     include: {
       user: { select: { id: true, email: true, firstName: true, notifEmail: true } },
@@ -105,11 +105,11 @@ async function checkCostPerKm() {
 
     // Total costs (all time)
     const [expenseTotal, fuelTotal] = await Promise.all([
-      prisma.expense.aggregate({
+      prisma.depense.aggregate({
         where: { vehicleId: v.id },
         _sum: { amount: true },
       }),
-      prisma.fuelEntry.aggregate({
+      prisma.entreeCarburant.aggregate({
         where: { vehicleId: v.id },
         _sum: { totalCost: true },
       }),
@@ -144,7 +144,7 @@ async function checkFuelBudget() {
   const now = new Date();
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-  const vehicles = await prisma.vehicle.findMany({
+  const vehicles = await prisma.vehicule.findMany({
     where: { monthlyFuelBudget: { not: null, gt: 0 } },
     include: {
       user: { select: { id: true, email: true, firstName: true, notifEmail: true } },
@@ -152,7 +152,7 @@ async function checkFuelBudget() {
   });
 
   for (const v of vehicles) {
-    const fuelSum = await prisma.fuelEntry.aggregate({
+    const fuelSum = await prisma.entreeCarburant.aggregate({
       where: { vehicleId: v.id, date: { gte: startOfMonth } },
       _sum: { totalCost: true },
     });
@@ -190,7 +190,7 @@ async function checkKmRecord() {
   // Only run on the 1st of the month (checking last month's record)
   if (now.getDate() > 3) return 0;
 
-  const vehicles = await prisma.vehicle.findMany({
+  const vehicles = await prisma.vehicule.findMany({
     include: {
       user: { select: { id: true, email: true, firstName: true, notifEmail: true } },
     },
@@ -198,7 +198,7 @@ async function checkKmRecord() {
 
   for (const v of vehicles) {
     // Get mileage entries to compute monthly km
-    const entries = await prisma.mileageEntry.findMany({
+    const entries = await prisma.entreeKilometrage.findMany({
       where: { vehicleId: v.id },
       orderBy: { date: 'asc' },
       select: { mileage: true, date: true },
@@ -278,7 +278,7 @@ async function checkFuelPriceDrop() {
       .map(([ft]) => ft);
     if (matchingFuelTypes.length === 0) continue;
 
-    const users = await prisma.user.findMany({
+    const users = await prisma.utilisateur.findMany({
       where: {
         vehicles: { some: { fuelType: { in: matchingFuelTypes } } },
       },

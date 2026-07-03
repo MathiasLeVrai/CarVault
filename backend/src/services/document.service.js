@@ -58,7 +58,7 @@ class DocumentService {
 
     // Créer une alerte si le document a une date d'expiration
     if (data.expirationDate) {
-      await prisma.alert.create({
+      await prisma.alerte.create({
         data: {
           title: `Expiration: ${data.name}`,
           message: `Le document "${data.name}" expire le ${new Date(data.expirationDate).toLocaleDateString('fr-FR')}`,
@@ -93,7 +93,7 @@ class DocumentService {
    * Vérifier que le véhicule appartient à l'utilisateur
    */
   async verifyOwnership(vehicleId, userId) {
-    const vehicle = await prisma.vehicle.findFirst({
+    const vehicle = await prisma.vehicule.findFirst({
       where: { id: vehicleId, userId },
     });
 

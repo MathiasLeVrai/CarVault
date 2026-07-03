@@ -18,7 +18,7 @@ class StripeService {
   }
 
   async getUserWithPremium(userId) {
-    return prisma.user.findUnique({
+    return prisma.utilisateur.findUnique({
       where: { id: userId },
       select: {
         id: true,
@@ -37,7 +37,7 @@ class StripeService {
     if (!user) return { allowed: false };
     if (user.isPremium) return { allowed: true };
 
-    const count = await prisma.vehicle.count({ where: { userId } });
+    const count = await prisma.vehicule.count({ where: { userId } });
     return { allowed: count < FREE_VEHICLE_LIMIT, count, limit: FREE_VEHICLE_LIMIT };
   }
 
@@ -58,7 +58,7 @@ class StripeService {
     if (!customerId) {
       const customer = await stripe.customers.create({ email: user.email, metadata: { userId } });
       customerId = customer.id;
-      await prisma.user.update({ where: { id: userId }, data: { stripeCustomerId: customerId } });
+      await prisma.utilisateur.update({ where: { id: userId }, data: { stripeCustomerId: customerId } });
     }
 
     const session = await stripe.checkout.sessions.create({
@@ -122,7 +122,7 @@ class StripeService {
         const session = event.data.object;
         const userId = session.metadata?.userId;
         if (!userId) break;
-        await prisma.user.update({
+        await prisma.utilisateur.update({
           where: { id: userId },
           data: {
             isPremium: true,
@@ -136,7 +136,7 @@ class StripeService {
       case 'customer.subscription.deleted':
       case 'customer.subscription.paused': {
         const sub = event.data.object;
-        await prisma.user.updateMany({
+        await prisma.utilisateur.updateMany({
           where: { stripeSubscriptionId: sub.id },
           data: { isPremium: false, stripeSubscriptionId: null },
         });
@@ -148,7 +148,7 @@ class StripeService {
         const sub = event.data.object;
         const subId = sub.subscription || sub.id;
         if (subId) {
-          await prisma.user.updateMany({
+          await prisma.utilisateur.updateMany({
             where: { stripeSubscriptionId: subId },
             data: { isPremium: true },
           });

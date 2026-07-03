@@ -14,14 +14,14 @@ class AuthService {
    * Inscription d'un nouvel utilisateur
    */
   async register({ email, password, firstName, lastName }) {
-    const existingUser = await prisma.user.findUnique({ where: { email } });
+    const existingUser = await prisma.utilisateur.findUnique({ where: { email } });
     if (existingUser) {
       throw new AppError('Cet email est déjà utilisé', 409);
     }
 
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    const user = await prisma.user.create({
+    const user = await prisma.utilisateur.create({
       data: {
         email,
         password: hashedPassword,
@@ -48,7 +48,7 @@ class AuthService {
    * Connexion utilisateur
    */
   async login({ email, password }) {
-    const user = await prisma.user.findUnique({ where: { email } });
+    const user = await prisma.utilisateur.findUnique({ where: { email } });
     if (!user) {
       throw new AppError('Email ou mot de passe incorrect', 401);
     }
@@ -69,7 +69,7 @@ class AuthService {
    * Récupérer le profil utilisateur
    */
   async getProfile(userId) {
-    const user = await prisma.user.findUnique({
+    const user = await prisma.utilisateur.findUnique({
       where: { id: userId },
       select: {
         id: true,
@@ -100,12 +100,12 @@ class AuthService {
 
     if (avatarBuffer && avatarOriginalname) {
       // Delete old avatar if it exists
-      const existing = await prisma.user.findUnique({ where: { id: userId }, select: { avatar: true } });
+      const existing = await prisma.utilisateur.findUnique({ where: { id: userId }, select: { avatar: true } });
       if (existing?.avatar) await storageService.delete(existing.avatar).catch(() => {});
       data.avatar = await storageService.upload(avatarBuffer, avatarOriginalname, 'avatars');
     }
 
-    const user = await prisma.user.update({
+    const user = await prisma.utilisateur.update({
       where: { id: userId },
       data,
       select: {
@@ -152,7 +152,7 @@ class AuthService {
    * Demande de réinitialisation de mot de passe
    */
   async forgotPassword(email) {
-    const user = await prisma.user.findUnique({ where: { email } });
+    const user = await prisma.utilisateur.findUnique({ where: { email } });
     // Toujours répondre OK pour ne pas révéler si l'email existe
     if (!user) return;
 
@@ -194,7 +194,7 @@ class AuthService {
 
     const hashedPassword = await bcrypt.hash(newPassword, 12);
 
-    await prisma.user.update({
+    await prisma.utilisateur.update({
       where: { id: stored.userId },
       data: { password: hashedPassword },
     });
@@ -254,7 +254,7 @@ class AuthService {
       throw new AppError('Mot de passe requis pour supprimer le compte', 400);
     }
 
-    const user = await prisma.user.findUnique({
+    const user = await prisma.utilisateur.findUnique({
       where: { id: userId },
       select: { id: true, password: true, avatar: true, stripeSubscriptionId: true },
     });
@@ -273,7 +273,7 @@ class AuthService {
       where: { vehicle: { userId } },
       select: { filePath: true },
     });
-    const vehicles = await prisma.vehicle.findMany({
+    const vehicles = await prisma.vehicule.findMany({
       where: { userId },
       select: { photo: true },
     });
@@ -287,7 +287,7 @@ class AuthService {
     await stripeService.cancelSubscription(user.stripeSubscriptionId);
 
     // Suppression de l'utilisateur — la cascade Prisma fait le reste en BDD
-    await prisma.user.delete({ where: { id: userId } });
+    await prisma.utilisateur.delete({ where: { id: userId } });
 
     // Best-effort : retire les fichiers du stockage objet
     await Promise.allSettled(fileUrls.map((url) => storageService.delete(url)));

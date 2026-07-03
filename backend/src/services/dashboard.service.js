@@ -7,9 +7,9 @@ class DashboardService {
     const yearStart = new Date(currentYear, 0, 1);
     const now = new Date();
 
-    const vehicleCount = await prisma.vehicle.count({ where: { userId } });
+    const vehicleCount = await prisma.vehicule.count({ where: { userId } });
 
-    const yearExpenses = await prisma.expense.aggregate({
+    const yearExpenses = await prisma.depense.aggregate({
       where: { vehicle: { userId }, date: { gte: yearStart } },
       _sum: { amount: true },
     });
@@ -18,8 +18,8 @@ class DashboardService {
       SELECT 
         EXTRACT(MONTH FROM e.date) as month,
         SUM(e.amount) as total
-      FROM expenses e
-      JOIN vehicles v ON e."vehicleId" = v.id
+      FROM depenses e
+      JOIN vehicules v ON e."vehicleId" = v.id
       WHERE v."userId" = ${userId}
         AND e.date >= ${yearStart}
       GROUP BY EXTRACT(MONTH FROM e.date)
@@ -33,17 +33,17 @@ class DashboardService {
       take: 5,
     });
 
-    const unreadAlerts = await prisma.alert.findMany({
+    const unreadAlerts = await prisma.alerte.findMany({
       where: { userId, isRead: false },
       orderBy: { createdAt: 'desc' },
       take: 5,
     });
 
-    const alertCount = await prisma.alert.count({
+    const alertCount = await prisma.alerte.count({
       where: { userId, isRead: false },
     });
 
-    const recentExpenses = await prisma.expense.findMany({
+    const recentExpenses = await prisma.depense.findMany({
       where: { vehicle: { userId } },
       include: { vehicle: { select: { brand: true, model: true } } },
       orderBy: { date: 'desc' },
@@ -54,8 +54,8 @@ class DashboardService {
       SELECT 
         e.category,
         SUM(e.amount) as total
-      FROM expenses e
-      JOIN vehicles v ON e."vehicleId" = v.id
+      FROM depenses e
+      JOIN vehicules v ON e."vehicleId" = v.id
       WHERE v."userId" = ${userId}
         AND e.date >= ${yearStart}
       GROUP BY e.category
@@ -74,7 +74,7 @@ class DashboardService {
 
     let avgHealthScore = null;
     try {
-      const vehicles = await prisma.vehicle.findMany({
+      const vehicles = await prisma.vehicule.findMany({
         where: { userId },
         select: { id: true },
       });
@@ -181,7 +181,7 @@ class DashboardService {
     // 3. Maintenance due (no maintenance in last 6 months)
     const sixMonthsAgo = new Date(now);
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-    const vehiclesNeedingMaint = await prisma.vehicle.findMany({
+    const vehiclesNeedingMaint = await prisma.vehicule.findMany({
       where: { userId },
       include: {
         expenses: {
@@ -237,7 +237,7 @@ class DashboardService {
   }
 
   async _calcOwnershipCosts(userId) {
-    const vehicles = await prisma.vehicle.findMany({
+    const vehicles = await prisma.vehicule.findMany({
       where: { userId },
       select: { id: true, brand: true, model: true, fuelType: true, createdAt: true, purchasePrice: true },
     });
@@ -248,12 +248,12 @@ class DashboardService {
     for (const v of vehicles) {
       const monthsOwned = Math.max(1, Math.round((Date.now() - new Date(v.createdAt).getTime()) / (30.44 * 24 * 60 * 60 * 1000)));
 
-      const totalExpenses = await prisma.expense.aggregate({
+      const totalExpenses = await prisma.depense.aggregate({
         where: { vehicleId: v.id },
         _sum: { amount: true },
       });
 
-      const totalFuel = await prisma.fuelEntry.aggregate({
+      const totalFuel = await prisma.entreeCarburant.aggregate({
         where: { vehicleId: v.id },
         _sum: { totalCost: true },
       });

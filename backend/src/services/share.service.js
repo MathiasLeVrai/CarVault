@@ -4,7 +4,7 @@ const { AppError } = require('../middleware/error.middleware');
 
 class ShareService {
   async createLink(vehicleId, userId, opts = {}) {
-    const vehicle = await prisma.vehicle.findFirst({ where: { id: vehicleId, userId } });
+    const vehicle = await prisma.vehicule.findFirst({ where: { id: vehicleId, userId } });
     if (!vehicle) throw new AppError('Véhicule non trouvé', 404);
 
     const { expiresInDays = 30, password, hidePurchasePrice = false, label } = opts;
@@ -17,7 +17,7 @@ class ShareService {
 
     const passwordHash = password ? await bcrypt.hash(password, 10) : null;
 
-    return prisma.shareLink.create({
+    return prisma.lienPartage.create({
       data: {
         vehicleId,
         userId,
@@ -30,7 +30,7 @@ class ShareService {
   }
 
   async getByToken(token) {
-    const link = await prisma.shareLink.findUnique({
+    const link = await prisma.lienPartage.findUnique({
       where: { token },
       include: {
         vehicle: {
@@ -58,20 +58,20 @@ class ShareService {
   }
 
   async trackView(linkId) {
-    return prisma.shareLink.update({
+    return prisma.lienPartage.update({
       where: { id: linkId },
       data: { viewCount: { increment: 1 }, lastViewedAt: new Date() },
     });
   }
 
   async revokeLink(id, userId) {
-    const link = await prisma.shareLink.findFirst({ where: { id, userId } });
+    const link = await prisma.lienPartage.findFirst({ where: { id, userId } });
     if (!link) throw new AppError('Lien introuvable', 404);
-    return prisma.shareLink.delete({ where: { id } });
+    return prisma.lienPartage.delete({ where: { id } });
   }
 
   async getLinksForVehicle(vehicleId, userId) {
-    const links = await prisma.shareLink.findMany({
+    const links = await prisma.lienPartage.findMany({
       where: { vehicleId, userId },
       orderBy: { createdAt: 'desc' },
     });

@@ -6,7 +6,7 @@ class HealthService {
    * Calculer le score sante complet d'un vehicule
    */
   async getHealthScore(vehicleId, userId) {
-    const vehicle = await prisma.vehicle.findFirst({
+    const vehicle = await prisma.vehicule.findFirst({
       where: { id: vehicleId, userId },
       include: {
         documents: true,

@@ -16,7 +16,7 @@ async function generateMonthlyReport() {
   const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
   const monthName = lastMonth.toLocaleString('fr-FR', { month: 'long', year: 'numeric' });
 
-  const users = await prisma.user.findMany({
+  const users = await prisma.utilisateur.findMany({
     where: { vehicles: { some: {} } },
     select: {
       id: true,
@@ -32,7 +32,7 @@ async function generateMonthlyReport() {
   for (const user of users) {
     try {
       // Dépenses du mois dernier
-      const monthExpenses = await prisma.expense.aggregate({
+      const monthExpenses = await prisma.depense.aggregate({
         where: {
           vehicle: { userId: user.id },
           date: { gte: lastMonth, lte: lastMonthEnd },
@@ -42,7 +42,7 @@ async function generateMonthlyReport() {
       });
 
       // Carburant du mois
-      const monthFuel = await prisma.fuelEntry.aggregate({
+      const monthFuel = await prisma.entreeCarburant.aggregate({
         where: {
           vehicle: { userId: user.id },
           date: { gte: lastMonth, lte: lastMonthEnd },
@@ -51,7 +51,7 @@ async function generateMonthlyReport() {
       });
 
       // Alertes actives
-      const activeAlerts = await prisma.alert.count({
+      const activeAlerts = await prisma.alerte.count({
         where: { userId: user.id, isRead: false },
       });
 

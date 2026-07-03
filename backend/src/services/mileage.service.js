@@ -3,14 +3,14 @@ const { AppError } = require('../middleware/error.middleware');
 
 class MileageService {
   async verifyOwnership(vehicleId, userId) {
-    const v = await prisma.vehicle.findFirst({ where: { id: vehicleId, userId } });
+    const v = await prisma.vehicule.findFirst({ where: { id: vehicleId, userId } });
     if (!v) throw new AppError('Véhicule non trouvé', 404);
     return v;
   }
 
   async getAll(vehicleId, userId) {
     await this.verifyOwnership(vehicleId, userId);
-    return prisma.mileageEntry.findMany({
+    return prisma.entreeKilometrage.findMany({
       where: { vehicleId },
       orderBy: { date: 'desc' },
     });
@@ -19,7 +19,7 @@ class MileageService {
   async create(vehicleId, userId, { mileage, date, notes }) {
     const vehicle = await this.verifyOwnership(vehicleId, userId);
 
-    const entry = await prisma.mileageEntry.create({
+    const entry = await prisma.entreeKilometrage.create({
       data: {
         vehicleId,
         mileage: parseInt(mileage),
@@ -30,7 +30,7 @@ class MileageService {
 
     // Mettre à jour le kilométrage courant du véhicule si supérieur
     if (parseInt(mileage) > vehicle.mileage) {
-      await prisma.vehicle.update({
+      await prisma.vehicule.update({
         where: { id: vehicleId },
         data: { mileage: parseInt(mileage) },
       });
@@ -40,12 +40,12 @@ class MileageService {
   }
 
   async delete(id, userId) {
-    const entry = await prisma.mileageEntry.findFirst({
+    const entry = await prisma.entreeKilometrage.findFirst({
       where: { id },
       include: { vehicle: { select: { userId: true } } },
     });
     if (!entry || entry.vehicle.userId !== userId) throw new AppError('Entrée non trouvée', 404);
-    return prisma.mileageEntry.delete({ where: { id } });
+    return prisma.entreeKilometrage.delete({ where: { id } });
   }
 }
 

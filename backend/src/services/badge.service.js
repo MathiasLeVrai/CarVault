@@ -77,7 +77,7 @@ const BADGE_DEFS = [
  * Compute the fuel logging streak (consecutive months with at least 1 entry)
  */
 async function computeFuelStreak(userId) {
-  const entries = await prisma.fuelEntry.findMany({
+  const entries = await prisma.entreeCarburant.findMany({
     where: { vehicle: { userId } },
     select: { date: true },
     orderBy: { date: 'desc' },
@@ -123,12 +123,12 @@ class BadgeService {
       mileageCount,
       fuelStreak,
     ] = await Promise.all([
-      prisma.vehicle.count({ where: { userId } }),
+      prisma.vehicule.count({ where: { userId } }),
       prisma.document.count({ where: { vehicle: { userId } } }),
       prisma.document.count({ where: { vehicle: { userId }, type: 'TECHNICAL_INSPECTION' } }),
-      prisma.fuelEntry.count({ where: { vehicle: { userId } } }),
-      prisma.expense.count({ where: { vehicle: { userId } } }),
-      prisma.mileageEntry.count({ where: { vehicle: { userId } } }),
+      prisma.entreeCarburant.count({ where: { vehicle: { userId } } }),
+      prisma.depense.count({ where: { vehicle: { userId } } }),
+      prisma.entreeKilometrage.count({ where: { vehicle: { userId } } }),
       computeFuelStreak(userId),
     ]);
 

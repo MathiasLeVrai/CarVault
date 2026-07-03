@@ -10,11 +10,11 @@ async function alertExists(userId, type, titleContains, options = {}) {
   const where = { userId, type, title: { contains: titleContains } };
   if (options.since) where.createdAt = { gte: options.since };
   if (options.dueDate) where.dueDate = options.dueDate;
-  return prisma.alert.findFirst({ where });
+  return prisma.alerte.findFirst({ where });
 }
 
 async function createAlert(data, { email, userName, dueDate } = {}) {
-  const alert = await prisma.alert.create({ data });
+  const alert = await prisma.alerte.create({ data });
 
   // Send push notification (best-effort)
   try {
@@ -24,7 +24,7 @@ async function createAlert(data, { email, userName, dueDate } = {}) {
   // Send email notification
   if (email && emailService.isConfigured()) {
     const sent = await emailService.sendAlertEmail(email, userName, data.title, data.message, dueDate || data.dueDate);
-    if (sent) await prisma.alert.update({ where: { id: alert.id }, data: { emailSent: true } });
+    if (sent) await prisma.alerte.update({ where: { id: alert.id }, data: { emailSent: true } });
   }
 
   return alert;

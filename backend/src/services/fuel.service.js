@@ -4,10 +4,10 @@ const { AppError } = require('../middleware/error.middleware');
 class FuelService {
   async getAll(vehicleId, userId) {
     // Verify ownership
-    const vehicle = await prisma.vehicle.findFirst({ where: { id: vehicleId, userId } });
+    const vehicle = await prisma.vehicule.findFirst({ where: { id: vehicleId, userId } });
     if (!vehicle) throw new AppError('Véhicule introuvable', 404);
 
-    const entries = await prisma.fuelEntry.findMany({
+    const entries = await prisma.entreeCarburant.findMany({
       where: { vehicleId },
       orderBy: { date: 'desc' },
     });
@@ -18,7 +18,7 @@ class FuelService {
   }
 
   async create(vehicleId, userId, data) {
-    const vehicle = await prisma.vehicle.findFirst({ where: { id: vehicleId, userId } });
+    const vehicle = await prisma.vehicule.findFirst({ where: { id: vehicleId, userId } });
     if (!vehicle) throw new AppError('Véhicule introuvable', 404);
 
     const { date, mileage, liters, pricePerLiter, isFull = true, notes } = data;
@@ -28,7 +28,7 @@ class FuelService {
 
     const totalCost = parseFloat((liters * pricePerLiter).toFixed(2));
 
-    const entry = await prisma.fuelEntry.create({
+    const entry = await prisma.entreeCarburant.create({
       data: {
         vehicleId,
         date: new Date(date),
@@ -43,7 +43,7 @@ class FuelService {
 
     // Update vehicle mileage if this entry has higher mileage
     if (parseInt(mileage) > vehicle.mileage) {
-      await prisma.vehicle.update({
+      await prisma.vehicule.update({
         where: { id: vehicleId },
         data: { mileage: parseInt(mileage) },
       });
@@ -53,14 +53,14 @@ class FuelService {
   }
 
   async delete(id, userId) {
-    const entry = await prisma.fuelEntry.findFirst({
+    const entry = await prisma.entreeCarburant.findFirst({
       where: { id },
       include: { vehicle: true },
     });
     if (!entry || entry.vehicle.userId !== userId) {
       throw new AppError('Entrée introuvable', 404);
     }
-    await prisma.fuelEntry.delete({ where: { id } });
+    await prisma.entreeCarburant.delete({ where: { id } });
   }
 
   /**

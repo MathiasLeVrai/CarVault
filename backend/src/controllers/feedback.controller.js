@@ -13,7 +13,7 @@ class FeedbackController {
         return res.status(400).json({ error: 'Votre idée est trop longue (2000 caractères max).' });
       }
 
-      const user = await prisma.user.findUnique({
+      const user = await prisma.utilisateur.findUnique({
         where: { id: req.userId },
         select: { email: true, firstName: true, lastName: true },
       });

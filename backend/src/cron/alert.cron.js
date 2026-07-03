@@ -104,7 +104,7 @@ async function checkMaintenanceDue() {
   sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
   let created = 0;
 
-  const vehicles = await prisma.vehicle.findMany({
+  const vehicles = await prisma.vehicule.findMany({
     include: {
       user: { select: { email: true, firstName: true, notifEmail: true } },
       expenses: {
@@ -145,7 +145,7 @@ async function checkMaintenanceDue() {
 async function checkOilChange() {
   let created = 0;
 
-  const vehicles = await prisma.vehicle.findMany({
+  const vehicles = await prisma.vehicule.findMany({
     include: {
       user: { select: { email: true, firstName: true, notifEmail: true } },
       expenses: {
@@ -228,7 +228,7 @@ async function checkTireSeason() {
   const twoMonthsAgo = new Date();
   twoMonthsAgo.setMonth(twoMonthsAgo.getMonth() - 2);
 
-  const vehicles = await prisma.vehicle.findMany({
+  const vehicles = await prisma.vehicule.findMany({
     include: {
       user: { select: { email: true, firstName: true, notifEmail: true } },
       expenses: {
@@ -269,7 +269,7 @@ async function checkTireSeason() {
 async function checkMileageService() {
   let created = 0;
 
-  const vehicles = await prisma.vehicle.findMany({
+  const vehicles = await prisma.vehicule.findMany({
     include: {
       user: { select: { email: true, firstName: true, notifEmail: true } },
       expenses: {
@@ -371,7 +371,7 @@ async function checkZfeAlerts() {
   const sixMonthsAgo = new Date();
   sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
 
-  const vehicles = await prisma.vehicle.findMany({
+  const vehicles = await prisma.vehicule.findMany({
     where: { critAir: { not: null, gte: 2 } },
     include: {
       user: { select: { id: true, email: true, firstName: true, notifEmail: true } },
@@ -413,7 +413,7 @@ async function runAllAlertChecks() {
     // Purge alertes lues de +90 jours
     const ninetyDaysAgo = new Date();
     ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
-    const purged = await prisma.alert.deleteMany({
+    const purged = await prisma.alerte.deleteMany({
       where: { isRead: true, createdAt: { lt: ninetyDaysAgo } },
     });
     if (purged.count > 0) console.log(`[CRON] ${purged.count} alerte(s) purgée(s) (lues +90j)`);

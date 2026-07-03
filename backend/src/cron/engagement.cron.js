@@ -26,7 +26,7 @@ async function checkNoRecentExpense(userId) {
   const twoWeeksAgo = new Date();
   twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
 
-  const vehicles = await prisma.vehicle.findMany({
+  const vehicles = await prisma.vehicule.findMany({
     where: { userId },
     select: { id: true },
   });
@@ -34,7 +34,7 @@ async function checkNoRecentExpense(userId) {
 
   const vehicleIds = vehicles.map(v => v.id);
 
-  const recent = await prisma.expense.findFirst({
+  const recent = await prisma.depense.findFirst({
     where: { vehicleId: { in: vehicleIds }, createdAt: { gte: twoWeeksAgo } },
     select: { id: true },
   });
@@ -54,7 +54,7 @@ async function checkNoRecentMileage(userId) {
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-  const vehicles = await prisma.vehicle.findMany({
+  const vehicles = await prisma.vehicule.findMany({
     where: { userId },
     select: { id: true },
   });
@@ -62,12 +62,12 @@ async function checkNoRecentMileage(userId) {
 
   const vehicleIds = vehicles.map(v => v.id);
 
-  const recentFuel = await prisma.fuelEntry.findFirst({
+  const recentFuel = await prisma.entreeCarburant.findFirst({
     where: { vehicleId: { in: vehicleIds }, createdAt: { gte: thirtyDaysAgo } },
     select: { id: true },
   });
 
-  const recentMileage = await prisma.mileageEntry.findFirst({
+  const recentMileage = await prisma.entreeKilometrage.findFirst({
     where: { vehicleId: { in: vehicleIds }, createdAt: { gte: thirtyDaysAgo } },
     select: { id: true },
   });
@@ -84,7 +84,7 @@ async function checkNoRecentMileage(userId) {
 
 // ── Check 3: Few documents (<2) ──
 async function checkFewDocuments(userId) {
-  const vehicles = await prisma.vehicle.findMany({
+  const vehicles = await prisma.vehicule.findMany({
     where: { userId },
     select: { id: true },
   });
@@ -109,7 +109,7 @@ async function checkTireWear(userId) {
   const oneYearAgo = new Date();
   oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
 
-  const vehicles = await prisma.vehicle.findMany({
+  const vehicles = await prisma.vehicule.findMany({
     where: { userId },
     select: { id: true, brand: true, model: true, fuelType: true },
   });
@@ -119,7 +119,7 @@ async function checkTireWear(userId) {
   const nonElectric = vehicles.filter(v => v.fuelType !== 'ELECTRIC');
   if (nonElectric.length === 0) return null;
 
-  const recentTires = await prisma.expense.findFirst({
+  const recentTires = await prisma.depense.findFirst({
     where: {
       vehicleId: { in: nonElectric.map(v => v.id) },
       category: 'TIRES',
@@ -144,7 +144,7 @@ async function checkCO2Malus(userId) {
   // Barème 2026 : malus à partir de 118 g/km
   const CO2_MALUS_THRESHOLD = 118;
 
-  const vehicle = await prisma.vehicle.findFirst({
+  const vehicle = await prisma.vehicule.findFirst({
     where: { userId, co2: { not: null, gt: CO2_MALUS_THRESHOLD } },
     select: { brand: true, model: true, co2: true },
   });
@@ -161,7 +161,7 @@ async function checkCO2Malus(userId) {
 
 // ── Check 6: Missing vehicle photo ──
 async function checkMissingPhoto(userId) {
-  const vehicleWithoutPhoto = await prisma.vehicle.findFirst({
+  const vehicleWithoutPhoto = await prisma.vehicule.findFirst({
     where: { userId, photo: null },
     select: { brand: true, model: true, id: true },
   });
@@ -178,14 +178,14 @@ async function checkMissingPhoto(userId) {
 
 // ── Check 7: Inefficient fuel fill ──
 async function checkFuelEfficiency(userId) {
-  const vehicle = await prisma.vehicle.findFirst({
+  const vehicle = await prisma.vehicule.findFirst({
     where: { userId },
     select: { id: true, brand: true, model: true },
   });
   if (!vehicle) return null;
 
   // Get full fills (isFull=true) ordered by date, need at least 3 to compute avg
-  const fills = await prisma.fuelEntry.findMany({
+  const fills = await prisma.entreeCarburant.findMany({
     where: { vehicleId: vehicle.id, isFull: true },
     orderBy: { date: 'desc' },
     take: 10,
@@ -218,7 +218,7 @@ async function checkFuelEfficiency(userId) {
 
 // ── Check 8: Annual km goal progress ──
 async function checkAnnualKmGoal(userId) {
-  const vehicle = await prisma.vehicle.findFirst({
+  const vehicle = await prisma.vehicule.findFirst({
     where: { userId, annualKmGoal: { not: null } },
     select: { id: true, brand: true, model: true, annualKmGoal: true },
   });
@@ -227,13 +227,13 @@ async function checkAnnualKmGoal(userId) {
   const startOfYear = new Date(new Date().getFullYear(), 0, 1);
 
   // Get mileage at start of year (closest entry)
-  const startEntry = await prisma.mileageEntry.findFirst({
+  const startEntry = await prisma.entreeKilometrage.findFirst({
     where: { vehicleId: vehicle.id, date: { gte: startOfYear } },
     orderBy: { date: 'asc' },
     select: { mileage: true },
   });
 
-  const latestEntry = await prisma.mileageEntry.findFirst({
+  const latestEntry = await prisma.entreeKilometrage.findFirst({
     where: { vehicleId: vehicle.id },
     orderBy: { date: 'desc' },
     select: { mileage: true },
@@ -263,18 +263,18 @@ async function checkMonthlyCostInsight(userId) {
   const threeMonthsAgo = new Date();
   threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
 
-  const vehicle = await prisma.vehicle.findFirst({
+  const vehicle = await prisma.vehicule.findFirst({
     where: { userId },
     select: { id: true, brand: true, model: true },
   });
   if (!vehicle) return null;
 
-  const expenses = await prisma.expense.aggregate({
+  const expenses = await prisma.depense.aggregate({
     where: { vehicleId: vehicle.id, date: { gte: threeMonthsAgo } },
     _sum: { amount: true },
   });
 
-  const fuel = await prisma.fuelEntry.aggregate({
+  const fuel = await prisma.entreeCarburant.aggregate({
     where: { vehicleId: vehicle.id, date: { gte: threeMonthsAgo } },
     _sum: { totalCost: true },
   });
@@ -300,7 +300,7 @@ async function runEngagementChecks() {
 
   console.log('[CRON] Engagement notifications...');
 
-  const users = await prisma.user.findMany({
+  const users = await prisma.utilisateur.findMany({
     where: {
       notifPush: true,
       vehicles: { some: {} },

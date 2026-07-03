@@ -14,7 +14,7 @@ require.cache[prismaPath] = {
   filename: prismaPath,
   loaded: true,
   exports: {
-    user: { findUnique: async () => fakeUser },
+    utilisateur: { findUnique: async () => fakeUser },
   },
 };
 

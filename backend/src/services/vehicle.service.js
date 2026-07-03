@@ -7,7 +7,7 @@ class VehicleService {
    * Récupérer tous les véhicules d'un utilisateur
    */
   async getAll(userId) {
-    return prisma.vehicle.findMany({
+    return prisma.vehicule.findMany({
       where: { userId },
       include: {
         _count: {
@@ -22,7 +22,7 @@ class VehicleService {
    * Récupérer un véhicule par ID
    */
   async getById(id, userId) {
-    const vehicle = await prisma.vehicle.findFirst({
+    const vehicle = await prisma.vehicule.findFirst({
       where: { id, userId },
       include: {
         documents: {
@@ -47,7 +47,7 @@ class VehicleService {
     const currentYear = new Date().getFullYear();
     const yearStart = new Date(currentYear, 0, 1);
 
-    const yearExpenses = await prisma.expense.aggregate({
+    const yearExpenses = await prisma.depense.aggregate({
       where: {
         vehicleId: id,
         date: { gte: yearStart },
@@ -59,7 +59,7 @@ class VehicleService {
       SELECT 
         EXTRACT(MONTH FROM date) as month,
         SUM(amount) as total
-      FROM expenses
+      FROM depenses
       WHERE "vehicleId" = ${id}
         AND date >= ${yearStart}
       GROUP BY EXTRACT(MONTH FROM date)
@@ -90,7 +90,7 @@ class VehicleService {
         'PREMIUM_REQUIRED'
       );
     }
-    return prisma.vehicle.create({
+    return prisma.vehicule.create({
       data: {
         ...data,
         userId,
@@ -102,7 +102,7 @@ class VehicleService {
    * Mettre à jour un véhicule
    */
   async update(id, data, userId) {
-    const result = await prisma.vehicle.updateMany({
+    const result = await prisma.vehicule.updateMany({
       where: { id, userId },
       data,
     });
@@ -111,7 +111,7 @@ class VehicleService {
       throw new AppError('Véhicule non trouvé', 404);
     }
 
-    return prisma.vehicle.findUnique({ where: { id } });
+    return prisma.vehicule.findUnique({ where: { id } });
   }
 
   /**
@@ -119,7 +119,7 @@ class VehicleService {
    * Sans limite de documents/dépenses
    */
   async getFullData(id, userId) {
-    const vehicle = await prisma.vehicle.findFirst({
+    const vehicle = await prisma.vehicule.findFirst({
       where: { id, userId },
       include: {
         documents: { orderBy: { createdAt: 'desc' } },
@@ -136,12 +136,12 @@ class VehicleService {
     const currentYear = new Date().getFullYear();
     const yearStart = new Date(currentYear, 0, 1);
 
-    const yearExpenses = await prisma.expense.aggregate({
+    const yearExpenses = await prisma.depense.aggregate({
       where: { vehicleId: id, date: { gte: yearStart } },
       _sum: { amount: true },
     });
 
-    const totalExpenses = await prisma.expense.aggregate({
+    const totalExpenses = await prisma.depense.aggregate({
       where: { vehicleId: id },
       _sum: { amount: true },
     });
@@ -161,7 +161,7 @@ class VehicleService {
    * Supprimer un véhicule
    */
   async delete(id, userId) {
-    const vehicle = await prisma.vehicle.findFirst({
+    const vehicle = await prisma.vehicule.findFirst({
       where: { id, userId },
     });
 
@@ -169,7 +169,7 @@ class VehicleService {
       throw new AppError('Véhicule non trouvé', 404);
     }
 
-    return prisma.vehicle.delete({ where: { id } });
+    return prisma.vehicule.delete({ where: { id } });
   }
 }
 

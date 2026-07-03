@@ -59,7 +59,7 @@ class VehicleController {
 
       // Vérifier que la plaque n'est pas déjà prise par un autre utilisateur
       if (licensePlate) {
-        const existing = await prisma.vehicle.findFirst({
+        const existing = await prisma.vehicule.findFirst({
           where: { licensePlate: licensePlate.toUpperCase().replace(/\s+/g, '-'), userId: { not: req.userId } },
         });
         if (existing) {
@@ -120,7 +120,7 @@ class VehicleController {
       }
 
       if (Object.keys(maintenanceLastKm).length > 0) {
-        await prisma.vehicle.update({
+        await prisma.vehicule.update({
           where: { id: vehicle.id },
           data: { maintenanceLastKm },
         });
@@ -181,7 +181,7 @@ class VehicleController {
 
   async getMaintenancePlan(req, res, next) {
     try {
-      const vehicle = await prisma.vehicle.findFirst({
+      const vehicle = await prisma.vehicule.findFirst({
         where: { id: req.params.id, userId: req.userId },
         include: {
           expenses: { orderBy: { date: 'desc' } },
@@ -202,7 +202,7 @@ class VehicleController {
         return res.status(400).json({ error: 'Intervalles ou kilométrages requis' });
       }
 
-      const vehicle = await prisma.vehicle.findFirst({
+      const vehicle = await prisma.vehicule.findFirst({
         where: { id: req.params.id, userId: req.userId },
       });
       if (!vehicle) return res.status(404).json({ error: 'Véhicule non trouvé' });
@@ -224,7 +224,7 @@ class VehicleController {
         data.maintenanceLastKm = { ...(vehicle.maintenanceLastKm || {}), ...parsed };
       }
 
-      await prisma.vehicle.update({
+      await prisma.vehicule.update({
         where: { id: vehicle.id },
         data,
       });
@@ -242,7 +242,7 @@ class VehicleController {
         return res.status(400).json({ error: 'Type d\'entretien invalide' });
       }
 
-      const vehicle = await prisma.vehicle.findFirst({
+      const vehicle = await prisma.vehicule.findFirst({
         where: { id: req.params.id, userId: req.userId },
       });
       if (!vehicle) return res.status(404).json({ error: 'Véhicule non trouvé' });
@@ -255,7 +255,7 @@ class VehicleController {
         return res.status(400).json({ error: 'Kilométrage invalide' });
       }
 
-      await prisma.vehicle.update({
+      await prisma.vehicule.update({
         where: { id: vehicle.id },
         data: {
           maintenanceLastKm: {

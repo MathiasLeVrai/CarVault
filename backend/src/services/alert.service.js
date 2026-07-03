@@ -12,7 +12,7 @@ class AlertService {
     // Exclure les alertes snoozées encore actives
     where.OR = [{ snoozedUntil: null }, { snoozedUntil: { lte: now } }];
 
-    return prisma.alert.findMany({
+    return prisma.alerte.findMany({
       where,
       orderBy: { createdAt: 'desc' },
     });
@@ -23,7 +23,7 @@ class AlertService {
    */
   async countUnread(userId) {
     const now = new Date();
-    return prisma.alert.count({
+    return prisma.alerte.count({
       where: {
         userId, isRead: false,
         OR: [{ snoozedUntil: null }, { snoozedUntil: { lte: now } }],
@@ -35,18 +35,18 @@ class AlertService {
    * Snooze une alerte (la masquer jusqu'à une date)
    */
   async snooze(id, userId, days) {
-    const alert = await prisma.alert.findFirst({ where: { id, userId } });
+    const alert = await prisma.alerte.findFirst({ where: { id, userId } });
     if (!alert) throw new AppError('Alerte non trouvée', 404);
     const snoozedUntil = new Date();
     snoozedUntil.setDate(snoozedUntil.getDate() + parseInt(days));
-    return prisma.alert.update({ where: { id }, data: { snoozedUntil, isRead: true } });
+    return prisma.alerte.update({ where: { id }, data: { snoozedUntil, isRead: true } });
   }
 
   /**
    * Marquer une alerte comme lue
    */
   async markAsRead(id, userId) {
-    const alert = await prisma.alert.findFirst({
+    const alert = await prisma.alerte.findFirst({
       where: { id, userId },
     });
 
@@ -54,7 +54,7 @@ class AlertService {
       throw new AppError('Alerte non trouvée', 404);
     }
 
-    return prisma.alert.update({
+    return prisma.alerte.update({
       where: { id },
       data: { isRead: true },
     });
@@ -64,7 +64,7 @@ class AlertService {
    * Marquer toutes les alertes comme lues
    */
   async markAllAsRead(userId) {
-    return prisma.alert.updateMany({
+    return prisma.alerte.updateMany({
       where: { userId, isRead: false },
       data: { isRead: true },
     });
@@ -93,7 +93,7 @@ class AlertService {
 
     const alerts = [];
     for (const doc of expiringDocs) {
-      const existingAlert = await prisma.alert.findFirst({
+      const existingAlert = await prisma.alerte.findFirst({
         where: {
           userId,
           type: 'DOCUMENT_EXPIRY',
@@ -103,7 +103,7 @@ class AlertService {
       });
 
       if (!existingAlert) {
-        const alert = await prisma.alert.create({
+        const alert = await prisma.alerte.create({
           data: {
             title: `Expiration prochaine: ${doc.name}`,
             message: `Le document "${doc.name}" de votre ${doc.vehicle.brand} ${doc.vehicle.model} expire le ${doc.expirationDate.toLocaleDateString('fr-FR')}`,
@@ -123,7 +123,7 @@ class AlertService {
    * Supprimer une alerte
    */
   async delete(id, userId) {
-    const alert = await prisma.alert.findFirst({
+    const alert = await prisma.alerte.findFirst({
       where: { id, userId },
     });
 
@@ -131,7 +131,7 @@ class AlertService {
       throw new AppError('Alerte non trouvée', 404);
     }
 
-    return prisma.alert.delete({ where: { id } });
+    return prisma.alerte.delete({ where: { id } });
   }
 }
 
