@@ -33,6 +33,7 @@ const badgeRoutes = require('./routes/badge.routes');
 const pushRoutes = require('./routes/push.routes');
 const coteRoutes = require('./routes/cote.routes');
 const feedbackRoutes = require('./routes/feedback.routes');
+const mapRoutes = require('./routes/map.routes');
 const { errorHandler } = require('./middleware/error.middleware');
 const { startAlertCron } = require('./cron/alert.cron');
 const { startMonthlyReportCron } = require('./cron/monthly-report.cron');
@@ -167,6 +168,7 @@ app.use('/api/badges', badgeRoutes);
 app.use('/api/push', pushRoutes);
 app.use('/api/cote', coteRoutes);  // GET /api/cote/:vehicleId
 app.use('/api/feedback', feedbackRoutes);
+app.use('/api/map', mapRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

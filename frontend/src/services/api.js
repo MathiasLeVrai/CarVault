@@ -398,3 +398,15 @@ export const feedbackApi = {
   send: (message) => api.post('/feedback', { message }),
 };
 
+export const mapApi = {
+  getPois: (lat, lon, radius, types) => {
+    const params = new URLSearchParams({
+      lat: String(lat),
+      lon: String(lon),
+      radius: String(radius),
+      types: types.filter((t) => t !== 'fuel').join(','),
+    });
+    return api.get(`/map/pois?${params}`);
+  },
+};
+

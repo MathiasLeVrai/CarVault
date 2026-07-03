@@ -4,6 +4,7 @@ import { motion as Motion } from 'framer-motion';
 import { MapPin, Navigation, Wrench, ShieldCheck, Droplets, Fuel, Search, ExternalLink, Loader2 } from 'lucide-react';
 import { Capacitor } from '@capacitor/core';
 import { Geolocation } from '@capacitor/geolocation';
+import { mapApi } from '../services/api';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -94,63 +95,13 @@ function ViewportTracker({ onViewportChange, skipNextRef }) {
   return null;
 }
 
-const OVERPASS_ENDPOINTS = [
-  'https://overpass-api.de/api/interpreter',
-  'https://overpass.kumi.systems/api/interpreter',
-];
-
-async function fetchOverpass(query, attempt = 0) {
-  const endpoint = OVERPASS_ENDPOINTS[attempt % OVERPASS_ENDPOINTS.length];
-  const res = await fetch(endpoint, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: `data=${encodeURIComponent(query)}`,
-    signal: AbortSignal.timeout(20000),
-  });
-  if (!res.ok) throw new Error(`Overpass ${res.status}`);
-  return res.json();
-}
-
-function parseOverpassElements(elements) {
-  return elements.map(el => {
-    const lat2 = el.lat ?? el.center?.lat;
-    const lon2 = el.lon ?? el.center?.lon;
-    if (!lat2 || !lon2) return null;
-
-    let type = 'garage';
-    if (el.tags?.amenity === 'vehicle_inspection' || el.tags?.shop === 'vehicle_inspection') type = 'ct';
-    else if (el.tags?.amenity === 'car_wash' || el.tags?.shop === 'car_wash' || el.tags?.self_service === 'car_wash') type = 'carwash';
-
-    const name = el.tags?.name || el.tags?.operator || FILTERS.find(f => f.id === type)?.label || 'Lieu';
-    const address = [el.tags?.['addr:housenumber'], el.tags?.['addr:street'], el.tags?.['addr:city']]
-      .filter(Boolean).join(' ') || '';
-
-    return { id: el.id, lat: lat2, lon: lon2, name, address, type };
-  }).filter(Boolean);
-}
-
 async function fetchPOIs(lat, lon, activeFilters, radius = DEFAULT_RADIUS) {
   const overpassFilters = activeFilters.filter(id => id !== 'fuel');
   if (overpassFilters.length === 0) return [];
 
   const r = Math.min(Math.round(radius), MAX_RADIUS);
-  const conditions = overpassFilters.flatMap(id => {
-    const f = FILTERS.find(f => f.id === id);
-    return f.tags.map(([k, v]) => `node["${k}"="${v}"](around:${r},${lat},${lon});way["${k}"="${v}"](around:${r},${lat},${lon});`);
-  });
-
-  const query = `[out:json][timeout:25];(${conditions.join('')});out center;`;
-
-  // Try primary, then fallback mirror on failure
-  for (let attempt = 0; attempt < OVERPASS_ENDPOINTS.length; attempt++) {
-    try {
-      const data = await fetchOverpass(query, attempt);
-      return parseOverpassElements(data.elements || []);
-    } catch {
-      if (attempt === OVERPASS_ENDPOINTS.length - 1) throw new Error('All Overpass endpoints failed');
-    }
-  }
-  return [];
+  const { pois } = await mapApi.getPois(lat, lon, r, overpassFilters);
+  return pois || [];
 }
 
 async function fetchFuelStations(lat, lon, radius = DEFAULT_RADIUS) {
