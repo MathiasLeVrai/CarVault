@@ -1,286 +1,551 @@
 # Carvio — Gestion intelligente de véhicules
 
-Application **PWA mobile-first** permettant aux particuliers de centraliser documents, dépenses et rappels liés à leurs véhicules. Installable sur l'écran d'accueil (iOS/Android), utilisable hors-ligne grâce au Service Worker. En moins de 5 minutes, l'utilisateur ajoute son véhicule, attache ses documents clés et reçoit automatiquement des alertes d'expiration.
+**Carvio** est une application **PWA mobile-first** (et apps natives iOS/Android via Capacitor) qui permet aux particuliers de centraliser documents, dépenses, entretien et rappels liés à leurs véhicules. Installable sur l'écran d'accueil, utilisable hors ligne grâce au Service Worker.
 
 **Production :** [carvio.fr](https://carvio.fr)
 
 ---
 
-## Moment "aha" — Parcours d'activation
+## Sommaire
+
+- [Moment « aha »](#moment-aha--parcours-dactivation)
+- [Fonctionnalités](#fonctionnalités)
+- [Architecture](#architecture)
+- [Stack technique](#stack-technique)
+- [Structure du projet](#structure-du-projet)
+- [Démarrage local](#démarrage-local)
+- [Variables d'environnement](#variables-denvironnement)
+- [Base de données (Prisma)](#base-de-données-prisma)
+- [API REST](#api-rest)
+- [Tâches planifiées (cron)](#tâches-planifiées-cron)
+- [Abonnement Premium](#abonnement-premium)
+- [Apps mobiles (Capacitor)](#apps-mobiles-capacitor)
+- [Tests](#tests)
+- [Déploiement](#déploiement)
+- [CI/CD](#cicd)
+- [Scripts utiles](#scripts-utiles)
+
+---
+
+## Moment « aha » — Parcours d'activation
 
 ```
 1. Créer un compte
-2. Ajouter un véhicule (ou chercher par plaque)
-3. Uploader 1 document avec une date d'expiration (ex. assurance, CT)
+2. Ajouter un véhicule (manuellement ou via recherche par plaque)
+3. Uploader 1 document avec une date d'expiration (assurance, CT…)
 4. Recevoir automatiquement un rappel avant expiration
 ```
 
-Objectif : atteindre "1 véhicule + 1 doc + 1 rappel planifié" en < 5 min.
+Objectif produit : atteindre **1 véhicule + 1 document + 1 rappel planifié** en moins de 5 minutes.
 
 ---
 
-## Fonctionnalités principales (v2)
+## Fonctionnalités
 
-Pour un brief produit détaillé, voir `PRODUCT.md`.
+### Coffre-fort de documents
+- Upload de tous les documents liés au véhicule : assurance, carte grise, contrôle technique, factures, garanties, constats d'accident…
+- Dates d'expiration et rappels configurables par document (J-30, J-14, J-7, J-1, J+0)
+- Stockage local en dev, **Cloudflare R2** en production
 
-- **Coffre-fort de documents**: upload de tous les documents liés au véhicule (assurance, carte grise, CT, factures, garanties…) avec dates d’expiration.
-- **Rappels intelligents**: rappels configurables (J-30, J-14, J-7, J-1, J+0) par document, avec centre de notifications et préférences utilisateur.
-- **Suivi dépenses & entretien**: catégories de dépenses, kilométrage, carburant, statistiques mensuelles et annuel, coût de possession.
-- **Score santé véhicule**: score /100 (A–D), estimation de valeur et indicateurs de risque.
-- **Dossier revente**: export PDF complet, partage via lien public sécurisé (token, expiration).
-- **Dashboard d’action**: vue synthétique des prochaines actions (docs à renouveler, CT à passer, entretiens à prévoir).
-- **Onboarding guidé**: parcours simple pour créer un compte, ajouter un véhicule et atteindre rapidement le moment "aha".
-- **PWA mobile-first**: installable sur écran d’accueil, fonctionnement hors ligne via Service Worker.
+### Alertes intelligentes
+- Génération automatique d'alertes : expiration de documents, entretien à prévoir, CT, vidange, pneus saisonniers, restrictions ZFE, budget carburant dépassé, pic de dépenses…
+- Centre de notifications in-app avec snooze
+- Notifications **email** (digest hebdomadaire, rappels) et **Web Push** (PWA)
+- Préférences utilisateur : email, push, digest hebdomadaire
+
+### Suivi dépenses & entretien
+- Catégories détaillées : entretien, vidange, freins, pneus, carrosserie, pare-brise, CT, parking, péage, nettoyage, amendes…
+- Historique de kilométrage
+- Suivi carburant (pleins, consommation, coût au km)
+- Statistiques mensuelles et annuelles, coût de possession
+- Plan d'entretien personnalisable par véhicule (intervalles km/temps)
+
+### Score santé & valorisation
+- Score santé /100 avec note A–D (documents + entretien)
+- Estimation de valeur (saisie manuelle ou cote La Centrale)
+- Vignette Crit'Air, données techniques enrichies via CarAPI
+
+### Dossier revente & partage
+- Export PDF complet du dossier véhicule
+- Lien public sécurisé (token, expiration, mot de passe optionnel, masquage du prix d'achat)
+
+### Dashboard d'action
+- Vue synthétique : prochaines échéances, alertes non lues, dépenses récentes, actions à mener
+- Badges de gamification (premier véhicule, premier document, pleins réguliers…)
+
+### Autres
+- Recherche véhicule par **plaque d'immatriculation** (API RapidAPI)
+- Catalogue marques/modèles via **CarAPI**
+- Carte des services auto à proximité (garages, CT, stations…)
+- Onboarding guidé
+- Authentification JWT + refresh tokens, mot de passe oublié par email
+- Abonnement Premium (Stripe web + RevenueCat iOS)
+
+---
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  Client                                                     │
+│  React 19 PWA  ·  Capacitor (iOS / Android)                 │
+│  Service Worker (cache offline)  ·  Web Push                │
+└──────────────────────────┬──────────────────────────────────┘
+                           │ HTTPS  /api  /uploads
+┌──────────────────────────▼──────────────────────────────────┐
+│  Backend Express (Node.js)                                  │
+│  Controllers → Services → Prisma → PostgreSQL (NeonDB)      │
+│  Cron jobs (alertes, digest, budget)  ·  Swagger OpenAPI   │
+└──────┬──────────────┬──────────────┬─────────────────────────┘
+       │              │              │
+  Cloudflare R2   Stripe /       RapidAPI / CarAPI
+  (fichiers)      RevenueCat     (plaque, marques)
+                  (abonnements)
+```
+
+En production, une **image Docker unique** sert le build frontend (`frontend/dist`) et l'API backend sur le même port (8080).
+
+---
 
 ## Stack technique
 
-| Couche | Techno |
-|--------|--------|
-| Frontend | React 19, Vite 7, Tailwind CSS 4, React Router 7, Recharts |
-| Backend | Node.js, Express 4, Prisma 6, PostgreSQL (NeonDB), Nodemailer, Stripe |
-| Auth | JWT + bcryptjs |
-| Upload | Multer (local en dev → volume Fly.io en prod) |
-| PDF | PDFKit |
-| Alertes | node-cron (jobs récurrents pour rappels d’expiration) |
-| Déploiement | Docker multi-stage + Fly.io (région CDG) + GitHub Actions (CI/CD) |
-| APIs tierces | RapidAPI (plaque FR), CarAPI (marques/modèles) |
-
----
-
-## Lancer le projet en local (< 30 min)
-
-### Prérequis
-
-- Node.js 18+
-- PostgreSQL 14+ (ou une URL NeonDB)
-- npm
-
-### Installation
-
-```bash
-# 1. Dépendances (racine + backend + frontend)
-npm run install:all
-
-# 2. Variables d'environnement
-cp backend/.env.example backend/.env
-# Renseigner DATABASE_URL, JWT_SECRET, RAPIDAPI_KEY dans backend/.env
-
-# 3. Migrations + client Prisma
-cd backend
-npx prisma migrate dev --name init
-cd ..
-
-# 4. Démarrer (backend :3001 + frontend :5173)
-npm run dev
-```
-
-**Frontend :** http://localhost:5173  
-**API :** http://localhost:3001
-
-**Documentation Swagger (OpenAPI 3)** : http://localhost:3001/api/docs — JSON brut : http://localhost:3001/api/docs.json  
-Désactivation : `SWAGGER_ENABLED=false` dans `backend/.env`.
-
-> Le frontend proxifie automatiquement `/api` et `/uploads` vers le backend via Vite (voir `vite.config.js`).
-
----
-
-## Build mobile avec Capacitor
-
-L'app native iOS/Android embarque le build Vite de `frontend/dist` via Capacitor (`appId`: `fr.carvio.app`).
-
-```bash
-# 1. Variables frontend pour un build store/prod
-cp frontend/.env.example frontend/.env
-# Vérifier VITE_API_URL="https://carvio.fr/api"
-# Vérifier VITE_PUBLIC_APP_URL="https://carvio.fr"
-
-# 2. Générer le build web et synchroniser les projets natifs
-npm run cap:sync
-
-# 3. Ouvrir les projets natifs
-npm run cap:open:ios
-npm run cap:open:android
-```
-
-Notes publication :
-- iOS se finalise dans Xcode (`ios/App`) avec l'équipe Apple Developer, le signing et l'archive App Store.
-- Android se finalise dans Android Studio (`android`) avec le package `fr.carvio.app`, le keystore de release et l'AAB Play Store.
-- Les notifications actuelles restent du Web Push/PWA ; APNs/FCM natif est à traiter séparément.
+| Couche | Technologies |
+|--------|--------------|
+| **Frontend** | React 19, Vite 7, Tailwind CSS 4, React Router 7, Recharts, Framer Motion, Leaflet |
+| **Backend** | Node.js 20, Express 4, Prisma 6, PostgreSQL |
+| **Auth** | JWT + refresh tokens, bcryptjs |
+| **Upload** | Multer → disque local (dev) / Cloudflare R2 (prod) |
+| **PDF** | PDFKit |
+| **Email** | Nodemailer (SMTP) |
+| **Paiements** | Stripe (web), RevenueCat (iOS In-App Purchase) |
+| **Push** | web-push (VAPID) |
+| **Monitoring** | Sentry (frontend + backend) |
+| **Alertes** | node-cron (jobs récurrents) |
+| **Mobile** | Capacitor 8 (`fr.carvio.app`) |
+| **Déploiement** | Docker multi-stage, Fly.io (région CDG), GitHub Actions |
+| **APIs tierces** | RapidAPI (plaque FR), CarAPI (marques/modèles), prix carburant |
 
 ---
 
 ## Structure du projet
 
 ```
-Carvio/
-├── Dockerfile                  ← build multi-stage (frontend → backend → image unique)
-├── fly.toml                    ← config Fly.io
+CarVault/
+├── Dockerfile                    # Build multi-stage (frontend → backend → image unique)
+├── fly.toml                      # Config Fly.io (app: carvault, région: cdg)
+├── capacitor.config.json         # Config Capacitor (appId: fr.carvio.app)
+├── package.json                  # Scripts racine (dev, cap, e2e)
+├── playwright.config.js          # Config tests E2E
+├── e2e/                          # Tests Playwright (8 parcours)
+├── .github/workflows/deploy.yml  # CI/CD (lint → E2E → deploy Fly.io)
+│
 ├── backend/
 │   ├── prisma/
-│   │   ├── schema.prisma       ← modèles (User, Vehicle, Document, Expense, Alert)
-│   │   └── migrations/         ← migrations SQL versionnées
+│   │   ├── schema.prisma         # Modèles (Utilisateur, Vehicule, Document, Depense…)
+│   │   └── migrations/           # Migrations SQL versionnées
 │   ├── src/
-│   │   ├── controllers/        ← HTTP handlers (auth, vehicle, document, expense, alert)
-│   │   ├── services/           ← logique métier (pdf, health, plate, carapi, alert…)
-│   │   ├── routes/             ← routes Express
-│   │   ├── middleware/         ← auth JWT, erreurs, upload multer
-│   │   └── cron/               ← alertes automatiques planifiées
-│   └── uploads/                ← fichiers uploadés (local en dev, volume en prod)
-└── frontend/
-    ├── src/
-    │   ├── pages/              ← Dashboard, Vehicles, VehicleDetail, Documents, Expenses, Alerts
-    │   ├── components/ui/      ← Button, Modal, Input, Badge, Card…
-    │   ├── context/            ← AuthContext, ThemeContext
-    │   ├── services/api.js     ← tous les appels API
-    │   └── utils/helpers.js    ← labels, formateurs
-    └── public/sw.js            ← Service Worker (PWA / cache offline)
+│   │   ├── index.js              # Point d'entrée Express
+│   │   ├── controllers/          # Handlers HTTP
+│   │   ├── services/             # Logique métier (auth, pdf, health, plate, stripe…)
+│   │   ├── routes/               # Routes Express
+│   │   ├── middleware/           # Auth JWT, erreurs, upload Multer
+│   │   ├── cron/                 # Jobs planifiés (alertes, digest, budget…)
+│   │   ├── docs/openapi.yaml     # Spécification OpenAPI 3
+│   │   └── uploads/              # Fichiers locaux (dev) — volume Fly.io en prod
+│   └── .env.example
+│
+├── frontend/
+│   ├── src/
+│   │   ├── pages/                # Dashboard, Vehicles, Documents, Expenses, Alerts…
+│   │   ├── components/           # UI, véhicule, onboarding…
+│   │   ├── context/              # AuthContext, ThemeContext
+│   │   ├── hooks/                # usePush, useBodyScrollLock…
+│   │   ├── services/api.js       # Client API centralisé
+│   │   └── utils/                # Helpers, labels, formateurs
+│   ├── public/
+│   │   ├── sw.js                 # Service Worker (PWA / cache offline)
+│   │   └── manifest.json
+│   └── .env.example
+│
+├── ios/                          # Projet Xcode (Capacitor)
+└── android/                      # Projet Android Studio (Capacitor)
 ```
 
 ---
 
-## API — Spécification v1
+## Démarrage local
 
-**Auth :** toutes les routes (sauf `/api/auth/*`) requièrent `Authorization: Bearer <JWT>`.  
-**Erreurs communes :** `400` champ manquant · `401` token invalide/expiré · `404` ressource introuvable · `500` erreur serveur.  
-**Format :** JSON (sauf upload multipart).
+### Prérequis
 
----
+- **Node.js 20+**
+- **PostgreSQL 14+** (local ou URL [NeonDB](https://neon.tech))
+- **npm**
 
-### Auth
-
-#### `POST /api/auth/register`
-```json
-// Body
-{ "email": "user@mail.com", "password": "motdepasse", "firstName": "Jean", "lastName": "Dupont" }
-
-// 201 Created
-{ "token": "<jwt>", "user": { "id": "uuid", "email": "...", "firstName": "Jean", "lastName": "Dupont" } }
-```
-
-#### `POST /api/auth/login`
-```json
-// Body
-{ "email": "user@mail.com", "password": "motdepasse" }
-
-// 200 OK
-{ "token": "<jwt>", "user": { "id": "uuid", "email": "...", "firstName": "Jean" } }
-```
-
-#### `GET /api/auth/profile`
-```json
-// 200 OK
-{ "id": "uuid", "email": "...", "firstName": "Jean", "lastName": "Dupont", "createdAt": "..." }
-```
-
----
-
-### Véhicules
-
-#### `GET /api/vehicles`
-```json
-// 200 OK — tableau
-[{ "id": "uuid", "brand": "Peugeot", "model": "308", "year": 2020, "mileage": 45000,
-   "licensePlate": "AB-123-CD", "fuelType": "DIESEL", "photo": "/uploads/vehicles/xxx.jpg",
-   "_count": { "documents": 3, "expenses": 12 } }]
-```
-
-#### `POST /api/vehicles` — multipart/form-data
-```
-Fields: brand*, model*, year*, mileage, licensePlate, color, fuelType, purchasePrice, photo (file)
-// 201 Created → objet Vehicle complet
-```
-
-#### `GET /api/vehicles/:id`
-```json
-// 200 OK — véhicule + 5 derniers docs + 10 dernières dépenses + stats année
-{ "id": "...", "brand": "...", "documents": [...], "expenses": [...],
-  "stats": { "totalExpensesYear": 1240.50, "monthlyExpenses": [{ "month": 1, "total": 80 }] },
-  "health": { "score": 74, "grade": "B", "estimatedValue": 12500 } }
-```
-
-#### `GET /api/vehicles/:id/pdf`
-```
-// 200 OK — Content-Type: application/pdf
-// Retourne un buffer PDF (dossier revente)
-```
-
----
-
-### Documents
-
-#### `POST /api/documents` — multipart/form-data
-```
-Fields: name*, type* (INSURANCE|TECHNICAL_INSPECTION|INVOICE|WARRANTY|REGISTRATION|OTHER),
-        vehicleId*, expirationDate (ISO date), notes, file* (pdf/image)
-// 201 Created → objet Document
-```
-
-#### `GET /api/documents?type=INSURANCE`
-```json
-// 200 OK — filtre par type optionnel
-[{ "id": "...", "name": "Assurance MAAF 2026", "type": "INSURANCE",
-   "filePath": "/uploads/documents/xxx.pdf", "expirationDate": "2026-12-31",
-   "vehicle": { "brand": "Peugeot", "model": "308" } }]
-```
-
----
-
-### Dépenses
-
-#### `POST /api/expenses`
-```json
-// Body
-{ "vehicleId": "uuid", "amount": 150.50, "category": "MAINTENANCE",
-  "date": "2026-02-10", "description": "Vidange + filtres", "mileage": 45200 }
-// 201 Created → objet Expense
-```
-
-#### `GET /api/expenses/stats`
-```json
-// 200 OK
-{ "totalAll": 3240.00, "totalYear": 890.50, "byCategory": { "MAINTENANCE": 450, "FUEL": 340 },
-  "avgMonthly": 74.20 }
-```
-
----
-
-### Alertes
-
-#### `GET /api/alerts`
-```json
-// 200 OK
-[{ "id": "...", "title": "Assurance expire bientôt", "message": "...",
-   "type": "DOCUMENT_EXPIRY", "isRead": false, "dueDate": "2026-03-01" }]
-```
-
-#### `PUT /api/alerts/:id` — Marquer comme lu
-```json
-// Body
-{ "isRead": true }
-// 200 OK → alerte mise à jour
-```
-
----
-
-### Lookup plaque
-
-#### `GET /api/brands/plate/:plate`
-```json
-// Exemple : GET /api/brands/plate/AB-123-CD
-// 200 OK
-{ "licensePlate": "AB-123-CD", "brand": "Peugeot", "model": "308", "year": 2020,
-  "fuelType": "DIESEL", "color": "Gris", "horsepower": 130, "doors": 5 }
-// 404 si plaque non trouvée
-```
-
----
-
-## Déployer
+### Installation rapide (< 30 min)
 
 ```bash
-# Déployer sur Fly.io (Docker multi-stage automatique)
+# 1. Installer toutes les dépendances (racine + backend + frontend)
+npm run install:all
+
+# 2. Configurer les variables d'environnement
+cp backend/.env.example backend/.env
+# Renseigner au minimum : DATABASE_URL, JWT_SECRET
+
+# 3. Appliquer les migrations Prisma
+cd backend
+npx prisma migrate dev
+cd ..
+
+# 4. Lancer backend (:3001) + frontend (:5173)
+npm run dev
+```
+
+| Service | URL |
+|---------|-----|
+| Frontend | http://localhost:5173 |
+| API | http://localhost:3001 |
+| Swagger UI | http://localhost:3001/api/docs |
+| OpenAPI JSON | http://localhost:3001/api/docs.json |
+| Prisma Studio | `cd backend && npx prisma studio` |
+
+> Le frontend proxifie automatiquement `/api` et `/uploads` vers le backend via Vite (`frontend/vite.config.js`).
+
+### Base de données E2E (tests locaux)
+
+```bash
+createdb carvault_e2e
+npm run test:e2e
+```
+
+Playwright démarre automatiquement le backend et le frontend avec une base dédiée (jamais la prod).
+
+### Docker Compose (tout-en-un)
+
+Alternative sans installer Node.js ni PostgreSQL localement : une seule commande lance la base, applique les migrations et démarre l'app (frontend + API sur le même port).
+
+```bash
+# Optionnel : personnaliser le port ou le JWT
+cp .env.docker.example .env.docker
+
+# Construire et démarrer
+docker compose up --build
+
+# En arrière-plan
+docker compose up --build -d
+```
+
+| Service | URL |
+|---------|-----|
+| Application (frontend + API) | http://localhost:8080 |
+| Swagger UI | http://localhost:8080/api/docs |
+| Health check | http://localhost:8080/api/health |
+
+```bash
+# Arrêter
+docker compose down
+
+# Arrêter et supprimer les volumes (BDD + uploads)
+docker compose down -v
+```
+
+**Ce qui est inclus :** PostgreSQL 16, migrations Prisma automatiques, volume persistant pour les uploads.
+
+**Ce qui n'est pas inclus :** hot-reload (c'est un build production). Pour développer avec rechargement à chaud, utiliser `npm run dev`.
+
+---
+
+## Variables d'environnement
+
+### Backend (`backend/.env`)
+
+Copier depuis `backend/.env.example`. Variables **obligatoires** :
+
+| Variable | Description |
+|----------|-------------|
+| `DATABASE_URL` | URL PostgreSQL (`?sslmode=require` pour Neon) |
+| `JWT_SECRET` | Secret de signature JWT (fort, unique en prod) |
+
+Variables **recommandées** :
+
+| Variable | Description | Défaut |
+|----------|-------------|--------|
+| `JWT_EXPIRES_IN` | Durée de vie du JWT | `7d` |
+| `PORT` | Port du serveur | `3001` (dev) / `8080` (prod) |
+| `APP_URL` | URL publique du site (liens email, reset password) | `http://localhost:5173` |
+| `CORS_ORIGIN` | Origines autorisées (séparées par virgule) | `http://localhost:5173` |
+| `UPLOAD_DIR` | Dossier uploads local | `./uploads` |
+
+Variables **optionnelles** (fonctionnalités avancées) :
+
+| Variable | Fonctionnalité |
+|----------|----------------|
+| `RAPIDAPI_KEY` | Recherche par plaque d'immatriculation |
+| `CARAPI_TOKEN` / `CARAPI_SECRET` | Catalogue marques/modèles |
+| `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `R2_PUBLIC_URL` | Stockage Cloudflare R2 (prod) |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` | Emails (reset password, digest) |
+| `FEEDBACK_EMAIL` | Réception des idées utilisateur |
+| `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` | Notifications Web Push |
+| `STRIPE_SECRET_KEY`, `STRIPE_PRICE_ID`, `STRIPE_PRICE_ID_YEARLY`, `STRIPE_WEBHOOK_SECRET` | Abonnement Premium (web) |
+| `REVENUECAT_SECRET_API_KEY`, `REVENUECAT_ENTITLEMENT_ID`, `REVENUECAT_WEBHOOK_AUTH` | Abonnement iOS |
+| `SENTRY_DSN`, `SENTRY_RELEASE` | Monitoring backend |
+| `SWAGGER_ENABLED` | Forcer Swagger en prod (`true`/`false`) |
+
+### Frontend (`frontend/.env`)
+
+Copier depuis `frontend/.env.example` :
+
+| Variable | Description |
+|----------|-------------|
+| `VITE_API_URL` | URL de l'API (`/api` en dev via proxy, URL absolue en prod) |
+| `VITE_PUBLIC_APP_URL` | URL publique de l'app |
+| `VITE_STORAGE_PUBLIC_URL` | URL publique R2 (si différente de l'API) |
+| `VITE_SENTRY_DSN` | Monitoring frontend |
+| `VITE_IOS_SUBSCRIPTIONS_ENABLED` | Activer RevenueCat sur iOS |
+| `VITE_REVENUECAT_IOS_API_KEY` | Clé publique RevenueCat iOS |
+
+---
+
+## Base de données (Prisma)
+
+### Modèles principaux
+
+| Modèle | Rôle |
+|--------|------|
+| `Utilisateur` | Compte, préférences notif, statut Premium |
+| `Vehicule` | Véhicule (marque, modèle, km, plaque, config entretien…) |
+| `Document` | Fichier + type + date d'expiration + rappels |
+| `Depense` | Dépense catégorisée liée à un véhicule |
+| `EntreeKilometrage` | Historique kilométrique |
+| `EntreeCarburant` | Suivi des pleins |
+| `Alerte` | Notification in-app (avec snooze) |
+| `LienPartage` | Lien public de partage de dossier |
+| `AbonnementPush` | Subscription Web Push |
+| `RefreshToken` | Refresh token JWT |
+| `PasswordResetToken` | Token de réinitialisation mot de passe |
+
+### Commandes courantes
+
+```bash
+cd backend
+
+npx prisma migrate dev          # Créer/appliquer une migration (dev)
+npx prisma migrate deploy       # Appliquer les migrations (prod / CI)
+npx prisma generate             # Régénérer le client Prisma
+npx prisma studio               # Interface graphique BDD
+npx prisma validate             # Valider le schéma
+```
+
+---
+
+## API REST
+
+**Authentification :** toutes les routes (sauf auth publique, share public, health, webhooks) requièrent :
+
+```
+Authorization: Bearer <JWT>
+```
+
+**Format :** JSON (sauf upload `multipart/form-data`).
+
+**Erreurs communes :** `400` validation · `401` token invalide · `404` introuvable · `429` rate limit · `500` erreur serveur.
+
+### Documentation interactive
+
+La spec complète est maintenue dans `backend/src/docs/openapi.yaml` et exposée via Swagger :
+
+- **Swagger UI :** http://localhost:3001/api/docs
+- **JSON brut :** http://localhost:3001/api/docs.json
+
+Désactiver Swagger : `SWAGGER_ENABLED=false` dans `backend/.env`.
+
+### Routes principales
+
+| Préfixe | Description |
+|---------|-------------|
+| `GET /api/health` | Santé du serveur |
+| `/api/auth/*` | Inscription, login, refresh, profil, reset password, suppression compte |
+| `/api/vehicles/*` | CRUD véhicules, PDF dossier revente, score santé |
+| `/api/documents/*` | CRUD documents (upload multipart) |
+| `/api/expenses/*` | CRUD dépenses + statistiques |
+| `/api/alerts/*` | Liste, lecture, snooze des alertes |
+| `/api/dashboard/*` | Données agrégées du tableau de bord |
+| `/api/brands/*` | Marques/modèles CarAPI + lookup plaque |
+| `/api/vehicles/:id/mileage/*` | Historique kilométrage |
+| `/api/vehicles/:id/fuel/*` | Suivi carburant |
+| `/api/share/*` | Création et consultation de liens de partage |
+| `/api/notifications/*` | Préférences de notification |
+| `/api/subscription/*` | Statut Premium, checkout Stripe, webhooks |
+| `/api/badges/*` | Badges de gamification |
+| `/api/push/*` | Web Push (clé VAPID, subscription) |
+| `/api/cote/*` | Cote La Centrale |
+| `/api/feedback/*` | Envoi d'idées utilisateur |
+
+### Auth — flux refresh token
+
+```
+POST /api/auth/login     → { token, refreshToken, user }
+POST /api/auth/refresh   → { token, refreshToken }      (renouvellement)
+POST /api/auth/logout    → invalide le refresh token
+```
+
+---
+
+## Tâches planifiées (cron)
+
+Les jobs tournent dans le processus backend au démarrage (`backend/src/index.js`) :
+
+| Job | Fichier | Fréquence | Rôle |
+|-----|---------|-----------|------|
+| Alertes intelligentes | `alert.cron.js` | Quotidien | Expiration docs, entretien, CT, vidange, pneus, ZFE… |
+| Digest hebdomadaire | `weekly-digest.cron.js` | Lundi 8h | Résumé email/push de la semaine |
+| Rapport mensuel | `monthly-report.cron.js` | 1er du mois | Bilan mensuel par email |
+| Engagement | `engagement.cron.js` | Périodique | Relances utilisateurs inactifs |
+| Budget & stats | `budget.cron.js` | Quotidien 9h | Pic dépenses, coût/km, budget carburant, records km |
+
+---
+
+## Abonnement Premium
+
+| Canal | Mécanisme | Limite gratuite |
+|-------|-----------|-----------------|
+| **Web** | Stripe Checkout + Customer Portal | 1 véhicule |
+| **iOS** | RevenueCat (In-App Purchase) | 1 véhicule |
+
+Les webhooks Stripe et RevenueCat sont enregistrés **avant** `express.json()` pour conserver le corps brut.
+
+---
+
+## Apps mobiles (Capacitor)
+
+L'app native iOS/Android embarque le build Vite de `frontend/dist`.
+
+```bash
+# 1. Variables frontend pour un build store/prod
+cp frontend/.env.example frontend/.env
+# VITE_API_URL="https://carvio.fr/api"
+# VITE_PUBLIC_APP_URL="https://carvio.fr"
+
+# 2. Build web + sync projets natifs
+npm run cap:sync
+
+# 3. Ouvrir les projets natifs
+npm run cap:open:ios       # Xcode (ios/)
+npm run cap:open:android   # Android Studio (android/)
+```
+
+**Publication :**
+- **iOS** — finaliser dans Xcode (`ios/App`) : équipe Apple Developer, signing, archive App Store
+- **Android** — finaliser dans Android Studio : package `fr.carvio.app`, keystore release, AAB Play Store
+- Les notifications actuelles sont du **Web Push** (PWA) ; APNs/FCM natif reste à traiter séparément
+
+---
+
+## Tests
+
+### Tests E2E (Playwright)
+
+8 parcours couvrant le flux principal :
+
+| Fichier | Scénario |
+|---------|----------|
+| `01-public.spec.js` | Pages publiques (landing, pricing…) |
+| `02-register.spec.js` | Inscription |
+| `03-login.spec.js` | Connexion |
+| `04-vehicle.spec.js` | Ajout véhicule |
+| `05-document.spec.js` | Upload document |
+| `06-expense.spec.js` | Ajout dépense |
+| `07-alerts.spec.js` | Centre d'alertes |
+| `08-auth-guard.spec.js` | Protection des routes |
+
+```bash
+# Prérequis : PostgreSQL local avec base carvault_e2e
+createdb carvault_e2e
+
+npm run test:e2e              # Lancer les tests
+npm run test:e2e:report       # Ouvrir le rapport HTML
+```
+
+### Lint
+
+```bash
+cd backend && npm run lint
+cd frontend && npm run lint
+```
+
+---
+
+## Déploiement
+
+### Fly.io (production actuelle)
+
+```bash
+# Déployer (build Docker multi-stage automatique)
 fly deploy
 
-# Configurer les secrets en production
-fly secrets set DATABASE_URL="..." JWT_SECRET="..." RAPIDAPI_KEY="..."
-.gitignore
+# Secrets obligatoires
+fly secrets set \
+  DATABASE_URL="postgresql://..." \
+  JWT_SECRET="..." \
+  APP_URL="https://carvio.fr" \
+  CORS_ORIGIN="https://carvio.fr,capacitor://localhost,ionic://localhost"
+
+# Secrets optionnels (selon fonctionnalités activées)
+fly secrets set RAPIDAPI_KEY="..." CARAPI_TOKEN="..." CARAPI_SECRET="..."
+fly secrets set R2_ACCOUNT_ID="..." R2_ACCESS_KEY_ID="..." R2_SECRET_ACCESS_KEY="..." R2_BUCKET_NAME="..." R2_PUBLIC_URL="..."
+fly secrets set SMTP_HOST="..." SMTP_USER="..." SMTP_PASS="..." SMTP_FROM="..."
+fly secrets set STRIPE_SECRET_KEY="..." STRIPE_WEBHOOK_SECRET="..." STRIPE_PRICE_ID="..."
+fly secrets set VAPID_PUBLIC_KEY="..." VAPID_PRIVATE_KEY="..."
+fly secrets set SENTRY_DSN="..."
+```
+
+**Config Fly.io** (`fly.toml`) :
+- App : `carvault`, région : `cdg`
+- Port interne : `8080`
+- Volume monté : `/app/backend/uploads` (fallback si R2 non configuré)
+- `release_command` : `npx prisma migrate deploy` (migrations auto au deploy)
+
+### Docker local
+
+```bash
+docker build -t carvio .
+docker run -p 8080:8080 --env-file backend/.env carvio
+```
+
+---
+
+## CI/CD
+
+Pipeline GitHub Actions (`.github/workflows/deploy.yml`) déclenché à chaque push sur `main` :
+
+```
+1. Vérifier le code   → lint backend + frontend, prisma validate, build frontend
+2. Tests E2E          → Playwright (8 parcours) avec PostgreSQL éphémère
+3. Déployer Fly.io    → fly deploy (avec retry sur erreurs 408 transitoires)
+```
+
+Secrets GitHub requis : `FLY_API_TOKEN`.
+
+---
+
+## Scripts utiles
+
+| Commande | Description |
+|----------|-------------|
+| `npm run dev` | Backend + frontend en parallèle |
+| `npm run dev:backend` | Backend seul (nodemon) |
+| `npm run dev:frontend` | Frontend seul (Vite) |
+| `npm run install:all` | Installer toutes les dépendances |
+| `npm run build:frontend` | Build production frontend |
+| `npm run cap:sync` | Build + `cap sync` |
+| `npm run cap:open:ios` | Ouvrir Xcode |
+| `npm run cap:open:android` | Ouvrir Android Studio |
+| `npm run db:migrate` | `prisma migrate dev` |
+| `npm run test:e2e` | Tests Playwright |
+| `docker compose up --build` | Lancer l'app complète (PostgreSQL + API + frontend) |
+| `docker compose down` | Arrêter les conteneurs |
+
+---
+
+## Licence
+
+Projet privé — tous droits réservés.

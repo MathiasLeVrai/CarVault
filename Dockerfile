@@ -23,6 +23,13 @@ RUN cd backend && npx prisma generate
 # Copy backend source
 COPY backend/src ./backend/src
 
+# Prisma CLI (devDependency) requis pour migrate deploy au démarrage (Docker Compose / Fly release_command)
+RUN cd backend && npm install prisma@6 --no-save
+
+# Entrypoint Docker Compose (migrations + démarrage)
+COPY docker/entrypoint.sh ./backend/docker/entrypoint.sh
+RUN chmod +x /app/backend/docker/entrypoint.sh
+
 # Copy frontend build from stage 1
 COPY --from=frontend-build /app/frontend/dist ./frontend/dist
 
