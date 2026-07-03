@@ -3,7 +3,7 @@ const pdfService = require('../services/pdf.service');
 const healthService = require('../services/health.service');
 const storageService = require('../services/storage.service');
 const prisma = require('../lib/prisma');
-const { getMaintenanceIntervals } = require('../data/vehicles');
+const { getMaintenanceIntervals, getApplicableMaintenanceItems } = require('../data/vehicles');
 const { computeCritAir } = require('../services/critair.service');
 const {
   buildMaintenancePlan,
@@ -173,6 +173,12 @@ class VehicleController {
     }
   }
 
+  async getMaintenanceTypes(req, res) {
+    const fuelType = req.query.fuelType || 'GASOLINE';
+    const brand = req.query.brand || '';
+    res.json(getApplicableMaintenanceItems(brand, fuelType));
+  }
+
   async getMaintenancePlan(req, res, next) {
     try {
       const vehicle = await prisma.vehicle.findFirst({
@@ -203,10 +209,11 @@ class VehicleController {
 
       const data = {};
       if (intervals && typeof intervals === 'object') {
-        const validKeys = Object.keys(MAINTENANCE_LABELS);
+        const applicable = getMaintenanceIntervals(vehicle.brand, vehicle.fuelType || 'GASOLINE');
         const clean = {};
         for (const [k, v] of Object.entries(intervals)) {
-          if (!validKeys.includes(k)) continue;
+          if (applicable[k] == null && v !== null) continue;
+          if (!MAINTENANCE_LABELS[k]) continue;
           clean[k] = v === null ? null : parseInt(v);
         }
         data.maintenanceConfig = clean;

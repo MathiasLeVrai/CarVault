@@ -287,6 +287,7 @@ export const vehicleApi = {
   delete: (id) => api.delete(`/vehicles/${id}`),
   backfill: () => api.post('/vehicles/backfill'),
   getMaintenancePlan: (id) => api.get(`/vehicles/${id}/maintenance`),
+  getMaintenanceTypes: (fuelType, brand = '') => api.get(`/vehicles/maintenance-types?fuelType=${fuelType}${brand ? `&brand=${encodeURIComponent(brand)}` : ''}`),
   updateMaintenancePlan: (id, { intervals, lastKm } = {}) => api.put(`/vehicles/${id}/maintenance`, { intervals, lastKm }),
   markMaintenanceDone: (id, key, lastKm) => api.post(`/vehicles/${id}/maintenance/${key}/mark-done`, lastKm != null ? { lastKm } : {}),
   downloadPdf: async (id) => {

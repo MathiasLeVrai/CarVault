@@ -10,6 +10,7 @@ const { computeCritAir } = require('../services/critair.service');
 router.use(authenticate);
 
 router.get('/', vehicleController.getAll);
+router.get('/maintenance-types', vehicleController.getMaintenanceTypes);
 
 // POST /api/vehicles/backfill — Met à jour Crit'Air, puissance fiscale, CO2 pour les véhicules existants
 router.post('/backfill', async (req, res, next) => {

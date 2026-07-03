@@ -15,15 +15,6 @@ import PremiumModal from '../components/PremiumModal';
 import { shouldShowSubscriptions } from '../services/purchases';
 
 
-const MAINTENANCE_ITEMS = [
-  { key: 'oilChange', label: 'Vidange' },
-  { key: 'brakes', label: 'Plaquettes de frein' },
-  { key: 'timingBelt', label: 'Courroie de distribution' },
-  { key: 'tires', label: 'Pneus' },
-  { key: 'generalService', label: 'Révision générale' },
-  { key: 'airFilter', label: 'Filtre à air' },
-];
-
 const fuelOpts = [
   { value: 'GASOLINE', label: 'Essence' },
   { value: 'DIESEL', label: 'Diesel' },
@@ -89,6 +80,7 @@ export default function VehiclesPage() {
   const [maintenanceUpToDate, setMaintenanceUpToDate] = useState(false);
   const [maintenanceBaselines, setMaintenanceBaselines] = useState({});
   const [showMaintenanceBaselines, setShowMaintenanceBaselines] = useState(false);
+  const [maintenanceItems, setMaintenanceItems] = useState([]);
 
   const [brands, setBrands] = useState([]);
   const [models, setModels] = useState([]);
@@ -97,6 +89,25 @@ export default function VehiclesPage() {
   const [loadingTrims, setLoadingTrims] = useState(false);
 
   useEffect(() => { loadVehicles(); loadBrands(); }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    vehicleApi.getMaintenanceTypes(form.fuelType, form.brand)
+      .then((items) => {
+        if (cancelled) return;
+        setMaintenanceItems(items);
+        setMaintenanceBaselines((prev) => {
+          const keys = new Set(items.map((i) => i.key));
+          const next = {};
+          for (const [k, v] of Object.entries(prev)) {
+            if (keys.has(k)) next[k] = v;
+          }
+          return next;
+        });
+      })
+      .catch(() => { if (!cancelled) setMaintenanceItems([]); });
+    return () => { cancelled = true; };
+  }, [form.fuelType, form.brand]);
 
   const loadVehicles = async () => {
     try { setVehicles(await vehicleApi.getAll()); } catch (e) { console.error('Erreur chargement véhicules:', e); } finally { setLoading(false); }
@@ -206,7 +217,7 @@ export default function VehiclesPage() {
     if (checked) {
       const m = form.mileage ? String(form.mileage) : '';
       const all = {};
-      MAINTENANCE_ITEMS.forEach(({ key }) => { if (m) all[key] = m; });
+      maintenanceItems.forEach(({ key }) => { if (m) all[key] = m; });
       setMaintenanceBaselines(all);
       setShowMaintenanceBaselines(true);
     }
@@ -421,9 +432,9 @@ export default function VehiclesPage() {
                   </div>
                   <span className="text-xs text-white/40">{showMaintenanceBaselines ? 'Masquer' : 'Configurer'}</span>
                 </button>
-                {showMaintenanceBaselines && (
+                {showMaintenanceBaselines && maintenanceItems.length > 0 && (
                   <div className="px-4 pb-4 grid grid-cols-1 sm:grid-cols-2 gap-3 border-t border-white/5 pt-3">
-                    {MAINTENANCE_ITEMS.map(({ key, label }) => (
+                    {maintenanceItems.map(({ key, label }) => (
                       <Input
                         key={key}
                         label={label}

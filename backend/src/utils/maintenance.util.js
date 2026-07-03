@@ -21,7 +21,15 @@ function findLastExpenseForType(expenses, maintenanceKey) {
 function getMergedIntervals(vehicle) {
   const defaults = getMaintenanceIntervals(vehicle.brand, vehicle.fuelType || 'GASOLINE');
   const custom = vehicle.maintenanceConfig || {};
-  return { defaults, custom, intervals: { ...defaults, ...custom } };
+  const intervals = {};
+
+  for (const [key, defaultVal] of Object.entries(defaults)) {
+    if (defaultVal == null) continue;
+    const customVal = custom[key];
+    intervals[key] = customVal !== undefined && customVal !== null ? customVal : defaultVal;
+  }
+
+  return { defaults, custom, intervals };
 }
 
 function getLastServiceKm(vehicle, key, lastExpense) {

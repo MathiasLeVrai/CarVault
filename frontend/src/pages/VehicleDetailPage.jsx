@@ -16,7 +16,7 @@ import VehicleValuation from '../components/vehicle/VehicleValuation';
 import ShareModal from '../components/vehicle/ShareModal';
 import compressImage from '../utils/compressImage';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { formatCurrency, formatDateShort, documentTypeLabels, expenseCategoryLabels } from '../utils/helpers';
+import { formatCurrency, formatDateShort, documentTypeLabels, expenseCategoryLabels, fuelTypeLabels } from '../utils/helpers';
 import { motion as Motion } from 'framer-motion';
 
 const fuelOpts = [{ value: 'GASOLINE', label: 'Essence' },{ value: 'DIESEL', label: 'Diesel' },{ value: 'HYBRID', label: 'Hybride' },{ value: 'ELECTRIC', label: 'Électrique' },{ value: 'LPG', label: 'GPL' },{ value: 'OTHER', label: 'Autre' }];
@@ -214,6 +214,7 @@ export default function VehicleDetailPage() {
       <MaintenancePlanCard
         vehicleId={id}
         brand={v.brand}
+        fuelTypeLabel={fuelTypeLabels[v.fuelType]}
         maintenancePlan={maintenancePlan}
         setMaintenancePlan={setMaintenancePlan}
         variants={itemVariants}
