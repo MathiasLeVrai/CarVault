@@ -3,7 +3,7 @@
  * Cache les ressources statiques et les réponses API pour le mode offline.
  */
 
-const CACHE_VERSION = 'carvio-v2';
+const CACHE_VERSION = 'carvio-v3';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const API_CACHE = `${CACHE_VERSION}-api`;
 const UPLOADS_CACHE = `${CACHE_VERSION}-uploads`;

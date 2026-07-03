@@ -11,6 +11,7 @@ import {
 
 import { PRICING } from '../constants/pricing';
 import { useTheme } from '../context/ThemeContext';
+import CarvioLogo, { CarvioBrand } from '../components/CarvioLogo';
 
 /* ─── Data ──────────────────────────────────────────────────── */
 
@@ -476,12 +477,12 @@ export default function LandingPage() {
 
       {/* ── Navbar ───────────────────────────────────────────── */}
       <header className="relative z-10 flex items-center justify-between px-6 md:px-12 py-5 border-b border-white/[0.05]">
-        <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-accent flex items-center justify-center shadow-[0_0_20px_rgba(255,42,63,0.35)]">
-            <span className="text-xs font-black text-white font-display">CV</span>
-          </div>
-          <span className="text-lg font-bold font-display tracking-tight">Carvio</span>
-        </div>
+        <CarvioBrand
+          to="/"
+          variant="on-dark"
+          logoClassName="h-9 w-9"
+          textClassName="text-lg font-bold font-display tracking-tight text-white"
+        />
         <nav className="flex items-center gap-3">
           <a href="#pricing" className="px-4 py-2.5 text-sm font-semibold text-white/50 hover:text-white transition-[color] duration-150 hidden sm:block">
             Tarifs
@@ -744,9 +745,7 @@ export default function LandingPage() {
               <div className="col-span-1" />
               <div className="text-center">
                 <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-accent/10 border border-accent/20">
-                  <div className="w-4 h-4 rounded bg-accent flex items-center justify-center">
-                    <span className="text-[8px] font-black text-white">CV</span>
-                  </div>
+                  <CarvioLogo variant="on-dark" className="h-4 w-4" alt="" />
                   <span className="text-xs font-bold text-white">Carvio</span>
                 </div>
               </div>
@@ -946,15 +945,13 @@ export default function LandingPage() {
       {/* ── Footer ───────────────────────────────────────────── */}
       <footer className="relative z-10 border-t border-white/[0.05] px-6 md:px-12 py-8">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-accent/90 flex items-center justify-center shadow-[0_0_14px_rgba(255,42,63,0.3)]">
-              <span className="text-[10px] font-black text-white font-display">CV</span>
-            </div>
+          <Link to="/" className="flex items-center gap-2.5 transition-opacity hover:opacity-90">
+            <CarvioLogo variant="on-dark" className="h-8 w-8" alt="" />
             <div>
               <span className="text-sm font-bold font-display text-white">Carvio</span>
               <p className="text-[10px] text-white/25 font-medium">Le coffre-fort de votre automobile</p>
             </div>
-          </div>
+          </Link>
 
           <p className="text-xs text-white/20 font-medium order-last md:order-none">
             © {new Date().getFullYear()} Carvio

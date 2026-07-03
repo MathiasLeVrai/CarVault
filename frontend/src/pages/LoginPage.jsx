@@ -5,6 +5,7 @@ import { motion as Motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { ArrowRight } from 'lucide-react';
 import Button from '../components/ui/Button';
+import { CarvioBrand } from '../components/CarvioLogo';
 
 const STATS = [
   { value: '2 400+', label: 'utilisateurs' },
@@ -42,10 +43,14 @@ export default function LoginPage() {
             initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/[0.04] border border-white/10 mb-10"
+            className="mb-10"
           >
-            <span className="text-sm font-black text-accent font-display">CV</span>
-            <span className="text-sm font-bold text-white/70">Carvio</span>
+            <CarvioBrand
+              variant="on-dark"
+              className="inline-flex items-center gap-2.5 px-4 py-2 rounded-lg bg-white/[0.04] border border-white/10"
+              logoClassName="h-8 w-8"
+              textClassName="text-sm font-bold text-white/70"
+            />
           </Motion.div>
 
           {/* Headline */}
@@ -89,10 +94,12 @@ export default function LoginPage() {
         <div className="w-full max-w-[400px] relative z-10">
           {/* Mobile brand */}
           <div className="lg:hidden mb-10">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/[0.03] border border-white/10">
-              <span className="text-sm font-black text-accent font-display">CV</span>
-              <span className="text-sm font-bold text-white">Carvio</span>
-            </div>
+            <CarvioBrand
+              variant="on-dark"
+              className="inline-flex items-center gap-2.5 px-4 py-2 rounded-lg bg-white/[0.03] border border-white/10"
+              logoClassName="h-8 w-8"
+              textClassName="text-sm font-bold text-white"
+            />
           </div>
 
           <h2 className="text-3xl md:text-4xl font-black text-white mb-2 font-display tracking-tight">Connexion</h2>

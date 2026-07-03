@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Shield } from 'lucide-react';
+import { CarvioBrand } from '../components/CarvioLogo';
 
 const CONTACT_EMAIL = 'contact@carvio.fr';
 const LAST_UPDATED = '25 juin 2026';
@@ -20,12 +21,12 @@ export default function PrivacyPage() {
     <div className="public-screen bg-bg text-ink overflow-x-hidden">
       {/* Navbar */}
       <header className="relative z-10 flex items-center justify-between px-6 md:px-12 py-5 border-b border-white/[0.05]">
-        <Link to="/" className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-accent flex items-center justify-center shadow-[0_0_20px_rgba(255,42,63,0.35)]">
-            <span className="text-xs font-black text-white font-display">CV</span>
-          </div>
-          <span className="text-lg font-bold font-display tracking-tight">Carvio</span>
-        </Link>
+        <CarvioBrand
+          to="/"
+          variant="on-dark"
+          logoClassName="h-9 w-9"
+          textClassName="text-lg font-bold font-display tracking-tight text-white"
+        />
         <nav className="flex items-center gap-3">
           <Link to="/" className="px-4 py-2 text-sm font-semibold text-ink-muted hover:text-ink transition-colors hidden sm:flex items-center gap-1.5">
             <ArrowLeft className="w-3.5 h-3.5" /> Accueil
@@ -190,12 +191,12 @@ export default function PrivacyPage() {
       {/* Footer */}
       <footer className="relative z-10 border-t border-white/[0.05] px-6 md:px-12 py-8">
         <div className="max-w-3xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-accent/90 flex items-center justify-center shadow-[0_0_14px_rgba(255,42,63,0.3)]">
-              <span className="text-[10px] font-black text-white font-display">CV</span>
-            </div>
-            <span className="text-sm font-bold font-display text-white">Carvio</span>
-          </div>
+          <CarvioBrand
+            to="/"
+            variant="on-dark"
+            logoClassName="h-8 w-8"
+            textClassName="text-sm font-bold font-display text-white"
+          />
           <p className="text-xs text-white/20 font-medium">
             © {new Date().getFullYear()} Carvio
           </p>

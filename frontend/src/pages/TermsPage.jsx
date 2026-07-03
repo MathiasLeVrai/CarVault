@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, FileText } from 'lucide-react';
 import { CONTACT_EMAIL, LEGAL_LAST_UPDATED } from '../constants/legal';
+import { CarvioBrand } from '../components/CarvioLogo';
 
 function Section({ id, title, children }) {
   return (
@@ -17,12 +18,12 @@ export default function TermsPage() {
   return (
     <div className="public-screen bg-bg text-ink overflow-x-hidden">
       <header className="relative z-10 flex items-center justify-between px-6 md:px-12 py-5 border-b border-white/[0.05]">
-        <Link to="/" className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-accent flex items-center justify-center shadow-[0_0_20px_rgba(255,42,63,0.35)]">
-            <span className="text-xs font-black text-white font-display">CV</span>
-          </div>
-          <span className="text-lg font-bold font-display tracking-tight">Carvio</span>
-        </Link>
+        <CarvioBrand
+          to="/"
+          variant="on-dark"
+          logoClassName="h-9 w-9"
+          textClassName="text-lg font-bold font-display tracking-tight text-white"
+        />
         <nav className="flex items-center gap-3">
           <Link to="/" className="px-4 py-2 text-sm font-semibold text-ink-muted hover:text-ink transition-colors hidden sm:flex items-center gap-1.5">
             <ArrowLeft className="w-3.5 h-3.5" /> Accueil
@@ -143,7 +144,12 @@ export default function TermsPage() {
 
       <footer className="relative z-10 border-t border-white/[0.05] px-6 md:px-12 py-8">
         <div className="max-w-3xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-          <span className="text-sm font-bold font-display text-white">Carvio</span>
+          <CarvioBrand
+            to="/"
+            variant="on-dark"
+            logoClassName="h-8 w-8"
+            textClassName="text-sm font-bold font-display text-white"
+          />
           <p className="text-xs text-white/20 font-medium">© {new Date().getFullYear()} Carvio</p>
           <div className="flex gap-4">
             <Link to="/privacy" className="text-xs text-white/30 hover:text-white/60 transition-colors font-medium">Confidentialité</Link>

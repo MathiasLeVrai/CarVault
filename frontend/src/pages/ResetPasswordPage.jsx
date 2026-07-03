@@ -5,6 +5,7 @@ import { motion as Motion } from 'framer-motion';
 import { ArrowLeft, CheckCircle } from 'lucide-react';
 import { authApi } from '../services/api';
 import Button from '../components/ui/Button';
+import { CarvioBrand } from '../components/CarvioLogo';
 
 export default function ResetPasswordPage() {
   const [searchParams] = useSearchParams();
@@ -63,10 +64,13 @@ export default function ResetPasswordPage() {
       <div className="w-full max-w-[400px]">
         {/* Brand */}
         <div className="mb-10">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/[0.03] border border-white/10">
-            <span className="text-sm font-black text-accent font-display">CV</span>
-            <span className="text-sm font-bold text-white">Carvio</span>
-          </div>
+          <CarvioBrand
+            to="/"
+            variant="on-dark"
+            className="inline-flex items-center gap-2.5 px-4 py-2 rounded-lg bg-white/[0.03] border border-white/10"
+            logoClassName="h-8 w-8"
+            textClassName="text-sm font-bold text-white"
+          />
         </div>
 
         {success ? (
