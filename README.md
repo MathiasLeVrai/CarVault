@@ -103,7 +103,9 @@ npm run cap:open:android
 ```
 
 Notes publication :
-- iOS se finalise dans Xcode (`ios/App`) avec l'équipe Apple Developer, le signing et l'archive App Store.
+- Le projet iOS canonique est `frontend/ios/App` (Capacitor 8.4.x, activement maintenu). Il se synchronise depuis `frontend/` avec `cd frontend && npx cap sync ios`, puis se finalise dans Xcode avec l'équipe Apple Developer, le signing et l'archive App Store.
+- Les permissions iOS (caméra, photothèque, localisation) sont déclarées dans `frontend/capacitor.config.json` (`ios.infoPlist`) et dans `frontend/ios/App/App/Info.plist`. Toute nouvelle permission doit être ajoutée à ces deux fichiers, sinon l'app crash au premier accès (kill TCC par iOS).
+- Le dossier `ios/` à la racine est un ancien échafaudage inutilisé (build initial, jamais mis à jour) : ne pas l'archiver. À supprimer une fois confirmé qu'il n'est plus référencé.
 - Android se finalise dans Android Studio (`android`) avec le package `fr.carvio.app`, le keystore de release et l'AAB Play Store.
 - Les notifications actuelles restent du Web Push/PWA ; APNs/FCM natif est à traiter séparément.
 

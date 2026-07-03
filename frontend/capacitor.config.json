@@ -4,6 +4,9 @@
   "webDir": "dist",
   "ios": {
     "infoPlist": {
+      "NSCameraUsageDescription": "Carvio utilise l'appareil photo pour ajouter des photos de véhicules et documents.",
+      "NSPhotoLibraryUsageDescription": "Carvio utilise votre photothèque pour sélectionner des photos de véhicules et documents.",
+      "NSPhotoLibraryAddUsageDescription": "Carvio peut enregistrer des exports PDF ou images si vous le demandez.",
       "NSLocationWhenInUseUsageDescription": "Carvio utilise votre position pour afficher la carte et trouver les stations-service et services automobiles à proximité.",
       "NSLocationAlwaysAndWhenInUseUsageDescription": "Carvio utilise votre position pour afficher la carte et trouver les stations-service et services automobiles à proximité."
     }

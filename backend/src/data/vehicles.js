@@ -18,13 +18,36 @@ const DEFAULT_MAINTENANCE = {
 };
 
 // Intervalles spécifiques par type de carburant
+// null = entretien non applicable pour ce type de véhicule
 const FUEL_MAINTENANCE = {
-  GASOLINE: { oilChange: 15000, sparkPlugs: 45000 },
-  DIESEL:   { oilChange: 20000, sparkPlugs: null },  // Pas de bougies diesel
-  HYBRID:   { oilChange: 20000, sparkPlugs: 60000 },
-  ELECTRIC: { oilChange: null, sparkPlugs: null, timingBelt: null, coolant: null, airFilter: null },
-  LPG:      { oilChange: 10000, sparkPlugs: 30000 },
-  OTHER:    { oilChange: 15000, sparkPlugs: 45000 },
+  GASOLINE: {
+    oilChange: 15000,
+    sparkPlugs: 45000,
+  },
+  DIESEL: {
+    oilChange: 20000,
+    sparkPlugs: null, // Pas de bougies d'allumage (diesel = bougies de préchauffage, entretien rare)
+  },
+  HYBRID: {
+    oilChange: 20000,
+    sparkPlugs: 60000,
+  },
+  ELECTRIC: {
+    oilChange: null,
+    sparkPlugs: null,
+    timingBelt: null,
+    airFilter: null,
+    generalService: null,
+    // Conservés : brakes, tires, cabinFilter, coolant (circuit thermique batterie)
+  },
+  LPG: {
+    oilChange: 10000,
+    sparkPlugs: 30000,
+  },
+  OTHER: {
+    oilChange: 15000,
+    sparkPlugs: 45000,
+  },
 };
 
 // Labels humains pour les types de maintenance
@@ -194,19 +217,17 @@ const vehicleBrands = [
 ];
 
 /**
- * Récupérer les intervalles de maintenance pour une marque donnée
+ * Récupérer les intervalles de maintenance pour une marque et un type de carburant
  */
 function getMaintenanceIntervals(brandName, fuelType = 'GASOLINE') {
   const brand = vehicleBrands.find(b => b.name.toLowerCase() === brandName.toLowerCase());
   const brandMaint = brand?.maintenance || {};
 
-  // Fusionner avec les défauts
   const intervals = { ...DEFAULT_MAINTENANCE, ...brandMaint };
 
-  // Ajuster la vidange selon le type de carburant
-  const fuelOverride = FUEL_MAINTENANCE[fuelType];
-  if (fuelOverride?.oilChange !== undefined) {
-    intervals.oilChange = fuelOverride.oilChange;
+  const fuelOverride = FUEL_MAINTENANCE[fuelType] || FUEL_MAINTENANCE.OTHER;
+  for (const [key, value] of Object.entries(fuelOverride)) {
+    intervals[key] = value;
   }
 
   return intervals;

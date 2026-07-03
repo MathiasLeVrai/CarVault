@@ -6,7 +6,7 @@ import { motion as Motion, AnimatePresence } from 'framer-motion';
 const statusColors = { ok: '#22c55e', soon: '#f59e0b', overdue: '#ff2a3f' };
 const statusLabels = { ok: 'OK', soon: 'Bientôt', overdue: 'Dépassé' };
 
-export default function MaintenancePlanCard({ vehicleId, brand, maintenancePlan, setMaintenancePlan, variants }) {
+export default function MaintenancePlanCard({ vehicleId, brand, fuelTypeLabel, maintenancePlan, setMaintenancePlan, variants }) {
   const [editingInterval, setEditingInterval] = useState(null);
   const [editIntervalValue, setEditIntervalValue] = useState('');
   const [showAll, setShowAll] = useState(false);
@@ -88,7 +88,9 @@ export default function MaintenancePlanCard({ vehicleId, brand, maintenancePlan,
           </div>
           <div>
             <h2 className="text-lg font-bold text-white font-display">Entretien préconisé</h2>
-            <p className="text-xs text-white/40">Basé sur {brand} — personnalisable</p>
+            <p className="text-xs text-white/40">
+              Basé sur {brand}{fuelTypeLabel ? ` (${fuelTypeLabel})` : ''} — personnalisable
+            </p>
           </div>
         </div>
       </div>
