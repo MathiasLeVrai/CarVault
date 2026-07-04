@@ -60,3 +60,14 @@ Tous les diagrammes sont en **PlantUML**. Rendu : `plantuml file.puml` ou [plant
 | Séquence — Stripe checkout | [uml-sequence-stripe.puml](uml-sequence-stripe.puml) | Paiement + webhook |
 | Séquence — Reset password | [uml-sequence-password-reset.puml](uml-sequence-password-reset.puml) | Flow email + token |
 | Séquence — Carte carburants | [uml-sequence-fuel-prices.puml](uml-sequence-fuel-prices.puml) | Cache + API gouv |
+| MCD (Modèle Conceptuel) | [mcd-carvault.puml](mcd-carvault.puml) | Entités + associations Merise |
+| MLD (Modèle Logique) | [mld-carvault.puml](mld-carvault.puml) | Tables PostgreSQL + FK |
+| MPD (Modèle Physique) | [mpd-carvault.puml](mpd-carvault.puml) | Types SQL, index, contraintes |
+
+### Export PDF (MCD / MLD / MPD)
+
+```bash
+./docs/design-system/generate-mcd-mld-pdf.sh
+```
+
+Produit `mcd-carvault.pdf`, `mld-carvault.pdf` et `mpd-carvault.pdf` dans le même dossier (nécessite Java).
