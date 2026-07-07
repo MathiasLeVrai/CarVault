@@ -5,24 +5,6 @@
  * Résultat : 0 (électrique/hydrogène) à 5 (plus polluant), ou null si inconnu
  */
 
-const CRITAIR_COLORS = {
-  0: '#4ade80', // Vert — électrique
-  1: '#a78bfa', // Violet
-  2: '#facc15', // Jaune
-  3: '#f97316', // Orange
-  4: '#b45309', // Marron
-  5: '#6b7280', // Gris
-};
-
-const CRITAIR_LABELS = {
-  0: 'Électrique / Hydrogène',
-  1: 'Crit\'Air 1',
-  2: 'Crit\'Air 2',
-  3: 'Crit\'Air 3',
-  4: 'Crit\'Air 4',
-  5: 'Crit\'Air 5',
-};
-
 /**
  * Calcule la vignette Crit'Air d'un véhicule
  * @param {string} fuelType - GASOLINE, DIESEL, HYBRID, ELECTRIC, LPG, OTHER
@@ -89,4 +71,4 @@ function computeCritAir(fuelType, firstRegistrationDate) {
   return null;
 }
 
-module.exports = { computeCritAir, CRITAIR_COLORS, CRITAIR_LABELS };
+module.exports = { computeCritAir };
