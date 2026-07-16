@@ -33,6 +33,25 @@ export default defineConfig([
     },
     rules: {
       'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]', argsIgnorePattern: '^_|^[A-Z]' }],
+      'no-eval': 'error',
+      'no-implied-eval': 'error',
+      'no-new-func': 'error',
+      'no-script-url': 'error',
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: "JSXAttribute[name.name='dangerouslySetInnerHTML']",
+          message: 'dangerouslySetInnerHTML is forbidden (XSS risk). Use text nodes or DOMPurify if HTML is required.',
+        },
+        {
+          selector: "AssignmentExpression[left.property.name='innerHTML']",
+          message: 'innerHTML is forbidden (XSS risk).',
+        },
+        {
+          selector: "MemberExpression[property.name='innerHTML'][parent.type='AssignmentExpression']",
+          message: 'innerHTML is forbidden (XSS risk).',
+        },
+      ],
     },
   },
 ])

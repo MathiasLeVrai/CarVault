@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { brandApi, getAssetUrl, vehicleApi } from '../services/api';
+import { queryKeys } from '../lib/query';
 import compressImage from '../utils/compressImage';
 import { useToast } from '../context/ToastContext';
 import Button from '../components/ui/Button';
@@ -50,8 +52,7 @@ export default function VehiclesPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const toast = useToast();
-  const [vehicles, setVehicles] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [showModal, setShowModal] = useState(false);
 
   // Open modal if navigated with ?add=true (from QuickActionSheet)
@@ -61,7 +62,6 @@ export default function VehiclesPage() {
       setSearchParams({}, { replace: true });
     }
   }, [searchParams, setSearchParams]);
-  const [submitting, setSubmitting] = useState(false);
 
   // Plate lookup
   const [plateInput, setPlateInput] = useState('');
@@ -82,13 +82,30 @@ export default function VehiclesPage() {
   const [showMaintenanceBaselines, setShowMaintenanceBaselines] = useState(false);
   const [maintenanceItems, setMaintenanceItems] = useState([]);
 
-  const [brands, setBrands] = useState([]);
   const [models, setModels] = useState([]);
   const [trims, setTrims] = useState([]);
   const [loadingModels, setLoadingModels] = useState(false);
   const [loadingTrims, setLoadingTrims] = useState(false);
 
-  useEffect(() => { loadVehicles(); loadBrands(); }, []);
+  const { data: vehicles = [], isLoading: loading } = useQuery({
+    queryKey: queryKeys.vehicles,
+    queryFn: () => vehicleApi.getAll(),
+  });
+  const { data: brands = [] } = useQuery({
+    queryKey: queryKeys.brands,
+    queryFn: () => brandApi.getAll(),
+  });
+
+  const createMutation = useMutation({
+    mutationFn: (fd) => vehicleApi.create(fd),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.vehicles });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard });
+      setShowModal(false);
+      resetForm();
+    },
+  });
+  const submitting = createMutation.isPending;
 
   useEffect(() => {
     let cancelled = false;
@@ -99,8 +116,8 @@ export default function VehiclesPage() {
         setMaintenanceBaselines((prev) => {
           const keys = new Set(items.map((i) => i.key));
           const next = {};
-          for (const [k, v] of Object.entries(prev)) {
-            if (keys.has(k)) next[k] = v;
+          for (const k of Object.keys(prev)) {
+            if (keys.has(k)) next[k] = prev[k];
           }
           return next;
         });
@@ -108,14 +125,6 @@ export default function VehiclesPage() {
       .catch(() => { if (!cancelled) setMaintenanceItems([]); });
     return () => { cancelled = true; };
   }, [form.fuelType, form.brand]);
-
-  const loadVehicles = async () => {
-    try { setVehicles(await vehicleApi.getAll()); } catch (e) { console.error('Erreur chargement véhicules:', e); } finally { setLoading(false); }
-  };
-
-  const loadBrands = async () => {
-    try { setBrands(await brandApi.getAll()); } catch (e) { console.error('Erreur chargement marques:', e); }
-  };
 
   const handlePlateLookup = async () => {
     if (!plateInput.trim()) return;
@@ -225,7 +234,7 @@ export default function VehiclesPage() {
 
 
   const handleSubmit = async (e) => {
-    e.preventDefault(); setSubmitting(true);
+    e.preventDefault();
     try {
       const fd = new FormData();
       Object.entries(form).forEach(([k, v]) => { if (v) fd.append(k, v); });
@@ -239,8 +248,7 @@ export default function VehiclesPage() {
       if (Object.keys(baselines).length > 0) {
         fd.append('maintenanceLastKm', JSON.stringify(baselines));
       }
-      await vehicleApi.create(fd);
-      setShowModal(false); resetForm(); loadVehicles();
+      await createMutation.mutateAsync(fd);
     } catch (err) {
       if (err.code === 'PREMIUM_REQUIRED') {
         setShowModal(false);
@@ -254,7 +262,7 @@ export default function VehiclesPage() {
       } else {
         toast.error(err.message || 'Erreur lors de l\'ajout');
       }
-    } finally { setSubmitting(false); }
+    }
   };
 
   if (loading) return (

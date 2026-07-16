@@ -1,28 +1,15 @@
-# Fix CI lint failures (commit a1499e0)
-
-## Root cause
-- 413/420 frontend errors come from linting Capacitor iOS build artifacts (`frontend/ios/...`).
-- ESLint config only ignored `dist`, not `ios/`.
+# Vague 2 — fondations
 
 ## Tasks
-- [ ] frontend/eslint.config.js: ignore `ios`/`android`; add Node globals for config files
-- [ ] frontend/src/components/Sidebar.jsx: remove unused `index` arg
-- [ ] backend/src/data/zfe.js: remove dead `getMostRestrictiveThreshold`
-- [ ] backend/src/services/critair.service.js: export `CRITAIR_COLORS` + `CRITAIR_LABELS`
-- [ ] Run `npm run lint` in frontend + backend → green
-- [ ] Run `npm run build` in frontend → green
+- [x] Zod : middleware `validate` + schémas auth / vehicle / document / share
+- [x] Refresh tokens stockés en SHA-256 (compat legacy plaintext au refresh)
+- [x] Crons : entrée `worker.js` + garde `RUN_CRONS` + lock table `cron_locks`
+- [x] TanStack Query : provider + Dashboard / Vehicles / Documents / Expenses / VehicleDetail
+- [x] Vérifier lint/smoke + Review
 
-## Review (done 2026-06-25)
-All targets green locally:
-- frontend lint (`--max-warnings 20`): exit 0 (was 413 errors → 0 errors, 7 warnings)
-- backend lint: exit 0 (was 3 errors → 0)
-- frontend build: exit 0
-
-### Changes
-- `frontend/eslint.config.js`: ignore `ios`/`android`; Node globals block for `*.config.js`
-- `frontend/src/components/Sidebar.jsx`: dropped unused `index` map arg
-- `backend/src/data/zfe.js`: removed dead `getMostRestrictiveThreshold`
-- `backend/src/services/critair.service.js`: exported `CRITAIR_COLORS` + `CRITAIR_LABELS`
-
-### Note
-CI triggers on push/PR to `main`. Current work is on `dev` — needs to reach `main` to turn CI green and unblock the Fly.io deploy.
+## Review
+- **Zod** : `validate.middleware` + `validation/schemas.js` branchés sur auth, vehicles (create/update/id), documents (create/delete), share (create/links/revoke). Controllers auth allégés.
+- **Refresh tokens** : `generateRefreshToken` persiste `sha256(token)` ; `refresh()` lookup hash puis fallback plaintext legacy (une rotation migre). Pas de migration Prisma.
+- **Crons** : `src/worker.js` + `npm run worker` ; API skip crons en `production` sauf `RUN_CRONS=1` ; local non-prod garde les crons. Mutex `cron_locks` (CREATE IF NOT EXISTS) pool-safe.
+- **TanStack Query** : `QueryClientProvider` + `lib/query.js` ; pages Dashboard/Vehicles/Documents/Expenses/VehicleDetail + MaintenancePlanCard invalidation.
+- Lint backend OK ; frontend pages OK (1 warning hooks préexistant Documents). Smoke Zod OK.

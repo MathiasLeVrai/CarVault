@@ -3,6 +3,8 @@ const router = express.Router();
 const vehicleController = require('../controllers/vehicle.controller');
 const { authenticate } = require('../middleware/auth.middleware');
 const { uploadVehiclePhoto, uploadVehicleWithDoc } = require('../middleware/upload.middleware');
+const { validate } = require('../middleware/validate.middleware');
+const { vehicleCreateBody, vehicleUpdateBody, idParams } = require('../validation/schemas');
 const prisma = require('../lib/prisma');
 const plateService = require('../services/plate.service');
 const { computeCritAir } = require('../services/critair.service');
@@ -17,7 +19,7 @@ router.post('/backfill', async (req, res, next) => {
   try {
     const vehicles = await prisma.vehicule.findMany({
       where: {
-        userId: req.user.id,
+        userId: req.userId,
         licensePlate: { not: null },
         OR: [
           { critAir: null },
@@ -62,14 +64,25 @@ router.post('/backfill', async (req, res, next) => {
   }
 });
 
-router.get('/:id', vehicleController.getById);
-router.get('/:id/pdf', vehicleController.generatePdf);
-router.get('/:id/health', vehicleController.getHealthScore);
-router.post('/', uploadVehicleWithDoc.fields([{ name: 'photo', maxCount: 1 }, { name: 'registrationDoc', maxCount: 1 }]), vehicleController.create);
-router.put('/:id', uploadVehiclePhoto.single('photo'), vehicleController.update);
-router.get('/:id/maintenance', vehicleController.getMaintenancePlan);
-router.put('/:id/maintenance', vehicleController.updateMaintenancePlan);
-router.post('/:id/maintenance/:key/mark-done', vehicleController.markMaintenanceDone);
-router.delete('/:id', vehicleController.delete);
+router.get('/:id', validate({ params: idParams }), vehicleController.getById);
+router.get('/:id/pdf', validate({ params: idParams }), vehicleController.generatePdf);
+router.get('/:id/health', validate({ params: idParams }), vehicleController.getHealthScore);
+router.post(
+  '/',
+  uploadVehicleWithDoc.fields([{ name: 'photo', maxCount: 1 }, { name: 'registrationDoc', maxCount: 1 }]),
+  validate({ body: vehicleCreateBody }),
+  vehicleController.create,
+);
+router.put(
+  '/:id',
+  validate({ params: idParams }),
+  uploadVehiclePhoto.single('photo'),
+  validate({ body: vehicleUpdateBody }),
+  vehicleController.update,
+);
+router.get('/:id/maintenance', validate({ params: idParams }), vehicleController.getMaintenancePlan);
+router.put('/:id/maintenance', validate({ params: idParams }), vehicleController.updateMaintenancePlan);
+router.post('/:id/maintenance/:key/mark-done', validate({ params: idParams }), vehicleController.markMaintenanceDone);
+router.delete('/:id', validate({ params: idParams }), vehicleController.delete);
 
 module.exports = router;

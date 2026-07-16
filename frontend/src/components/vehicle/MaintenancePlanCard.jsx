@@ -1,12 +1,15 @@
 import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Settings, Pencil, Check, AlertTriangle, CheckCircle2, ChevronDown, RotateCcw } from 'lucide-react';
 import { vehicleApi } from '../../services/api';
+import { queryKeys } from '../../lib/query';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
 
 const statusColors = { ok: '#22c55e', soon: '#f59e0b', overdue: '#ff2a3f' };
 const statusLabels = { ok: 'OK', soon: 'Bientôt', overdue: 'Dépassé' };
 
-export default function MaintenancePlanCard({ vehicleId, brand, fuelTypeLabel, maintenancePlan, setMaintenancePlan, variants }) {
+export default function MaintenancePlanCard({ vehicleId, brand, fuelTypeLabel, maintenancePlan, variants }) {
+  const queryClient = useQueryClient();
   const [editingInterval, setEditingInterval] = useState(null);
   const [editIntervalValue, setEditIntervalValue] = useState('');
   const [editingLastKm, setEditingLastKm] = useState(null);
@@ -15,8 +18,7 @@ export default function MaintenancePlanCard({ vehicleId, brand, fuelTypeLabel, m
   const [showAll, setShowAll] = useState(false);
 
   const refreshPlan = async () => {
-    const updated = await vehicleApi.getMaintenancePlan(vehicleId);
-    setMaintenancePlan(updated);
+    await queryClient.invalidateQueries({ queryKey: queryKeys.vehicleMaintenance(vehicleId) });
   };
 
   const saveInterval = async (key, value) => {

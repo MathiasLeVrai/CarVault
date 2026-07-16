@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useParams, useNavigate } from 'react-router-dom';
 import { vehicleApi, documentApi, expenseApi, mileageApi } from '../services/api';
+import { queryKeys } from '../lib/query';
 import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
 import Input from '../components/ui/Input';
@@ -48,7 +50,7 @@ const itemVariants = {
 
 export default function VehicleDetailPage() {
   const { id } = useParams(); const navigate = useNavigate();
-  const [v, setV] = useState(null); const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [showDoc, setShowDoc] = useState(false); const [showExp, setShowExp] = useState(false); const [sub, setSub] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [editForm, setEditForm] = useState({ brand: '', model: '', year: '', mileage: '', licensePlate: '', color: '', fuelType: 'GASOLINE', purchasePrice: '', monthlyFuelBudget: '', annualKmGoal: '' });
@@ -57,36 +59,55 @@ export default function VehicleDetailPage() {
   const [generatingPdf, setGeneratingPdf] = useState(false);
   const [df, setDf] = useState({ name:'', type:'INSURANCE', expirationDate:'', notes:'' }); const [docFile, setDocFile] = useState(null);
   const [ef, setEf] = useState({ amount:'', category:'MAINTENANCE', date:'', description:'', mileage:'' });
-  const [mileageEntries, setMileageEntries] = useState([]);
   const [showMileage, setShowMileage] = useState(false);
   const [mf, setMf] = useState({ mileage:'', date: new Date().toISOString().split('T')[0], notes:'' });
   const [showShare, setShowShare] = useState(false);
-  const [maintenancePlan, setMaintenancePlan] = useState(null);
+
+  const { data: v, isLoading: loading, isError } = useQuery({
+    queryKey: queryKeys.vehicle(id),
+    queryFn: () => vehicleApi.getById(id),
+    enabled: Boolean(id),
+  });
+  const { data: mileageEntries = [] } = useQuery({
+    queryKey: queryKeys.vehicleMileage(id),
+    queryFn: () => mileageApi.getAll(id),
+    enabled: Boolean(id),
+  });
+  const { data: maintenancePlan } = useQuery({
+    queryKey: queryKeys.vehicleMaintenance(id),
+    queryFn: () => vehicleApi.getMaintenancePlan(id),
+    enabled: Boolean(id),
+  });
+
+  useEffect(() => {
+    if (isError) navigate('/vehicles');
+  }, [isError, navigate]);
+
+  const invalidateVehicle = () => {
+    queryClient.invalidateQueries({ queryKey: queryKeys.vehicle(id) });
+    queryClient.invalidateQueries({ queryKey: queryKeys.vehicleMileage(id) });
+    queryClient.invalidateQueries({ queryKey: queryKeys.vehicleMaintenance(id) });
+    queryClient.invalidateQueries({ queryKey: queryKeys.vehicles });
+    queryClient.invalidateQueries({ queryKey: queryKeys.dashboard });
+    queryClient.invalidateQueries({ queryKey: ['documents'] });
+    queryClient.invalidateQueries({ queryKey: ['expenses'] });
+  };
 
   const openEdit = () => {
     setEditForm({ brand: v.brand || '', model: v.model || '', year: String(v.year || ''), mileage: String(v.mileage || ''), licensePlate: v.licensePlate || '', color: v.color || '', fuelType: v.fuelType || 'GASOLINE', purchasePrice: v.purchasePrice ? String(v.purchasePrice) : '', monthlyFuelBudget: v.monthlyFuelBudget ? String(v.monthlyFuelBudget) : '', annualKmGoal: v.annualKmGoal ? String(v.annualKmGoal) : '' });
     setEditPhoto(null);
     setShowEdit(true);
   };
-  const submitEdit = async (e) => { e.preventDefault(); setEditSubmitting(true); try { const fd = new FormData(); Object.entries(editForm).forEach(([k, val]) => { if (val) fd.append(k, val); }); if (editPhoto) fd.append('photo', await compressImage(editPhoto)); await vehicleApi.update(id, fd); setShowEdit(false); load(); } catch { /* ignore */ } finally { setEditSubmitting(false); } };
+  const submitEdit = async (e) => { e.preventDefault(); setEditSubmitting(true); try { const fd = new FormData(); Object.entries(editForm).forEach(([k, val]) => { if (val) fd.append(k, val); }); if (editPhoto) fd.append('photo', await compressImage(editPhoto)); await vehicleApi.update(id, fd); setShowEdit(false); invalidateVehicle(); } catch { /* ignore */ } finally { setEditSubmitting(false); } };
 
-  useEffect(() => { load(); }, [id]);
-  const load = async () => {
-    try {
-      const [vehicle, entries] = await Promise.all([vehicleApi.getById(id), mileageApi.getAll(id)]);
-      setV(vehicle);
-      setMileageEntries(entries);
-      vehicleApi.getMaintenancePlan(id).then(setMaintenancePlan).catch(() => {});
-    } catch { navigate('/vehicles'); } finally { setLoading(false); }
-  };
-  const addDoc = async (e) => { e.preventDefault(); setSub(true); try { const fd=new FormData(); fd.append('vehicleId',id); fd.append('name',df.name); fd.append('type',df.type); if(df.expirationDate) fd.append('expirationDate',df.expirationDate); if(df.notes) fd.append('notes',df.notes); if(docFile) fd.append('file', docFile.type.startsWith('image/') ? await compressImage(docFile) : docFile); await documentApi.create(fd); setShowDoc(false); setDf({name:'',type:'INSURANCE',expirationDate:'',notes:''}); setDocFile(null); load(); } catch { /* ignore */ } finally{setSub(false);} };
-  const addExp = async (e) => { e.preventDefault(); setSub(true); try { await expenseApi.create({...ef,amount:parseFloat(ef.amount),vehicleId:id}); setShowExp(false); setEf({amount:'',category:'MAINTENANCE',date:'',description:'',mileage:''}); load(); } catch{console.error('erreur lors de l/ajout de la depense')} finally{setSub(false);} };
-  const delDoc = async (did) => { if(!confirm('Supprimer ?')) return; await documentApi.delete(did); load(); };
-  const delExp = async (eid) => { if(!confirm('Supprimer ?')) return; await expenseApi.delete(eid); load(); };
-  const delVehicle = async () => { if(!confirm('Supprimer ce véhicule ?')) return; await vehicleApi.delete(id); navigate('/vehicles'); };
+  const addDoc = async (e) => { e.preventDefault(); setSub(true); try { const fd=new FormData(); fd.append('vehicleId',id); fd.append('name',df.name); fd.append('type',df.type); if(df.expirationDate) fd.append('expirationDate',df.expirationDate); if(df.notes) fd.append('notes',df.notes); if(docFile) fd.append('file', docFile.type.startsWith('image/') ? await compressImage(docFile) : docFile); await documentApi.create(fd); setShowDoc(false); setDf({name:'',type:'INSURANCE',expirationDate:'',notes:''}); setDocFile(null); invalidateVehicle(); } catch { /* ignore */ } finally{setSub(false);} };
+  const addExp = async (e) => { e.preventDefault(); setSub(true); try { await expenseApi.create({...ef,amount:parseFloat(ef.amount),vehicleId:id}); setShowExp(false); setEf({amount:'',category:'MAINTENANCE',date:'',description:'',mileage:''}); invalidateVehicle(); } catch{console.error('erreur lors de l/ajout de la depense')} finally{setSub(false);} };
+  const delDoc = async (did) => { if(!confirm('Supprimer ?')) return; await documentApi.delete(did); invalidateVehicle(); };
+  const delExp = async (eid) => { if(!confirm('Supprimer ?')) return; await expenseApi.delete(eid); invalidateVehicle(); };
+  const delVehicle = async () => { if(!confirm('Supprimer ce véhicule ?')) return; await vehicleApi.delete(id); queryClient.invalidateQueries({ queryKey: queryKeys.vehicles }); queryClient.invalidateQueries({ queryKey: queryKeys.dashboard }); navigate('/vehicles'); };
   const downloadPdf = async () => { setGeneratingPdf(true); try { await vehicleApi.downloadPdf(id); } catch (e) { console.error('PDF error:', e); } finally { setGeneratingPdf(false); } };
-  const addMileage = async (e) => { e.preventDefault(); setSub(true); try { await mileageApi.create(id, { mileage: parseInt(mf.mileage), date: mf.date, notes: mf.notes }); setShowMileage(false); setMf({ mileage:'', date: new Date().toISOString().split('T')[0], notes:'' }); load(); } catch { /* ignore */ } finally { setSub(false); } };
-  const delMileage = async (mid) => { if(!confirm('Supprimer ?')) return; await mileageApi.delete(id, mid); load(); };
+  const addMileage = async (e) => { e.preventDefault(); setSub(true); try { await mileageApi.create(id, { mileage: parseInt(mf.mileage), date: mf.date, notes: mf.notes }); setShowMileage(false); setMf({ mileage:'', date: new Date().toISOString().split('T')[0], notes:'' }); invalidateVehicle(); } catch { /* ignore */ } finally { setSub(false); } };
+  const delMileage = async (mid) => { if(!confirm('Supprimer ?')) return; await mileageApi.delete(id, mid); invalidateVehicle(); };
   if (loading) return <div className="flex items-center justify-center h-64"><div className="relative w-12 h-12"><div className="absolute inset-0 rounded-full border-2 border-white/10 border-t-accent animate-spin" /></div></div>;
   if (!v) return null;
 
@@ -216,7 +237,6 @@ export default function VehicleDetailPage() {
         brand={v.brand}
         fuelTypeLabel={fuelTypeLabels[v.fuelType]}
         maintenancePlan={maintenancePlan}
-        setMaintenancePlan={setMaintenancePlan}
         variants={itemVariants}
       />
 

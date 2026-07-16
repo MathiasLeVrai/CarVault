@@ -1,4 +1,5 @@
 import { Capacitor } from '@capacitor/core';
+import { safeUrl } from '../utils/safeUrl';
 
 const DEFAULT_PUBLIC_APP_URL = 'https://carvio.fr';
 const DEFAULT_WEB_API_URL = '/api';
@@ -61,13 +62,17 @@ export const getBackendUrl = (path = '') => {
 };
 
 export const getAssetUrl = (path) => {
-  if (!path || isAbsoluteAssetUrl(path)) return path;
-  if (path.startsWith('/uploads/')) return getBackendUrl(path);
-  if (/^\/(vehicles|documents|avatars)\//.test(path) && STORAGE_PUBLIC_URL) {
-    return joinUrl(STORAGE_PUBLIC_URL, path);
+  if (!path) return undefined;
+  if (isAbsoluteAssetUrl(path)) return safeUrl(path) || undefined;
+  // Local signed media proxy or legacy /uploads paths
+  if (path.startsWith('/api/media') || path.startsWith('/uploads/')) {
+    return safeUrl(getBackendUrl(path)) || undefined;
   }
-  if (isNativeCapacitor() && path.startsWith('/')) return getBackendUrl(path);
-  return path;
+  if (/^\/(vehicles|documents|avatars)\//.test(path) && STORAGE_PUBLIC_URL) {
+    return safeUrl(joinUrl(STORAGE_PUBLIC_URL, path)) || undefined;
+  }
+  if (isNativeCapacitor() && path.startsWith('/')) return safeUrl(getBackendUrl(path)) || undefined;
+  return safeUrl(path) || undefined;
 };
 
 export const getPublicAppUrl = (path = '') => joinUrl(PUBLIC_APP_URL, path);
@@ -117,7 +122,7 @@ const downloadBlob = async (blob, filename) => {
 };
 
 export const downloadPdfFromUrl = async (url, filename = 'Carvio_Dossier.pdf', headers = {}) => {
-  const response = await fetch(url, { headers });
+  const response = await fetch(url, { headers, credentials: 'include' });
   if (!response.ok) {
     const text = await response.text();
     let msg = 'Erreur lors de la génération du PDF';
@@ -161,12 +166,15 @@ class ApiClient {
   }
 
   /**
-   * Try to refresh the access token using the stored refresh token.
-   * Returns true if refresh succeeded, false otherwise.
+   * Refresh access token.
+   * Web: HttpOnly cookie (credentials: include). Native: body + localStorage.
+   * Legacy web localStorage refresh is sent once then cleared.
    */
   async _tryRefresh() {
-    const refreshToken = localStorage.getItem(STORAGE_REFRESH);
-    if (!refreshToken) return false;
+    const native = isNativeCapacitor();
+    const storedRefresh = localStorage.getItem(STORAGE_REFRESH);
+
+    if (native && !storedRefresh) return false;
 
     // If a refresh is already in flight, wait for it
     if (this._refreshPromise) {
@@ -175,15 +183,33 @@ class ApiClient {
 
     this._refreshPromise = (async () => {
       try {
+        const headers = { 'Content-Type': 'application/json' };
+        if (isIosNativeClient()) {
+          headers['X-Carvio-Client'] = 'ios-native';
+        }
+
+        const bodyPayload = {};
+        if (storedRefresh) {
+          bodyPayload.refreshToken = storedRefresh;
+        }
+
         const res = await fetch(joinUrl(this.baseUrl, '/auth/refresh'), {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ refreshToken }),
+          headers,
+          credentials: 'include',
+          body: Object.keys(bodyPayload).length ? JSON.stringify(bodyPayload) : '{}',
         });
-        if (!res.ok) return false;
+        if (!res.ok) {
+          if (!native) localStorage.removeItem(STORAGE_REFRESH);
+          return false;
+        }
         const data = await res.json();
         localStorage.setItem(STORAGE_TOKEN, data.token);
-        localStorage.setItem(STORAGE_REFRESH, data.refreshToken);
+        if (native && data.refreshToken) {
+          localStorage.setItem(STORAGE_REFRESH, data.refreshToken);
+        } else {
+          localStorage.removeItem(STORAGE_REFRESH);
+        }
         return true;
       } catch {
         return false;
@@ -201,6 +227,7 @@ class ApiClient {
     const config = {
       method,
       headers: { ...this.getHeaders(isFormData), ...(extraHeaders || {}) },
+      credentials: 'include',
     };
 
     if (body) {
@@ -214,7 +241,7 @@ class ApiClient {
       const refreshed = await this._tryRefresh();
       if (refreshed) {
         // Retry with new token
-        config.headers = this.getHeaders(isFormData);
+        config.headers = { ...this.getHeaders(isFormData), ...(extraHeaders || {}) };
         response = await fetch(joinUrl(this.baseUrl, endpoint), config);
       }
     }

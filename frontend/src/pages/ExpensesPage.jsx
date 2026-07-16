@@ -1,5 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { expenseApi, vehicleApi } from '../services/api';
+import { queryKeys } from '../lib/query';
 import Button from '../components/ui/Button';
 import Badge from '../components/ui/Badge';
 import Modal from '../components/ui/Modal';
@@ -37,15 +39,56 @@ const itemVariants = {
 };
 
 export default function ExpensesPage() {
-  const [exps, setExps] = useState([]); const [vehicles, setVehicles] = useState([]);
-  const [stats, setStats] = useState(null); const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState(''); const [showModal, setShowModal] = useState(false); const [sub, setSub] = useState(false);
+  const queryClient = useQueryClient();
+  const [filter, setFilter] = useState('');
+  const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({ amount:'', category:'MAINTENANCE', date:'', description:'', mileage:'', vehicleId:'' });
 
-  useEffect(() => { load(); }, [filter]);
-  const load = async () => { try { const p={}; if(filter) p.category=filter; const [e,s,v] = await Promise.all([expenseApi.getAll(p), expenseApi.getStats(), vehicleApi.getAll()]); setExps(e); setStats(s); setVehicles(v); } catch { /* ignore */ } finally { setLoading(false); } };
-  const submit = async (e) => { e.preventDefault(); setSub(true); try { await expenseApi.create({...form, amount:parseFloat(form.amount)}); setShowModal(false); setForm({amount:'',category:'MAINTENANCE',date:'',description:'',mileage:'',vehicleId:''}); load(); } catch { /* ignore */ } finally { setSub(false); } };
-  const del = async (id) => { if(!confirm('Supprimer ?')) return; await expenseApi.delete(id); load(); };
+  const { data: exps = [], isLoading: loadingExps } = useQuery({
+    queryKey: queryKeys.expenses(filter),
+    queryFn: () => {
+      const p = {};
+      if (filter) p.category = filter;
+      return expenseApi.getAll(p);
+    },
+  });
+  const { data: stats } = useQuery({
+    queryKey: queryKeys.expenseStats,
+    queryFn: () => expenseApi.getStats(),
+  });
+  const { data: vehicles = [] } = useQuery({
+    queryKey: queryKeys.vehicles,
+    queryFn: () => vehicleApi.getAll(),
+  });
+
+  const createMutation = useMutation({
+    mutationFn: (payload) => expenseApi.create(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['expenses'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard });
+      setShowModal(false);
+      setForm({ amount:'', category:'MAINTENANCE', date:'', description:'', mileage:'', vehicleId:'' });
+    },
+  });
+  const deleteMutation = useMutation({
+    mutationFn: (id) => expenseApi.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['expenses'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard });
+    },
+  });
+
+  const submit = async (e) => {
+    e.preventDefault();
+    await createMutation.mutateAsync({ ...form, amount: parseFloat(form.amount) });
+  };
+  const del = async (id) => {
+    if (!confirm('Supprimer ?')) return;
+    await deleteMutation.mutateAsync(id);
+  };
+
+  const loading = loadingExps;
+  const sub = createMutation.isPending;
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="relative w-12 h-12"><div className="absolute inset-0 rounded-full border-2 border-white/10 border-t-accent animate-spin" /></div></div>;
 

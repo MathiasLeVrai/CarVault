@@ -1,6 +1,8 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createPortal } from 'react-dom';
 import { documentApi, getAssetUrl, vehicleApi } from '../services/api';
+import { queryKeys } from '../lib/query';
 import Button from '../components/ui/Button';
 import Badge from '../components/ui/Badge';
 import Modal from '../components/ui/Modal';
@@ -44,13 +46,10 @@ const itemVariants = {
 
 
 export default function DocumentsPage() {
-  const [docs, setDocs] = useState([]);
-  const [vehicles, setVehicles] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [filter, setFilter] = useState('');
   const [vehicleFilter, setVehicleFilter] = useState('');
   const [showModal, setShowModal] = useState(false);
-  const [sub, setSub] = useState(false);
   const [form, setForm] = useState({ name: '', type: 'TECHNICAL_INSPECTION', vehicleId: '', expirationDate: '', notes: '' });
   const [hasExpiration, setHasExpiration] = useState(false);
   const [file, setFile] = useState(null);
@@ -69,20 +68,30 @@ export default function DocumentsPage() {
     return () => window.removeEventListener('keydown', onKey);
   }, [viewingDoc]);
 
-  useEffect(() => { load(); }, [filter]);
+  const { data: docs = [], isLoading: loading } = useQuery({
+    queryKey: queryKeys.documents(filter),
+    queryFn: () => documentApi.getAll(filter || undefined),
+  });
+  const { data: vehicles = [] } = useQuery({
+    queryKey: queryKeys.vehicles,
+    queryFn: () => vehicleApi.getAll(),
+  });
 
-  const load = async () => {
-    try {
-      const [d, v] = await Promise.all([
-        documentApi.getAll(filter || undefined),
-        vehicleApi.getAll(),
-      ]);
-      setDocs(d);
-      setVehicles(v);
-    } catch { /* ignore */ } finally {
-      setLoading(false);
-    }
-  };
+  const createMutation = useMutation({
+    mutationFn: (fd) => documentApi.create(fd),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['documents'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard });
+      setShowModal(false);
+    },
+  });
+  const deleteMutation = useMutation({
+    mutationFn: (id) => documentApi.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['documents'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard });
+    },
+  });
 
   const handleFileChange = useCallback(async (selectedFile) => {
     if (!selectedFile) return;
@@ -125,7 +134,6 @@ export default function DocumentsPage() {
 
   const submit = async (e) => {
     e.preventDefault();
-    setSub(true);
     try {
       const fd = new FormData();
       fd.append('name', form.name);
@@ -135,21 +143,18 @@ export default function DocumentsPage() {
       if (form.notes) fd.append('notes', form.notes);
       if (file) fd.append('file', file.type.startsWith('image/') ? await compressImage(file) : file);
       fd.append('reminderDays', JSON.stringify(reminders));
-      await documentApi.create(fd);
-      setShowModal(false);
-      load();
+      await createMutation.mutateAsync(fd);
     } catch (err) {
       console.error('Erreur document:', err);
-    } finally {
-      setSub(false);
     }
   };
 
   const del = async (id) => {
     if (!confirm('Supprimer ?')) return;
-    await documentApi.delete(id);
-    load();
+    await deleteMutation.mutateAsync(id);
   };
+
+  const sub = createMutation.isPending;
 
   if (loading) return (
     <div className="flex items-center justify-center h-64">

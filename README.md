@@ -8,7 +8,7 @@
 
 ## Sommaire
 
-- [Moment « aha »](#moment-aha--parcours-dactivation)
+- [Parcours d'activation](#parcours-dactivation)
 - [Fonctionnalités](#fonctionnalités)
 - [Architecture](#architecture)
 - [Stack technique](#stack-technique)
@@ -27,7 +27,7 @@
 
 ---
 
-## Moment « aha » — Parcours d'activation
+## Parcours d'activation
 
 ```
 1. Créer un compte
@@ -91,7 +91,7 @@ Objectif produit : atteindre **1 véhicule + 1 document + 1 rappel planifié** e
 │  React 19 PWA  ·  Capacitor (iOS / Android)                 │
 │  Service Worker (cache offline)  ·  Web Push                │
 └──────────────────────────┬──────────────────────────────────┘
-                           │ HTTPS  /api  /uploads
+                           │ HTTPS  /api  (/api/media signé)
 ┌──────────────────────────▼──────────────────────────────────┐
 │  Backend Express (Node.js)                                  │
 │  Controllers → Services → Prisma → PostgreSQL (NeonDB)      │
@@ -181,7 +181,7 @@ CarVault/
 - **PostgreSQL 14+** (local ou URL [NeonDB](https://neon.tech))
 - **npm**
 
-### Installation rapide (< 30 min)
+### Installation rapide (< 10 min)
 
 ```bash
 # 1. Installer toutes les dépendances (racine + backend + frontend)
@@ -208,7 +208,7 @@ npm run dev
 | OpenAPI JSON | http://localhost:3001/api/docs.json |
 | Prisma Studio | `cd backend && npx prisma studio` |
 
-> Le frontend proxifie automatiquement `/api` et `/uploads` vers le backend via Vite (`frontend/vite.config.js`).
+> Le frontend proxifie automatiquement `/api` (dont `/api/media`) vers le backend via Vite (`frontend/vite.config.js`).
 
 ### Base de données E2E (tests locaux)
 
@@ -273,7 +273,7 @@ Variables **recommandées** :
 | `PORT` | Port du serveur | `3001` (dev) / `8080` (prod) |
 | `APP_URL` | URL publique du site (liens email, reset password) | `http://localhost:5173` |
 | `CORS_ORIGIN` | Origines autorisées (séparées par virgule) | `http://localhost:5173` |
-| `UPLOAD_DIR` | Dossier uploads local | `./uploads` |
+| `UPLOAD_DIR` | Dossier uploads local (accès via `/api/media` signé, plus de static public) | `./uploads` |
 
 Variables **optionnelles** (fonctionnalités avancées) :
 
@@ -281,7 +281,8 @@ Variables **optionnelles** (fonctionnalités avancées) :
 |----------|----------------|
 | `RAPIDAPI_KEY` | Recherche par plaque d'immatriculation |
 | `CARAPI_TOKEN` / `CARAPI_SECRET` | Catalogue marques/modèles |
-| `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `R2_PUBLIC_URL` | Stockage Cloudflare R2 (prod) |
+| `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `R2_PUBLIC_URL` | Stockage Cloudflare R2 (prod). Préférer un **bucket privé** : l’API sert des URLs présignées. `R2_PUBLIC_URL` reste utile pour la CSP / legacy. |
+| `RUN_CRONS` | `1` pour lancer les crons dans le process API. En prod multi-instance : laisser off et lancer `npm run worker`. En local (non-production) les crons démarrent par défaut. |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` | Emails (reset password, digest) |
 | `FEEDBACK_EMAIL` | Réception des idées utilisateur |
 | `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` | Notifications Web Push |
@@ -382,11 +383,17 @@ Désactiver Swagger : `SWAGGER_ENABLED=false` dans `backend/.env`.
 
 ### Auth — flux refresh token
 
+**Web** — refresh token en cookie `HttpOnly` (`carvault_rt`, `Secure`, `SameSite=Lax`, path `/api/auth`). L’access token JWT (15 min) reste en Bearer / localStorage.
+
 ```
-POST /api/auth/login     → { token, refreshToken, user }
-POST /api/auth/refresh   → { token, refreshToken }      (renouvellement)
-POST /api/auth/logout    → invalide le refresh token
+POST /api/auth/login     → Set-Cookie + { token, user }     (pas de refreshToken dans le JSON)
+POST /api/auth/refresh   → cookie auto + { token }          (credentials: include)
+POST /api/auth/logout    → invalide le refresh + clearCookie
 ```
+
+**iOS Capacitor** — même API, mais le refresh est aussi renvoyé dans le body et stocké en localStorage (cookies cross-origin peu fiables sur `capacitor://`). Header `X-Carvio-Client: ios-native`.
+
+**CSP** — Helmet envoie une Content-Security-Policy stricte (scripts `self` + Plausible ; pas de scripts inline pirates).
 
 ---
 

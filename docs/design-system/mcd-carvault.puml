@@ -1,0 +1,197 @@
+@startuml mcd-carvault
+!pragma layout smetana
+title CarVault — Modèle Conceptuel de Données (MCD)
+skinparam linetype ortho
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam class {
+  BackgroundColor #fafafa
+  BorderColor #0b0b0f
+  ArrowColor #ff2a3f
+}
+skinparam note {
+  BackgroundColor #fff8e6
+  BorderColor #f59e0b
+}
+
+hide methods
+hide circle
+
+' ─── Entités ───────────────────────────────────────────────────────────────
+
+entity "UTILISATEUR" as UTILISATEUR {
+  * **id** : UUID
+  --
+  email : String <<unique>>
+  password : String
+  firstName : String
+  lastName : String
+  avatar : String?
+  notifEmail : Boolean
+  notifPush : Boolean
+  notifWeekly : Boolean
+  isPremium : Boolean
+  premiumSource : String?
+  stripeCustomerId : String?
+  stripeSubscriptionId : String?
+  premiumExpiresAt : DateTime?
+  createdAt : DateTime
+  updatedAt : DateTime
+}
+
+entity "VEHICULE" as VEHICULE {
+  * **id** : UUID
+  --
+  brand : String
+  model : String
+  year : Int
+  mileage : Int
+  purchaseMileage : Int?
+  photo : String?
+  licensePlate : String?
+  color : String?
+  fuelType : FuelType
+  purchasePrice : Float?
+  carapiTrimId : Int?
+  msrp : Float?
+  horsepower : Int?
+  engineSize : Float?
+  transmission : String?
+  bodyType : String?
+  doors : Int?
+  fiscalPower : Int?
+  co2 : Int?
+  critAir : Int?
+  firstRegistrationDate : DateTime?
+  laCentraleVersionId : Int?
+  estimatedValue : Float?
+  maintenanceConfig : Json?
+  maintenanceLastKm : Json?
+  monthlyFuelBudget : Float?
+  annualKmGoal : Int?
+  createdAt : DateTime
+  updatedAt : DateTime
+}
+
+entity "DOCUMENT" as DOCUMENT {
+  * **id** : UUID
+  --
+  name : String
+  type : DocumentType
+  filePath : String
+  fileName : String
+  expirationDate : DateTime?
+  notes : String?
+  reminderDays : Int[]
+  createdAt : DateTime
+  updatedAt : DateTime
+}
+
+entity "DEPENSE" as DEPENSE {
+  * **id** : UUID
+  --
+  amount : Float
+  category : ExpenseCategory
+  date : DateTime
+  description : String?
+  mileage : Int?
+  createdAt : DateTime
+  updatedAt : DateTime
+}
+
+entity "ALERTE" as ALERTE {
+  * **id** : UUID
+  --
+  title : String
+  message : String
+  type : AlertType
+  isRead : Boolean
+  dueDate : DateTime?
+  snoozedUntil : DateTime?
+  emailSent : Boolean
+  createdAt : DateTime
+}
+
+entity "ENTREE_KILOMETRAGE" as ENTREE_KM {
+  * **id** : UUID
+  --
+  mileage : Int
+  date : DateTime
+  notes : String?
+  createdAt : DateTime
+}
+
+entity "ENTREE_CARBURANT" as ENTREE_CARB {
+  * **id** : UUID
+  --
+  date : DateTime
+  mileage : Int
+  liters : Float
+  pricePerLiter : Float
+  totalCost : Float
+  isFull : Boolean
+  notes : String?
+  createdAt : DateTime
+}
+
+entity "ABONNEMENT_PUSH" as ABON_PUSH {
+  * **id** : UUID
+  --
+  endpoint : String
+  p256dh : String
+  auth : String
+  createdAt : DateTime
+}
+
+entity "LIEN_PARTAGE" as LIEN_PARTAGE {
+  * **id** : UUID
+  --
+  token : UUID <<unique>>
+  expiresAt : DateTime?
+  createdAt : DateTime
+  viewCount : Int
+  lastViewedAt : DateTime?
+  passwordHash : String?
+  hidePurchasePrice : Boolean
+  label : String?
+}
+
+entity "REFRESH_TOKEN" as REFRESH_TOKEN {
+  * **id** : UUID
+  --
+  token : String <<unique>>
+  expiresAt : DateTime
+  createdAt : DateTime
+}
+
+entity "PASSWORD_RESET_TOKEN" as PWD_RESET {
+  * **id** : UUID
+  --
+  token : String <<unique>>
+  expiresAt : DateTime
+  createdAt : DateTime
+}
+
+' ─── Associations (cardinalités Merise) ───────────────────────────────────
+
+UTILISATEUR ||--o{ VEHICULE : "possède\n(1,1) — (0,n)"
+UTILISATEUR ||--o{ ALERTE : "reçoit\n(1,1) — (0,n)"
+UTILISATEUR ||--o{ ABON_PUSH : "s'abonne\n(1,1) — (0,n)"
+UTILISATEUR ||--o{ REFRESH_TOKEN : "a\n(1,1) — (0,n)"
+UTILISATEUR ||--o{ PWD_RESET : "a\n(1,1) — (0,n)"
+UTILISATEUR ||--o{ LIEN_PARTAGE : "crée\n(1,1) — (0,n)"
+
+VEHICULE ||--o{ DOCUMENT : "contient\n(1,1) — (0,n)"
+VEHICULE ||--o{ DEPENSE : "enregistre\n(1,1) — (0,n)"
+VEHICULE ||--o{ ENTREE_KM : "trace\n(1,1) — (0,n)"
+VEHICULE ||--o{ ENTREE_CARB : "remplit\n(1,1) — (0,n)"
+VEHICULE ||--o{ LIEN_PARTAGE : "est partagé via\n(1,1) — (0,n)"
+
+note bottom of UTILISATEUR
+  **Légende MCD**
+  • *id* = identifiant (clé primaire conceptuelle)
+  • Cardinalités : (min, max) côté entité
+  • Pas de clés étrangères au niveau conceptuel
+end note
+
+@enduml

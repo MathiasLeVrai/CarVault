@@ -32,7 +32,7 @@ class DocumentController {
     try {
       const filters = { type: req.query.type };
       const documents = await documentService.getByVehicle(req.params.vehicleId, req.userId, filters);
-      res.json(documents);
+      res.json(await storageService.signAssets(documents));
     } catch (error) { next(error); }
   }
 
@@ -40,7 +40,7 @@ class DocumentController {
     try {
       const filters = { type: req.query.type };
       const documents = await documentService.getAllByUser(req.userId, filters);
-      res.json(documents);
+      res.json(await storageService.signAssets(documents));
     } catch (error) { next(error); }
   }
 
@@ -48,9 +48,6 @@ class DocumentController {
     try {
       const { name, type, expirationDate, notes, vehicleId, reminderDays } = req.body;
 
-      if (!name || !type || !vehicleId) {
-        return res.status(400).json({ error: 'Nom, type et véhicule sont requis' });
-      }
       if (!req.file) {
         return res.status(400).json({ error: 'Fichier requis' });
       }
@@ -75,7 +72,7 @@ class DocumentController {
       };
 
       const document = await documentService.create(data, vehicleId, req.userId);
-      res.status(201).json(document);
+      res.status(201).json(await storageService.signAssets(document));
     } catch (error) { next(error); }
   }
 

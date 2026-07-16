@@ -2,6 +2,7 @@ const Sentry = require('./instrument');
 
 const express = require('express');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 const helmet = require('helmet');
 const path = require('path');
 const rateLimit = require('express-rate-limit');
@@ -34,12 +35,9 @@ const pushRoutes = require('./routes/push.routes');
 const coteRoutes = require('./routes/cote.routes');
 const feedbackRoutes = require('./routes/feedback.routes');
 const mapRoutes = require('./routes/map.routes');
+const mediaRoutes = require('./routes/media.routes');
 const { errorHandler } = require('./middleware/error.middleware');
-const { startAlertCron } = require('./cron/alert.cron');
-const { startMonthlyReportCron } = require('./cron/monthly-report.cron');
-const { startWeeklyDigestCron } = require('./cron/weekly-digest.cron');
-const { startEngagementCron } = require('./cron/engagement.cron');
-const { startBudgetCron } = require('./cron/budget.cron');
+const { startAllCrons } = require('./cron/runner');
 
 const app = express();
 app.set('trust proxy', 1);
@@ -117,10 +115,57 @@ const nativeAppOrigins = [
 ];
 const allowedOrigins = [...new Set([...configuredOrigins, ...nativeAppOrigins])];
 
+// Storage origins allowed in CSP (R2 public CDN and/or S3-compatible endpoint for presigned URLs)
+const storageOrigins = new Set();
+try {
+  if (process.env.STORAGE_PUBLIC_URL) {
+    storageOrigins.add(new URL(process.env.STORAGE_PUBLIC_URL).origin);
+  }
+  if (process.env.R2_PUBLIC_URL) {
+    storageOrigins.add(new URL(process.env.R2_PUBLIC_URL).origin);
+  }
+} catch {
+  /* ignore invalid URL */
+}
+if (process.env.R2_ACCOUNT_ID) {
+  storageOrigins.add(`https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`);
+}
+const storageOriginList = [...storageOrigins];
+
 app.use(helmet({
-  contentSecurityPolicy: false, // CSP géré par Vite/frontend
+  // CSP applies to HTML served by this app (SPA in prod). Blocks injected scripts.
+  contentSecurityPolicy: {
+    useDefaults: true,
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", 'https://plausible.io'],
+      styleSrc: ["'self'", "'unsafe-inline'", 'https://api.fontshare.com'],
+      fontSrc: ["'self'", 'https://api.fontshare.com', 'https://cdn.fontshare.com', 'data:'],
+      imgSrc: [
+        "'self'",
+        'data:',
+        'blob:',
+        'https://*.basemaps.cartocdn.com',
+        'https://*.openstreetmap.org',
+        ...storageOriginList,
+      ],
+      connectSrc: [
+        "'self'",
+        'https://plausible.io',
+        'https://*.ingest.sentry.io',
+        'https://*.ingest.de.sentry.io',
+        ...storageOriginList,
+      ],
+      workerSrc: ["'self'", 'blob:'],
+      objectSrc: ["'none'"],
+      baseUri: ["'self'"],
+      formAction: ["'self'"],
+      frameAncestors: ["'none'"],
+      upgradeInsecureRequests: process.env.NODE_ENV === 'production' ? [] : null,
+    },
+  },
   crossOriginEmbedderPolicy: false, // Permet le chargement des images externes (map tiles, etc.)
-  crossOriginResourcePolicy: { policy: 'cross-origin' }, // Autorise l'app Capacitor à afficher /uploads depuis carvio.fr
+  crossOriginResourcePolicy: { policy: 'cross-origin' }, // Capacitor / médias cross-origin
 }));
 
 app.use(cors({
@@ -138,9 +183,9 @@ app.use('/api/subscription/revenuecat-webhook', express.raw({ type: 'application
 
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
+app.use(cookieParser());
 
-// Serve uploaded files (UUID filenames — unguessable, consistent with R2 public URLs in prod)
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+// Uploads are private: local files via signed /api/media, R2 via presigned URLs
 
 // Rate limiting global sur toutes les routes API
 app.use('/api', apiLimiter);
@@ -169,6 +214,7 @@ app.use('/api/push', pushRoutes);
 app.use('/api/cote', coteRoutes);  // GET /api/cote/:vehicleId
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/map', mapRoutes);
+app.use('/api/media', mediaRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -223,11 +269,19 @@ app.get('*', (req, res) => {
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚗 Carvio API listening on http://0.0.0.0:${PORT} (NODE_ENV=${process.env.NODE_ENV || 'development'})`);
-  startAlertCron();
-  startMonthlyReportCron();
-  startWeeklyDigestCron();
-  startEngagementCron();
-  startBudgetCron();
+
+  // Crons: default ON in non-production; OFF in production unless RUN_CRONS=1.
+  // Prefer a dedicated worker (`npm run worker` / node src/worker.js) in multi-instance prod.
+  const runCronsExplicit = process.env.RUN_CRONS;
+  const shouldRunCrons = runCronsExplicit === '1' || runCronsExplicit === 'true'
+    || ((runCronsExplicit !== '0' && runCronsExplicit !== 'false')
+      && process.env.NODE_ENV !== 'production');
+
+  if (shouldRunCrons) {
+    startAllCrons();
+  } else {
+    console.log('[CRON] Skipped in API process (use worker.js or set RUN_CRONS=1)');
+  }
 });
 
 process.on('unhandledRejection', (reason) => {

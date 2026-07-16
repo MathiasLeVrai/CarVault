@@ -231,8 +231,12 @@ async function sendWeeklyEmail(email, firstName, data) {
 }
 
 function startWeeklyDigestCron() {
-  // Chaque lundi à 8h
-  cron.schedule('0 8 * * 1', () => generateWeeklyDigest());
+  const { withCronLock } = require('./lock');
+  cron.schedule('0 8 * * 1', () => {
+    withCronLock('weekly-digest', generateWeeklyDigest).catch((err) => {
+      console.error('[CRON] weekly-digest error:', err.message);
+    });
+  });
   console.log('[CRON] Digest hebdomadaire activé (lundi 8h).');
 }
 

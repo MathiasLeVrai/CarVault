@@ -1,9 +1,11 @@
 const shareService = require('../services/share.service');
 const healthService = require('../services/health.service');
 const pdfService = require('../services/pdf.service');
+const storageService = require('../services/storage.service');
 
 function readPassword(req) {
-  return req.headers['x-share-password'] || req.query.p || null;
+  // Header only — never accept ?p= (leaks via history, logs, Referer)
+  return req.headers['x-share-password'] || null;
 }
 
 function sanitizeFilename(name) {
@@ -62,7 +64,7 @@ class ShareController {
 
       shareService.trackView(link.id).catch(() => {});
 
-      res.json({
+      const payload = {
         vehicle: sanitizeVehicleForShare(vehicle, link),
         documents: vehicle.documents.map(d => ({
           name: d.name, type: d.type, expirationDate: d.expirationDate, createdAt: d.createdAt,
@@ -74,7 +76,8 @@ class ShareController {
         health,
         expiresAt: link.expiresAt,
         sharedAt: link.createdAt,
-      });
+      };
+      res.json(await storageService.signAssets(payload));
     } catch (error) { next(error); }
   }
 

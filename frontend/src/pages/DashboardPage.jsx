@@ -1,6 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useNavigate, Link } from 'react-router-dom';
 import { dashboardApi, vehicleApi } from '../services/api';
+import { queryKeys } from '../lib/query';
 import { PRICING } from '../constants/pricing';
 import { useAuth } from '../context/AuthContext';
 import { shouldShowSubscriptions } from '../services/purchases';
@@ -105,12 +107,13 @@ function ActionCard({ card, onClick }) {
 export default function DashboardPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
+
+  const { data, isLoading: loading } = useQuery({
+    queryKey: queryKeys.dashboard,
+    queryFn: () => dashboardApi.getData(),
+  });
 
   useEffect(() => {
-    dashboardApi.getData().then(setData).catch(() => {}).finally(() => setLoading(false));
-    // Backfill Crit'Air/CO2/puissance fiscale pour les véhicules existants (une fois par session)
     if (!sessionStorage.getItem('cv_backfill_done')) {
       vehicleApi.backfill().catch(() => {}).finally(() => sessionStorage.setItem('cv_backfill_done', '1'));
     }

@@ -9,7 +9,7 @@ router.use(authenticate);
 router.get('/:vehicleId', async (req, res, next) => {
   try {
     const vehicle = await prisma.vehicule.findFirst({
-      where: { id: req.params.vehicleId, userId: req.user.id },
+      where: { id: req.params.vehicleId, userId: req.userId },
       select: { estimatedValue: true, updatedAt: true },
     });
 
@@ -36,7 +36,7 @@ router.put('/:vehicleId', async (req, res, next) => {
     }
 
     const vehicle = await prisma.vehicule.findFirst({
-      where: { id: req.params.vehicleId, userId: req.user.id },
+      where: { id: req.params.vehicleId, userId: req.userId },
     });
 
     if (!vehicle) {

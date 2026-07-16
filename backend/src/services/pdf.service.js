@@ -1,6 +1,5 @@
 const PDFDocument = require('pdfkit');
-const path = require('path');
-const fs = require('fs');
+const storageService = require('./storage.service');
 
 // Labels français
 const DOC_TYPES = {
@@ -38,46 +37,11 @@ const COLORS = {
   red: '#ef4444',
 };
 
-// Résout le chemin physique d'une photo véhicule (stockée en DB comme /uploads/vehicles/xxx)
-function resolvePhotoPath(photoUrl) {
-  if (!photoUrl || typeof photoUrl !== 'string') return null;
-  const relative = photoUrl.replace(/^\//, '');
-  const candidates = [
-    path.join(__dirname, '..', '..', relative),
-    path.join(process.cwd(), relative),
-  ];
-  for (const p of candidates) {
-    try {
-      if (fs.existsSync(p)) return p;
-    } catch { /* ignore */ }
-  }
-  return null;
-}
-
 async function resolvePhotoSource(photoUrl) {
-  const localPath = resolvePhotoPath(photoUrl);
-  if (localPath) return localPath;
-  if (!photoUrl || typeof photoUrl !== 'string') return null;
-
-  let remoteUrl = photoUrl;
-  if (!/^https?:\/\//i.test(remoteUrl)) {
-    const publicStorageUrl = (process.env.R2_PUBLIC_URL || '').replace(/\/$/, '');
-    const appUrl = (process.env.APP_URL || '').replace(/\/$/, '');
-    const baseUrl = /^\/uploads\//.test(remoteUrl) ? appUrl : publicStorageUrl;
-    if (!baseUrl) return null;
-    remoteUrl = `${baseUrl}${remoteUrl.startsWith('/') ? remoteUrl : `/${remoteUrl}`}`;
-  }
-
-  try {
-    const response = await fetch(remoteUrl);
-    if (!response.ok) return null;
-    return Buffer.from(await response.arrayBuffer());
-  } catch {
-    return null;
-  }
+  return storageService.getObjectBuffer(photoUrl);
 }
 
-const getPhotoSource = (vehicle) => vehicle?._pdfPhotoSource || resolvePhotoPath(vehicle?.photo);
+const getPhotoSource = (vehicle) => vehicle?._pdfPhotoSource || null;
 
 class PdfService {
   /**

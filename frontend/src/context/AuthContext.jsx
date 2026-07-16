@@ -2,6 +2,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import * as Sentry from '@sentry/react';
 import { authApi } from '../services/api';
+import { isNativeCapacitor } from '../instrument';
 import { configurePurchases, logoutPurchases, areIosSubscriptionsEnabled, isIosNative } from '../services/purchases';
 
 const AuthContext = createContext(null);
@@ -9,6 +10,22 @@ const AuthContext = createContext(null);
 const STORAGE_TOKEN = 'carvault_token';
 const STORAGE_REFRESH = 'carvault_refresh_token';
 const STORAGE_USER = 'carvault_user';
+
+function persistSession(userData, token, refreshToken) {
+  localStorage.setItem(STORAGE_TOKEN, token);
+  localStorage.setItem(STORAGE_USER, JSON.stringify(userData));
+  if (isNativeCapacitor() && refreshToken) {
+    localStorage.setItem(STORAGE_REFRESH, refreshToken);
+  } else {
+    localStorage.removeItem(STORAGE_REFRESH);
+  }
+}
+
+function clearSessionStorage() {
+  localStorage.removeItem(STORAGE_TOKEN);
+  localStorage.removeItem(STORAGE_REFRESH);
+  localStorage.removeItem(STORAGE_USER);
+}
 
 export function AuthProvider({ children }) {
   // Optimistic: render immediately from localStorage (no loading spinner)
@@ -50,9 +67,7 @@ export function AuthProvider({ children }) {
         // If we still get 401 after auto-refresh attempt, token is truly dead
         const status = err?.status;
         if (status === 401 || status === 403) {
-          localStorage.removeItem(STORAGE_TOKEN);
-          localStorage.removeItem(STORAGE_REFRESH);
-          localStorage.removeItem(STORAGE_USER);
+          clearSessionStorage();
           setUser(null);
         }
       });
@@ -68,9 +83,7 @@ export function AuthProvider({ children }) {
 
   const login = async (email, password) => {
     const { user: userData, token, refreshToken } = await authApi.login({ email, password });
-    localStorage.setItem(STORAGE_TOKEN, token);
-    localStorage.setItem(STORAGE_REFRESH, refreshToken);
-    localStorage.setItem(STORAGE_USER, JSON.stringify(userData));
+    persistSession(userData, token, refreshToken);
     setUser(userData);
     if (!isIosNative() || areIosSubscriptionsEnabled()) {
       await configurePurchases(userData.id).catch(() => {});
@@ -80,9 +93,7 @@ export function AuthProvider({ children }) {
 
   const register = async (data) => {
     const { user: userData, token, refreshToken } = await authApi.register(data);
-    localStorage.setItem(STORAGE_TOKEN, token);
-    localStorage.setItem(STORAGE_REFRESH, refreshToken);
-    localStorage.setItem(STORAGE_USER, JSON.stringify(userData));
+    persistSession(userData, token, refreshToken);
     setUser(userData);
     if (!isIosNative() || areIosSubscriptionsEnabled()) {
       await configurePurchases(userData.id).catch(() => {});
@@ -91,12 +102,10 @@ export function AuthProvider({ children }) {
   };
 
   const logout = () => {
-    // Revoke refresh tokens server-side (best effort)
+    // Revoke refresh tokens server-side (best effort) — also clears HttpOnly cookie
     authApi.logout().catch(() => {});
     logoutPurchases().catch(() => {});
-    localStorage.removeItem(STORAGE_TOKEN);
-    localStorage.removeItem(STORAGE_REFRESH);
-    localStorage.removeItem(STORAGE_USER);
+    clearSessionStorage();
     setUser(null);
   };
 
@@ -124,8 +133,6 @@ export function AuthProvider({ children }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth doit être utilisé dans un AuthProvider');
-  }
+  if (!context) throw new Error('useAuth must be used within AuthProvider');
   return context;
 }

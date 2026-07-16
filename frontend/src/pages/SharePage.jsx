@@ -151,13 +151,12 @@ export default function SharePage() {
 
   if (!data) return null;
   const { vehicle, documents, expenses, stats, health, expiresAt } = data;
-  const pdfHref = password
-    ? getApiUrl(`/share/${token}/pdf?p=${encodeURIComponent(password)}`)
-    : getApiUrl(`/share/${token}/pdf`);
+  const pdfUrl = getApiUrl(`/share/${token}/pdf`);
 
   const handlePdfDownload = async (e) => {
     e.preventDefault();
-    await downloadPdfFromUrl(pdfHref, 'Carvio_Dossier.pdf');
+    const headers = password ? { 'X-Share-Password': password } : {};
+    await downloadPdfFromUrl(pdfUrl, 'Carvio_Dossier.pdf', headers);
   };
 
   return (
@@ -180,13 +179,13 @@ export default function SharePage() {
               <p className="text-[10px] text-ink-muted font-semibold uppercase tracking-widest">Dossier partagé</p>
             </div>
           </div>
-          <a
-            href={pdfHref}
+          <button
+            type="button"
             onClick={handlePdfDownload}
             className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-accent text-white text-sm font-bold hover:bg-accent/80 transition-colors shadow-[0_0_20px_rgba(255,42,63,0.3)]"
           >
             <FileDown className="w-4 h-4" /> Télécharger le PDF
-          </a>
+          </button>
         </div>
 
         {/* Vehicle Hero */}

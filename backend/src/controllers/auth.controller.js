@@ -1,20 +1,17 @@
 const authService = require('../services/auth.service');
+const storageService = require('../services/storage.service');
+const {
+  sendAuthResponse,
+  sendRefreshResponse,
+  getRefreshTokenFromRequest,
+  clearRefreshCookie,
+} = require('../utils/refresh-cookie');
 
 class AuthController {
   async register(req, res, next) {
     try {
-      const { email, password, firstName, lastName } = req.body;
-
-      if (!email || !password || !firstName || !lastName) {
-        return res.status(400).json({ error: 'Tous les champs sont requis' });
-      }
-
-      if (password.length < 8) {
-        return res.status(400).json({ error: 'Le mot de passe doit contenir au moins 8 caractères' });
-      }
-
-      const result = await authService.register({ email, password, firstName, lastName });
-      res.status(201).json(result);
+      const result = await authService.register(req.body);
+      return sendAuthResponse(req, res, result, 201);
     } catch (error) {
       next(error);
     }
@@ -22,14 +19,8 @@ class AuthController {
 
   async login(req, res, next) {
     try {
-      const { email, password } = req.body;
-
-      if (!email || !password) {
-        return res.status(400).json({ error: 'Email et mot de passe requis' });
-      }
-
-      const result = await authService.login({ email, password });
-      res.json(result);
+      const result = await authService.login(req.body);
+      return sendAuthResponse(req, res, result);
     } catch (error) {
       next(error);
     }
@@ -38,7 +29,7 @@ class AuthController {
   async getProfile(req, res, next) {
     try {
       const user = await authService.getProfile(req.userId);
-      res.json(user);
+      res.json(await storageService.signAssets(user));
     } catch (error) {
       next(error);
     }
@@ -46,13 +37,14 @@ class AuthController {
 
   async refresh(req, res, next) {
     try {
-      const { refreshToken } = req.body;
+      const refreshToken = getRefreshTokenFromRequest(req);
       if (!refreshToken) {
         return res.status(400).json({ error: 'Refresh token requis' });
       }
       const result = await authService.refresh(refreshToken);
-      res.json(result);
+      return sendRefreshResponse(req, res, result);
     } catch (error) {
+      clearRefreshCookie(res);
       next(error);
     }
   }
@@ -60,6 +52,7 @@ class AuthController {
   async logout(req, res, next) {
     try {
       await authService.revokeRefreshTokens(req.userId);
+      clearRefreshCookie(res);
       res.json({ message: 'Déconnexion réussie' });
     } catch (error) {
       next(error);
@@ -68,13 +61,8 @@ class AuthController {
 
   async forgotPassword(req, res, next) {
     try {
-      const { email } = req.body;
-      if (!email) {
-        return res.status(400).json({ error: 'Email requis' });
-      }
-      await authService.forgotPassword(email);
-      // Toujours répondre OK pour ne pas révéler si l'email existe
-      res.json({ message: 'Si un compte existe avec cet email, un lien de réinitialisation a été envoyé.' });
+      await authService.forgotPassword(req.body.email);
+      res.json({ message: 'Si un compte existe pour cet email, un lien de réinitialisation a été envoyé.' });
     } catch (error) {
       next(error);
     }
@@ -83,13 +71,8 @@ class AuthController {
   async resetPassword(req, res, next) {
     try {
       const { token, password } = req.body;
-      if (!token || !password) {
-        return res.status(400).json({ error: 'Token et nouveau mot de passe requis' });
-      }
-      if (password.length < 8) {
-        return res.status(400).json({ error: 'Le mot de passe doit contenir au moins 8 caractères' });
-      }
       await authService.resetPassword(token, password);
+      clearRefreshCookie(res);
       res.json({ message: 'Mot de passe réinitialisé avec succès.' });
     } catch (error) {
       next(error);
@@ -106,7 +89,7 @@ class AuthController {
         avatarBuffer: file?.buffer,
         avatarOriginalname: file?.originalname,
       });
-      res.json(user);
+      res.json(await storageService.signAssets(user));
     } catch (error) {
       next(error);
     }
@@ -114,8 +97,8 @@ class AuthController {
 
   async deleteAccount(req, res, next) {
     try {
-      const { password } = req.body;
-      await authService.deleteAccount(req.userId, password);
+      await authService.deleteAccount(req.userId, req.body.password);
+      clearRefreshCookie(res);
       res.json({ message: 'Votre compte et toutes vos données ont été supprimés définitivement.' });
     } catch (error) {
       next(error);

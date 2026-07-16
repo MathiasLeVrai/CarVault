@@ -329,8 +329,12 @@ async function runBudgetChecks() {
 }
 
 function startBudgetCron() {
-  // Every day at 9am
-  cron.schedule('0 9 * * *', () => runBudgetChecks());
+  const { withCronLock } = require('./lock');
+  cron.schedule('0 9 * * *', () => {
+    withCronLock('budget', runBudgetChecks).catch((err) => {
+      console.error('[CRON] budget error:', err.message);
+    });
+  });
   console.log('[CRON] Budget & stats activées (quotidien 9h).');
 }
 

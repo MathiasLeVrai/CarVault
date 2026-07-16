@@ -345,9 +345,9 @@ async function runEngagementChecks() {
 }
 
 function startEngagementCron() {
-  // Every day at 10am
+  const { withCronLock } = require('./lock');
   cron.schedule('0 10 * * *', () => {
-    runEngagementChecks().catch(err => {
+    withCronLock('engagement', runEngagementChecks).catch((err) => {
       console.error('[CRON] Engagement error:', err.message);
     });
   });

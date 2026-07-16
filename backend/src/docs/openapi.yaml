@@ -516,6 +516,11 @@ paths:
           name: token
           required: true
           schema: { type: string }
+        - in: header
+          name: X-Share-Password
+          required: false
+          schema: { type: string }
+          description: Mot de passe du lien (ne jamais passer en query string)
 
   /api/share/{token}/pdf:
     get:
@@ -525,6 +530,30 @@ paths:
       parameters:
         - in: path
           name: token
+          required: true
+          schema: { type: string }
+        - in: header
+          name: X-Share-Password
+          required: false
+          schema: { type: string }
+          description: Mot de passe du lien (ne jamais passer en query string)
+
+  /api/media:
+    get:
+      tags: [Media]
+      summary: Stream d'un fichier local signé (HMAC)
+      security: []
+      parameters:
+        - in: query
+          name: p
+          required: true
+          schema: { type: string }
+        - in: query
+          name: e
+          required: true
+          schema: { type: integer }
+        - in: query
+          name: s
           required: true
           schema: { type: string }
 

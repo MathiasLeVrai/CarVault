@@ -1,12 +1,11 @@
 /**
  * Carvio Service Worker
- * Cache les ressources statiques et les réponses API pour le mode offline.
+ * Cache les ressources statiques pour le mode offline.
+ * Ne cache jamais les réponses API authentifiées ni les médias privés.
  */
 
-const CACHE_VERSION = 'carvio-v3';
+const CACHE_VERSION = 'carvio-v4';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
-const API_CACHE = `${CACHE_VERSION}-api`;
-const UPLOADS_CACHE = `${CACHE_VERSION}-uploads`;
 
 // Ressources à pré-cacher (shell de l'app)
 const PRECACHE_URLS = [
@@ -19,6 +18,11 @@ const PRECACHE_URLS = [
   '/icons/favicon-dark.png',
 ];
 
+// Endpoints API publics (sans données utilisateur) — seuls GET autorisés en cache offline
+const PUBLIC_API_CACHE_ALLOWLIST = [
+  /^\/api\/brands\/plate\//,
+];
+
 // ===== Installation =====
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -27,7 +31,6 @@ self.addEventListener('install', (event) => {
       return cache.addAll(PRECACHE_URLS);
     })
   );
-  // Activer immédiatement sans attendre les onglets existants
   self.skipWaiting();
 });
 
@@ -37,7 +40,7 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((keys) => {
       return Promise.all(
         keys
-          .filter((key) => (key.startsWith('carvio-') || key.startsWith('carvault-')) && key !== STATIC_CACHE && key !== API_CACHE && key !== UPLOADS_CACHE)
+          .filter((key) => (key.startsWith('carvio-') || key.startsWith('carvault-')) && key !== STATIC_CACHE)
           .map((key) => {
             console.log('[SW] Suppression ancien cache:', key);
             return caches.delete(key);
@@ -45,41 +48,49 @@ self.addEventListener('activate', (event) => {
       );
     })
   );
-  // Prendre le contrôle de tous les clients immédiatement
   self.clients.claim();
 });
+
+function isPublicApiPath(pathname) {
+  return PUBLIC_API_CACHE_ALLOWLIST.some((re) => re.test(pathname));
+}
+
+function hasAuthCredentials(request) {
+  if (request.headers.get('Authorization')) return true;
+  const cookie = request.headers.get('Cookie') || '';
+  return /(?:^|;\s*)carvault_rt=/.test(cookie);
+}
 
 // ===== Fetch =====
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Ignorer les requêtes non-GET
   if (request.method !== 'GET') return;
-
-  // Ignorer les schemes non-http (chrome-extension://, etc.)
   if (!request.url.startsWith('http')) return;
 
-  // Stratégie pour les appels API : Network First (réseau d'abord, cache en fallback)
+  // API : network-only sauf allowlist publique sans credentials
   if (url.pathname.startsWith('/api/')) {
-    event.respondWith(networkFirst(request, API_CACHE));
+    if (isPublicApiPath(url.pathname) && !hasAuthCredentials(request)) {
+      event.respondWith(networkFirst(request, STATIC_CACHE));
+      return;
+    }
+    event.respondWith(networkOnly(request));
     return;
   }
 
-  // Uploads (avatars, photos, documents) : Cache First
-  if (url.pathname.startsWith('/uploads/')) {
-    event.respondWith(cacheFirst(request, UPLOADS_CACHE));
+  // Médias privés (uploads historiques + proxy signé) : jamais de cache
+  if (url.pathname.startsWith('/uploads/') || url.pathname.startsWith('/api/media')) {
+    event.respondWith(networkOnly(request));
     return;
   }
 
-  // Stratégie pour les Fonts (Google + FontShare) : Cache First
   if (url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com'
     || url.hostname === 'api.fontshare.com' || url.hostname === 'cdn.fontshare.com') {
     event.respondWith(cacheFirst(request, STATIC_CACHE));
     return;
   }
 
-  // Navigation (pages HTML) : Network First avec fallback sur index.html (SPA)
   if (request.mode === 'navigate') {
     event.respondWith(
       fetch(request).catch(() => caches.match('/index.html'))
@@ -87,23 +98,28 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Assets statiques JS/CSS : Network First pour toujours avoir la dernière version
-  // (Vite ajoute des hash aux fichiers, donc les requêtes réseau sont rapides)
   if (url.pathname.match(/\.(js|css)$/)) {
     event.respondWith(networkFirst(request, STATIC_CACHE));
     return;
   }
 
-  // Tout le reste (images, fonts, etc.) : Cache First
   event.respondWith(cacheFirst(request, STATIC_CACHE));
 });
 
-// ===== Stratégies de cache =====
+async function networkOnly(request) {
+  try {
+    return await fetch(request);
+  } catch {
+    if (request.url.includes('/api/')) {
+      return new Response(JSON.stringify({ offline: true, error: 'Vous êtes hors ligne' }), {
+        headers: { 'Content-Type': 'application/json' },
+        status: 503,
+      });
+    }
+    return new Response('Offline', { status: 503 });
+  }
+}
 
-/**
- * Network First : essaie le réseau, cache en fallback
- * Idéal pour les données dynamiques (API)
- */
 async function networkFirst(request, cacheName) {
   try {
     const response = await fetch(request);
@@ -115,7 +131,6 @@ async function networkFirst(request, cacheName) {
   } catch {
     const cached = await caches.match(request);
     if (cached) return cached;
-    // Retourner une réponse JSON vide pour les API en offline
     return new Response(JSON.stringify({ offline: true, error: 'Vous êtes hors ligne' }), {
       headers: { 'Content-Type': 'application/json' },
       status: 503,
@@ -155,10 +170,6 @@ self.addEventListener('notificationclick', (event) => {
   );
 });
 
-/**
- * Cache First : cache prioritaire, réseau en fallback
- * Idéal pour les ressources statiques
- */
 async function cacheFirst(request, cacheName) {
   const cached = await caches.match(request);
   if (cached) return cached;
@@ -171,7 +182,6 @@ async function cacheFirst(request, cacheName) {
     }
     return response;
   } catch {
-    // Fallback générique pour les images
     if (request.destination === 'image') {
       return new Response('', { status: 404 });
     }

@@ -9,6 +9,10 @@ const { AppError } = require('../middleware/error.middleware');
 
 const REFRESH_TOKEN_EXPIRY_DAYS = 30;
 
+function hashToken(value) {
+  return crypto.createHash('sha256').update(String(value)).digest('hex');
+}
+
 class AuthService {
   /**
    * Inscription d'un nouvel utilisateur
@@ -127,19 +131,23 @@ class AuthService {
    * Rafraîchir les tokens via refresh token
    */
   async refresh(refreshTokenValue) {
-    const stored = await prisma.refreshToken.findUnique({
-      where: { token: refreshTokenValue },
-    });
+    const presented = String(refreshTokenValue || '');
+    const hashed = hashToken(presented);
+
+    // Prefer hashed lookup; fall back to legacy plaintext rows (one rotation upgrades them)
+    let stored = await prisma.refreshToken.findUnique({ where: { token: hashed } });
+    if (!stored) {
+      stored = await prisma.refreshToken.findUnique({ where: { token: presented } });
+    }
 
     if (!stored || stored.expiresAt < new Date()) {
-      // Clean up expired token if it exists
       if (stored) {
         await prisma.refreshToken.delete({ where: { id: stored.id } });
       }
       throw new AppError('Refresh token invalide ou expiré', 401);
     }
 
-    // Rotation: delete old, create new
+    // Rotation: delete old, create new (always hashed going forward)
     await prisma.refreshToken.delete({ where: { id: stored.id } });
 
     const token = this.generateToken(stored.userId);
@@ -223,7 +231,8 @@ class AuthService {
   }
 
   /**
-   * Générer et stocker un refresh token (longue durée)
+   * Générer et stocker un refresh token (longue durée).
+   * Seul le hash SHA-256 est persisté — le plaintext n'est renvoyé qu'une fois au client.
    */
   async generateRefreshToken(userId) {
     const token = crypto.randomBytes(40).toString('hex');
@@ -231,10 +240,9 @@ class AuthService {
     expiresAt.setDate(expiresAt.getDate() + REFRESH_TOKEN_EXPIRY_DAYS);
 
     await prisma.refreshToken.create({
-      data: { token, userId, expiresAt },
+      data: { token: hashToken(token), userId, expiresAt },
     });
 
-    // Clean up old expired tokens for this user
     await prisma.refreshToken.deleteMany({
       where: { userId, expiresAt: { lt: new Date() } },
     });

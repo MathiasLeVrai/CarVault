@@ -167,8 +167,12 @@ async function sendMonthlyEmail(email, firstName, monthName, data) {
 }
 
 function startMonthlyReportCron() {
-  // Le 1er de chaque mois à 9h
-  cron.schedule('0 9 1 * *', () => generateMonthlyReport());
+  const { withCronLock } = require('./lock');
+  cron.schedule('0 9 1 * *', () => {
+    withCronLock('monthly-report', generateMonthlyReport).catch((err) => {
+      console.error('[CRON] monthly-report error:', err.message);
+    });
+  });
   console.log('[CRON] Rapport mensuel activé (1er du mois à 9h).');
 }
 

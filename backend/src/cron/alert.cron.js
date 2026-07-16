@@ -436,8 +436,12 @@ async function runAllAlertChecks() {
  * Démarrer le cron — toutes les 6 heures + exécution au boot
  */
 function startAlertCron() {
-  setTimeout(() => runAllAlertChecks(), 10_000);
-  cron.schedule('0 */6 * * *', () => runAllAlertChecks());
+  const { withCronLock } = require('./lock');
+  const run = () => withCronLock('alerts', runAllAlertChecks).catch((err) => {
+    console.error('[CRON] alerts lock/run error:', err.message);
+  });
+  setTimeout(run, 10_000);
+  cron.schedule('0 */6 * * *', run);
   console.log('[CRON] Alertes intelligentes activées (toutes les 6h).');
 }
 

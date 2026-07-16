@@ -15,7 +15,7 @@ class VehicleController {
   async getAll(req, res, next) {
     try {
       const vehicles = await vehicleService.getAll(req.userId);
-      res.json(vehicles);
+      res.json(await storageService.signAssets(vehicles));
     } catch (error) {
       next(error);
     }
@@ -26,7 +26,7 @@ class VehicleController {
       const vehicle = await vehicleService.getById(req.params.id, req.userId);
       let health = null;
       try { health = await healthService.getHealthScore(req.params.id, req.userId); } catch { /* health optionnel */ }
-      res.json({ ...vehicle, health });
+      res.json(await storageService.signAssets({ ...vehicle, health }));
     } catch (error) {
       next(error);
     }
@@ -50,50 +50,37 @@ class VehicleController {
               carapiTrimId, msrp, horsepower, engineSize, transmission, bodyType, doors,
               fiscalPower, co2, firstRegistrationDate } = req.body;
 
-      if (!brand || !model || !year) {
-        return res.status(400).json({ error: 'Marque, modèle et année sont requis' });
-      }
-
       // Carte grise optionnelle
       const regFile = req.files?.registrationDoc?.[0];
 
-      // Vérifier que la plaque n'est pas déjà prise par un autre utilisateur
-      if (licensePlate) {
-        const existing = await prisma.vehicule.findFirst({
-          where: { licensePlate: licensePlate.toUpperCase().replace(/\s+/g, '-'), userId: { not: req.userId } },
-        });
-        if (existing) {
-          return res.status(409).json({ error: 'Ce véhicule est déjà enregistré par un autre utilisateur', code: 'PLATE_TAKEN' });
-        }
-      }
 
       const photoFile = req.files?.photo?.[0];
       const photo = photoFile
         ? await storageService.upload(photoFile.buffer, photoFile.originalname, 'vehicles')
         : null;
 
-      const parsedMileage = parseInt(mileage) || 0;
+      const parsedMileage = mileage != null ? Number(mileage) : 0;
       const data = {
         brand,
         model,
-        year: parseInt(year),
+        year: Number(year),
         mileage: parsedMileage,
         purchaseMileage: parsedMileage,
         licensePlate: licensePlate || null,
         color: color || null,
         fuelType: fuelType || 'GASOLINE',
-        purchasePrice: purchasePrice ? parseFloat(purchasePrice) : null,
-        annualKmGoal: annualKmGoal ? parseInt(annualKmGoal) : null,
+        purchasePrice: purchasePrice != null ? Number(purchasePrice) : null,
+        annualKmGoal: annualKmGoal != null ? Number(annualKmGoal) : null,
         photo,
-        carapiTrimId: carapiTrimId ? parseInt(carapiTrimId) : null,
-        msrp: msrp ? parseFloat(msrp) : null,
-        horsepower: horsepower ? parseInt(horsepower) : null,
-        engineSize: engineSize ? parseFloat(engineSize) : null,
+        carapiTrimId: carapiTrimId ? parseInt(carapiTrimId, 10) : null,
+        msrp: msrp != null ? Number(msrp) : null,
+        horsepower: horsepower != null ? Number(horsepower) : null,
+        engineSize: engineSize != null ? Number(engineSize) : null,
         transmission: transmission || null,
         bodyType: bodyType || null,
-        doors: doors ? parseInt(doors) : null,
-        fiscalPower: fiscalPower ? parseInt(fiscalPower) : null,
-        co2: co2 ? parseInt(co2) : null,
+        doors: doors != null ? Number(doors) : null,
+        fiscalPower: fiscalPower != null ? Number(fiscalPower) : null,
+        co2: co2 != null ? Number(co2) : null,
         firstRegistrationDate: firstRegistrationDate ? new Date(firstRegistrationDate) : null,
         critAir: computeCritAir(fuelType || 'GASOLINE', firstRegistrationDate || null),
       };
@@ -140,7 +127,7 @@ class VehicleController {
         });
       }
 
-      res.status(201).json(vehicle);
+      res.status(201).json(await storageService.signAssets(vehicle));
     } catch (error) {
       next(error);
     }
@@ -167,7 +154,7 @@ class VehicleController {
       }
 
       const vehicle = await vehicleService.update(req.params.id, data, req.userId);
-      res.json(vehicle);
+      res.json(await storageService.signAssets(vehicle));
     } catch (error) {
       next(error);
     }
