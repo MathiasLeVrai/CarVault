@@ -24,7 +24,6 @@
     "concurrently": "^9.1.0"
   },
   "dependencies": {
-    "@aws-sdk/s3-request-presigner": "^3.1088.0",
     "@capacitor/android": "^8.3.1",
     "@capacitor/core": "^8.3.1",
     "@capacitor/filesystem": "^8.1.2",

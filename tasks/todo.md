@@ -1,15 +1,10 @@
-# Vague 2 — fondations
+# Fix: missing `@aws-sdk/s3-request-presigner` in prod
 
-## Tasks
-- [x] Zod : middleware `validate` + schémas auth / vehicle / document / share
-- [x] Refresh tokens stockés en SHA-256 (compat legacy plaintext au refresh)
-- [x] Crons : entrée `worker.js` + garde `RUN_CRONS` + lock table `cron_locks`
-- [x] TanStack Query : provider + Dashboard / Vehicles / Documents / Expenses / VehicleDetail
-- [x] Vérifier lint/smoke + Review
+## Plan
+- [x] Add `@aws-sdk/s3-request-presigner` to `backend/package.json` (used by `storage.service.js`)
+- [x] Remove misplaced dep from root `package.json` (Capacitor-only workspace)
+- [x] `npm install` in backend to update lockfile
+- [x] Verify require resolves
 
 ## Review
-- **Zod** : `validate.middleware` + `validation/schemas.js` branchés sur auth, vehicles (create/update/id), documents (create/delete), share (create/links/revoke). Controllers auth allégés.
-- **Refresh tokens** : `generateRefreshToken` persiste `sha256(token)` ; `refresh()` lookup hash puis fallback plaintext legacy (une rotation migre). Pas de migration Prisma.
-- **Crons** : `src/worker.js` + `npm run worker` ; API skip crons en `production` sauf `RUN_CRONS=1` ; local non-prod garde les crons. Mutex `cron_locks` (CREATE IF NOT EXISTS) pool-safe.
-- **TanStack Query** : `QueryClientProvider` + `lib/query.js` ; pages Dashboard/Vehicles/Documents/Expenses/VehicleDetail + MaintenancePlanCard invalidation.
-- Lint backend OK ; frontend pages OK (1 warning hooks préexistant Documents). Smoke Zod OK.
+Cause: `storage.service.js` require `@aws-sdk/s3-request-presigner`, but the dep lived only in the root `package.json`. Prod image (`/app/backend`) only installs backend deps → MODULE_NOT_FOUND at boot (auth → storage chain). Fix: move dep into `backend/package.json` and remove from root. Verified with `require('./backend/src/services/storage.service.js')`.
