@@ -2,12 +2,12 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>CAPACITOR_DEBUG</key>
+	<key>CAPACITOR_DEBUG</key>
 	<string>$(CAPACITOR_DEBUG)</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-        <string>Carvio</string>
+	<string>Carvio</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -22,20 +22,24 @@
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
-	<key>LSRequiresIPhoneOS</key>
-	<true/>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Carvio utilise votre position pour afficher les garages, centres de contrôle technique, stations de lavage et carburants proches de vous.</string>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>Carvio utilise votre position pour afficher les services automobiles proches de vous lorsque vous utilisez la carte.</string>
-	<key>NSCameraUsageDescription</key>
-	<string>Carvio utilise l'appareil photo pour ajouter des photos de véhicules et documents.</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Carvio utilise votre photothèque pour sélectionner des photos de véhicules et documents.</string>
-	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Carvio peut enregistrer des exports PDF ou images si vous le demandez.</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Carvio utilise l'appareil photo pour ajouter des photos de véhicules et documents.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Carvio utilise votre position pour afficher les services automobiles proches de vous lorsque vous utilisez la carte.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Carvio utilise votre position pour afficher les garages, centres de contrôle technique, stations de lavage et carburants proches de vous.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Carvio peut enregistrer des exports PDF ou images si vous le demandez.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Carvio utilise votre photothèque pour sélectionner des photos de véhicules et documents.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

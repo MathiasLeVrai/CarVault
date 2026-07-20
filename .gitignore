@@ -17,3 +17,5 @@ test-results/
 tasks/
 CLAUDE.md
 skills-lock.json
+# Clés secrètes (ne jamais committer)
+*.p8
