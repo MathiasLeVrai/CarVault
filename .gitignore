@@ -11,3 +11,9 @@ e2e/reports/
 e2e/test-results/
 playwright-report/
 test-results/
+.cursor/
+.agents/
+.claude/
+tasks/
+CLAUDE.md
+skills-lock.json

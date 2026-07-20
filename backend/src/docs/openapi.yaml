@@ -620,3 +620,28 @@ paths:
               type: object
               properties:
                 endpoint: { type: string }
+
+  /api/push/native-subscribe:
+    post:
+      tags: [Push]
+      summary: Enregistrer un token device natif (Capacitor iOS via APNs)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token: { type: string }
+                platform: { type: string, enum: [IOS] }
+
+  /api/push/native-unsubscribe:
+    post:
+      tags: [Push]
+      summary: Désinscrire un token device natif
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token: { type: string }

@@ -36,4 +36,31 @@ router.post('/unsubscribe', async (req, res, next) => {
   }
 });
 
+// Register a native device token (Capacitor iOS via APNs)
+router.post('/native-subscribe', async (req, res, next) => {
+  try {
+    const { token, platform } = req.body;
+    if (!token) return res.status(400).json({ error: 'Token requis' });
+    if (platform !== 'IOS') {
+      return res.status(400).json({ error: 'Plateforme invalide' });
+    }
+    await pushService.subscribeNative(req.userId, token);
+    res.json({ ok: true });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Unregister a native device token
+router.post('/native-unsubscribe', async (req, res, next) => {
+  try {
+    const { token } = req.body;
+    if (!token) return res.status(400).json({ error: 'Token requis' });
+    await pushService.unsubscribeNative(req.userId, token);
+    res.json({ ok: true });
+  } catch (error) {
+    next(error);
+  }
+});
+
 module.exports = router;

@@ -223,12 +223,18 @@ model EntreeCarburant {
   @@map("entrees_carburant")
 }
 
+enum PlateformePush {
+  WEB
+  IOS
+}
+
 model AbonnementPush {
-  id        String   @id @default(uuid())
+  id        String         @id @default(uuid())
   endpoint  String
-  p256dh    String
-  auth      String
-  createdAt DateTime @default(now())
+  platform  PlateformePush @default(WEB)
+  p256dh    String?
+  auth      String?
+  createdAt DateTime       @default(now())
 
   userId String
   user   Utilisateur @relation(fields: [userId], references: [id], onDelete: Cascade)

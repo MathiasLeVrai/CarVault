@@ -12,22 +12,26 @@ export function formatCurrency(amount) {
  * Formater une date
  */
 export function formatDate(date) {
+  const d = new Date(date);
+  if (!Number.isFinite(d.getTime())) return '—';
   return new Intl.DateTimeFormat('fr-FR', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
-  }).format(new Date(date));
+  }).format(d);
 }
 
 /**
  * Formater une date courte
  */
 export function formatDateShort(date) {
+  const d = new Date(date);
+  if (!Number.isFinite(d.getTime())) return '—';
   return new Intl.DateTimeFormat('fr-FR', {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
-  }).format(new Date(date));
+  }).format(d);
 }
 
 /**

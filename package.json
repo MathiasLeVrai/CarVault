@@ -11,7 +11,6 @@
     "build:frontend": "cd frontend && npm run build",
     "cap:sync": "npm run build:frontend && npx cap sync",
     "cap:open:ios": "npx cap open ios",
-    "cap:open:android": "npx cap open android",
     "db:migrate": "cd backend && npx prisma migrate dev",
     "db:seed": "cd backend && npx prisma db seed",
     "test:e2e": "playwright test",
@@ -24,11 +23,11 @@
     "concurrently": "^9.1.0"
   },
   "dependencies": {
-    "@capacitor/android": "^8.3.1",
     "@capacitor/core": "^8.3.1",
     "@capacitor/filesystem": "^8.1.2",
     "@capacitor/geolocation": "^8.2.0",
     "@capacitor/ios": "^8.3.1",
+    "@capacitor/push-notifications": "^8.1.2",
     "@capacitor/share": "^8.0.1",
     "@revenuecat/purchases-capacitor": "^13.2.0",
     "cookie-parser": "^1.4.7"

@@ -138,6 +138,7 @@ class StorageService {
    */
   async signAssets(value, ttlSeconds = DEFAULT_TTL_SECONDS) {
     if (value == null) return value;
+    if (value instanceof Date || Buffer.isBuffer(value)) return value;
     if (Array.isArray(value)) {
       return Promise.all(value.map((item) => this.signAssets(item, ttlSeconds)));
     }

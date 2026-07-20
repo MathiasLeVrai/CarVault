@@ -1,6 +1,6 @@
 # Carvio — Gestion intelligente de véhicules
 
-**Carvio** est une application **PWA mobile-first** (et apps natives iOS/Android via Capacitor) qui permet aux particuliers de centraliser documents, dépenses, entretien et rappels liés à leurs véhicules. Installable sur l'écran d'accueil, utilisable hors ligne grâce au Service Worker.
+**Carvio** est une application **PWA mobile-first** (et app native iOS via Capacitor) qui permet aux particuliers de centraliser documents, dépenses, entretien et rappels liés à leurs véhicules. Installable sur l'écran d'accueil, utilisable hors ligne grâce au Service Worker.
 
 **Production :** [carvio.fr](https://carvio.fr)
 
@@ -50,7 +50,7 @@ Objectif produit : atteindre **1 véhicule + 1 document + 1 rappel planifié** e
 ### Alertes intelligentes
 - Génération automatique d'alertes : expiration de documents, entretien à prévoir, CT, vidange, pneus saisonniers, restrictions ZFE, budget carburant dépassé, pic de dépenses…
 - Centre de notifications in-app avec snooze
-- Notifications **email** (digest hebdomadaire, rappels) et **Web Push** (PWA)
+- Notifications **email** (digest hebdomadaire, rappels), **Web Push** (PWA) et **push natif iOS** (APNs)
 - Préférences utilisateur : email, push, digest hebdomadaire
 
 ### Suivi dépenses & entretien
@@ -88,8 +88,8 @@ Objectif produit : atteindre **1 véhicule + 1 document + 1 rappel planifié** e
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │  Client                                                     │
-│  React 19 PWA  ·  Capacitor (iOS / Android)                 │
-│  Service Worker (cache offline)  ·  Web Push                │
+│  React 19 PWA  ·  Capacitor (iOS)                           │
+│  Service Worker (cache offline)  ·  Web Push  ·  APNs        │
 └──────────────────────────┬──────────────────────────────────┘
                            │ HTTPS  /api  (/api/media signé)
 ┌──────────────────────────▼──────────────────────────────────┐
@@ -167,8 +167,7 @@ CarVault/
 │   │   └── manifest.json
 │   └── .env.example
 │
-├── ios/                          # Projet Xcode (Capacitor)
-└── android/                      # Projet Android Studio (Capacitor)
+└── ios/                          # Projet Xcode (Capacitor)
 ```
 
 ---
@@ -285,7 +284,8 @@ Variables **optionnelles** (fonctionnalités avancées) :
 | `RUN_CRONS` | `1` pour lancer les crons dans le process API. En prod multi-instance : laisser off et lancer `npm run worker`. En local (non-production) les crons démarrent par défaut. |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` | Emails (reset password, digest) |
 | `FEEDBACK_EMAIL` | Réception des idées utilisateur |
-| `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` | Notifications Web Push |
+| `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` | Notifications Web Push (PWA) |
+| `APNS_KEY_ID`, `APNS_TEAM_ID`, `APNS_BUNDLE_ID`, `APNS_PRIVATE_KEY`, `APNS_PRODUCTION` | Push natif iOS (APNs, clé `.p8`) |
 | `STRIPE_SECRET_KEY`, `STRIPE_PRICE_ID`, `STRIPE_PRICE_ID_YEARLY`, `STRIPE_WEBHOOK_SECRET` | Abonnement Premium (web) |
 | `REVENUECAT_SECRET_API_KEY`, `REVENUECAT_ENTITLEMENT_ID`, `REVENUECAT_WEBHOOK_AUTH` | Abonnement iOS |
 | `SENTRY_DSN`, `SENTRY_RELEASE` | Monitoring backend |
@@ -320,7 +320,7 @@ Copier depuis `frontend/.env.example` :
 | `EntreeCarburant` | Suivi des pleins |
 | `Alerte` | Notification in-app (avec snooze) |
 | `LienPartage` | Lien public de partage de dossier |
-| `AbonnementPush` | Subscription Web Push |
+| `AbonnementPush` | Abonnement push (Web Push ou token APNs iOS) |
 | `RefreshToken` | Refresh token JWT |
 | `PasswordResetToken` | Token de réinitialisation mot de passe |
 
@@ -377,7 +377,7 @@ Désactiver Swagger : `SWAGGER_ENABLED=false` dans `backend/.env`.
 | `/api/notifications/*` | Préférences de notification |
 | `/api/subscription/*` | Statut Premium, checkout Stripe, webhooks |
 | `/api/badges/*` | Badges de gamification |
-| `/api/push/*` | Web Push (clé VAPID, subscription) |
+| `/api/push/*` | Push : Web Push (VAPID) + token natif iOS (APNs) |
 | `/api/cote/*` | Cote La Centrale |
 | `/api/feedback/*` | Envoi d'idées utilisateur |
 
@@ -424,7 +424,7 @@ Les webhooks Stripe et RevenueCat sont enregistrés **avant** `express.json()` p
 
 ## Apps mobiles (Capacitor)
 
-L'app native iOS/Android embarque le build Vite de `frontend/dist`.
+L'app native iOS embarque le build Vite de `frontend/dist`.
 
 ```bash
 # 1. Variables frontend pour un build store/prod
@@ -432,18 +432,16 @@ cp frontend/.env.example frontend/.env
 # VITE_API_URL="https://carvio.fr/api"
 # VITE_PUBLIC_APP_URL="https://carvio.fr"
 
-# 2. Build web + sync projets natifs
+# 2. Build web + sync projet natif
 npm run cap:sync
 
-# 3. Ouvrir les projets natifs
+# 3. Ouvrir le projet natif
 npm run cap:open:ios       # Xcode (ios/)
-npm run cap:open:android   # Android Studio (android/)
 ```
 
 **Publication :**
 - **iOS** — finaliser dans Xcode (`ios/App`) : équipe Apple Developer, signing, archive App Store
-- **Android** — finaliser dans Android Studio : package `fr.carvio.app`, keystore release, AAB Play Store
-- Les notifications actuelles sont du **Web Push** (PWA) ; APNs/FCM natif reste à traiter séparément
+- Notifications : **Web Push** (PWA) + **push natif iOS via APNs** (clé `.p8`, variables `APNS_*`)
 
 ---
 
@@ -545,7 +543,6 @@ Secrets GitHub requis : `FLY_API_TOKEN`.
 | `npm run build:frontend` | Build production frontend |
 | `npm run cap:sync` | Build + `cap sync` |
 | `npm run cap:open:ios` | Ouvrir Xcode |
-| `npm run cap:open:android` | Ouvrir Android Studio |
 | `npm run db:migrate` | `prisma migrate dev` |
 | `npm run test:e2e` | Tests Playwright |
 | `docker compose up --build` | Lancer l'app complète (PostgreSQL + API + frontend) |

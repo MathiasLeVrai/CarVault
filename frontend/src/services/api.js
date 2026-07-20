@@ -414,6 +414,8 @@ export const pushApi = {
   getVapidKey: () => api.get('/push/vapid-key'),
   subscribe: (subscription) => api.post('/push/subscribe', { subscription }),
   unsubscribe: (endpoint) => api.post('/push/unsubscribe', { endpoint }),
+  nativeSubscribe: (token, platform) => api.post('/push/native-subscribe', { token, platform }),
+  nativeUnsubscribe: (token) => api.post('/push/native-unsubscribe', { token }),
 };
 
 export const coteApi = {
