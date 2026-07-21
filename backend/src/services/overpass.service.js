@@ -1,7 +1,13 @@
 const OVERPASS_ENDPOINTS = [
   'https://overpass-api.de/api/interpreter',
+  'https://lz4.overpass-api.de/api/interpreter',
   'https://overpass.kumi.systems/api/interpreter',
 ];
+
+/** Overpass server-side budget (seconds). Keep below CLIENT_TIMEOUT_MS. */
+const QUERY_TIMEOUT_S = 15;
+/** Abort hung fetches before they stall the request forever. */
+const CLIENT_TIMEOUT_MS = 18000;
 
 const FILTER_DEFS = {
   garage: {
@@ -20,18 +26,34 @@ const FILTER_DEFS = {
 
 const USER_AGENT = 'Carvio/1.0 (+https://carvio.fr; contact@carvio.fr)';
 
+function isTimeoutError(err) {
+  return err?.name === 'TimeoutError' || err?.name === 'AbortError';
+}
+
+function overpassTimeoutError() {
+  const err = new Error('Overpass timeout');
+  err.status = 504;
+  return err;
+}
+
 async function fetchOverpass(query, attempt = 0) {
   const endpoint = OVERPASS_ENDPOINTS[attempt % OVERPASS_ENDPOINTS.length];
-  const res = await fetch(endpoint, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      Accept: 'application/json',
-      'User-Agent': USER_AGENT,
-    },
-    body: `data=${encodeURIComponent(query)}`,
-    signal: AbortSignal.timeout(25000),
-  });
+  let res;
+  try {
+    res = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        Accept: 'application/json',
+        'User-Agent': USER_AGENT,
+      },
+      body: `data=${encodeURIComponent(query)}`,
+      signal: AbortSignal.timeout(CLIENT_TIMEOUT_MS),
+    });
+  } catch (err) {
+    if (isTimeoutError(err)) throw overpassTimeoutError();
+    throw err;
+  }
 
   if (!res.ok) {
     const err = new Error(`Overpass ${res.status}`);
@@ -62,15 +84,16 @@ function parseElements(elements) {
 }
 
 function buildQuery(lat, lon, radius, types) {
+  // `nwr` covers node/way/relation in one clause — fewer Overpass selectors, faster.
   const conditions = types.flatMap((type) => {
     const def = FILTER_DEFS[type];
     if (!def) return [];
     return def.tags.map(([k, v]) =>
-      `node["${k}"="${v}"](around:${radius},${lat},${lon});way["${k}"="${v}"](around:${radius},${lat},${lon});`,
+      `nwr["${k}"="${v}"](around:${radius},${lat},${lon});`,
     );
   });
 
-  return `[out:json][timeout:25];(${conditions.join('')});out center;`;
+  return `[out:json][timeout:${QUERY_TIMEOUT_S}];(${conditions.join('')});out center;`;
 }
 
 class OverpassService {
@@ -79,17 +102,18 @@ class OverpassService {
     if (validTypes.length === 0) return [];
 
     const query = buildQuery(lat, lon, radius, validTypes);
+    let lastError;
 
     for (let attempt = 0; attempt < OVERPASS_ENDPOINTS.length; attempt++) {
       try {
         const data = await fetchOverpass(query, attempt);
         return parseElements(data.elements || []);
       } catch (err) {
-        if (attempt === OVERPASS_ENDPOINTS.length - 1) throw err;
+        lastError = err;
       }
     }
 
-    return [];
+    throw lastError || overpassTimeoutError();
   }
 }
 

@@ -33,8 +33,14 @@ class MapController {
       const pois = await overpassService.getPois(lat, lon, radius, types);
       res.json({ pois });
     } catch (error) {
-      if (error.status === 429 || error.status === 504) {
-        return res.status(503).json({ error: 'Service cartographique temporairement indisponible. Réessayez dans quelques instants.' });
+      // Overpass public mirrors are often slow/overloaded — degrade, don't 500.
+      const overpassUnavailable =
+        error.status === 429
+        || error.status === 504
+        || error.name === 'TimeoutError'
+        || error.name === 'AbortError';
+      if (overpassUnavailable) {
+        return res.json({ pois: [] });
       }
       next(error);
     }
