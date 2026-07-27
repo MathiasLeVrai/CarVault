@@ -27,10 +27,11 @@ import FuelPriceWidget from '../components/dashboard/FuelPriceWidget';
 
 const ChartTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
+  const value = payload[0]?.payload?.total ?? payload[0]?.value ?? 0;
   return (
     <div className="bg-bg-alt border border-white/10 rounded-xl px-4 py-3 shadow-2xl">
       <p className="text-xs font-semibold text-ink-muted">{label}</p>
-      <p className="text-sm font-bold text-white font-display">{formatCurrency(payload[0].value)}</p>
+      <p className="text-sm font-bold text-white font-display">{formatCurrency(value)}</p>
     </div>
   );
 };

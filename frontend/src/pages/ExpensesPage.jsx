@@ -11,19 +11,19 @@ import EmptyState from '../components/ui/EmptyState';
 import StatCard from '../components/ui/StatCard';
 import { Wallet, Plus, Trash2, TrendingUp, Calculator, Receipt } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { formatCurrency, formatDateShort, expenseCategoryLabels, expenseCategoryColors } from '../utils/helpers';
+import { formatCurrency, formatDateShort, expenseCategoryLabels, expenseCategoryColors, MONTH_SHORT_LABELS } from '../utils/helpers';
 import { motion as Motion } from 'framer-motion';
 
 const catFilters = [{value:'',label:'Toutes'},{value:'MAINTENANCE',label:'Entretien'},{value:'OIL_CHANGE',label:'Vidange'},{value:'BRAKES',label:'Freins'},{value:'TIRES',label:'Pneus'},{value:'BODYWORK',label:'Carrosserie'},{value:'WINDSHIELD',label:'Pare-brise'},{value:'TECHNICAL_INSPECTION',label:'CT'},{value:'PARKING',label:'Parking'},{value:'TOLL',label:'Péage'},{value:'CLEANING',label:'Lavage'},{value:'FINE',label:'Amende'},{value:'OTHER',label:'Autre'}];
 const catForm = catFilters.filter(o=>o.value);
-const months = ['J','F','M','A','M','J','J','A','S','O','N','D'];
 
 const ChartTip = ({ active, payload, label }) => {
   if(!active||!payload?.length) return null;
+  const value = payload[0]?.payload?.total ?? payload[0]?.value ?? 0;
   return (
     <div className="bg-[#121214] border border-white/10 rounded-xl px-4 py-3 shadow-2xl">
       <p className="text-xs font-semibold text-ink-light">{label}</p>
-      <p className="text-sm font-bold text-white font-display">{formatCurrency(payload[0].value)}</p>
+      <p className="text-sm font-bold text-white font-display">{formatCurrency(value)}</p>
     </div>
   );
 };
@@ -92,7 +92,10 @@ export default function ExpensesPage() {
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="relative w-12 h-12"><div className="absolute inset-0 rounded-full border-2 border-white/10 border-t-accent animate-spin" /></div></div>;
 
-  const monthly = months.map((n,i) => ({ month:n, total: stats?.monthlyData?.find(m=>m.month===i+1)?.total || 0 }));
+  const monthly = MONTH_SHORT_LABELS.map((n, i) => ({
+    month: n,
+    total: stats?.monthlyData?.find(m => m.month === i + 1)?.total || 0,
+  }));
   const avg = stats?.totalYear ? stats.totalYear / 12 : 0;
 
   return (

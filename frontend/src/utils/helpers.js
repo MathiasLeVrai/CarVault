@@ -1,4 +1,13 @@
 /**
+ * Libellés courts uniques des mois (fr) — requis pour Recharts :
+ * des lettres seules (J/M/A) créent des collisions et affichent le mauvais tooltip.
+ */
+export const MONTH_SHORT_LABELS = [
+  'Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin',
+  'Juil', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc',
+];
+
+/**
  * Formater un montant en euros
  */
 export function formatCurrency(amount) {

@@ -20,7 +20,7 @@ class HealthService {
     const documents = this._scoreDocuments(vehicle);
 
     const score = maintenance.score + documents.score;
-    const grade = score >= 80 ? 'A' : score >= 60 ? 'B' : score >= 40 ? 'C' : 'D';
+    const grade = this._grade(score);
 
     return {
       score,
@@ -28,6 +28,14 @@ class HealthService {
       breakdown: { maintenance, documents },
       estimatedValue: this._estimateValue(vehicle),
     };
+  }
+
+  /** Grade A–D à partir du score global (règle métier pure). */
+  _grade(score) {
+    if (score >= 80) return 'A';
+    if (score >= 60) return 'B';
+    if (score >= 40) return 'C';
+    return 'D';
   }
 
   // ============================================================

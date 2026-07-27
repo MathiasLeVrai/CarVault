@@ -62,9 +62,10 @@ class DashboardService {
       ORDER BY total DESC
     `;
 
+    // Libellés uniques (pas J/M/A seuls) — Recharts matche le tooltip par catégorie
     const monthNames = [
-      'J', 'F', 'M', 'A', 'M', 'J',
-      'J', 'A', 'S', 'O', 'N', 'D',
+      'Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin',
+      'Juil', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc',
     ];
 
     const formattedMonthly = Array.from({ length: 12 }, (_, i) => {

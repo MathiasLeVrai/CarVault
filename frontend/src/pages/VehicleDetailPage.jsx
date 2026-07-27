@@ -18,7 +18,7 @@ import VehicleValuation from '../components/vehicle/VehicleValuation';
 import ShareModal from '../components/vehicle/ShareModal';
 import compressImage from '../utils/compressImage';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { formatCurrency, formatDateShort, documentTypeLabels, expenseCategoryLabels, fuelTypeLabels } from '../utils/helpers';
+import { formatCurrency, formatDateShort, documentTypeLabels, expenseCategoryLabels, fuelTypeLabels, MONTH_SHORT_LABELS } from '../utils/helpers';
 import { motion as Motion } from 'framer-motion';
 
 const fuelOpts = [{ value: 'GASOLINE', label: 'Essence' },{ value: 'DIESEL', label: 'Diesel' },{ value: 'HYBRID', label: 'Hybride' },{ value: 'ELECTRIC', label: 'Électrique' },{ value: 'LPG', label: 'GPL' },{ value: 'OTHER', label: 'Autre' }];
@@ -26,14 +26,14 @@ const currentYear = new Date().getFullYear();
 const yearOpts = Array.from({ length: currentYear + 1 - 1990 + 1 }, (_, i) => { const y = currentYear + 1 - i; return { value: String(y), label: String(y) }; });
 const docTypeOpts = [{ value: 'TECHNICAL_INSPECTION', label: 'Contrôle technique' },{ value: 'INSURANCE', label: 'Assurance' },{ value: 'REGISTRATION', label: 'Carte grise' },{ value: 'INVOICE', label: 'Facture' },{ value: 'ACCIDENT_REPORT', label: 'Constat amiable' },{ value: 'OTHER', label: 'Autre' }];
 const expCatOpts = [{ value: 'MAINTENANCE', label: 'Entretien / Révision' },{ value: 'OIL_CHANGE', label: 'Vidange' },{ value: 'BRAKES', label: 'Freins / Plaquettes' },{ value: 'TIRES', label: 'Pneus' },{ value: 'BODYWORK', label: 'Carrosserie' },{ value: 'WINDSHIELD', label: 'Pare-brise' },{ value: 'TECHNICAL_INSPECTION', label: 'Contrôle technique' },{ value: 'PARKING', label: 'Stationnement' },{ value: 'TOLL', label: 'Péage' },{ value: 'CLEANING', label: 'Lavage' },{ value: 'FINE', label: 'Amende' },{ value: 'OTHER', label: 'Autre' }];
-const monthNames = ['J','F','M','A','M','J','J','A','S','O','N','D'];
 
 const ChartTip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
+  const value = payload[0]?.payload?.total ?? payload[0]?.value ?? 0;
   return (
     <div className="bg-[#121214] border border-white/10 rounded-xl px-4 py-3 shadow-2xl">
       <p className="text-xs font-semibold text-ink-light">{label}</p>
-      <p className="text-sm font-bold text-white font-display">{formatCurrency(payload[0].value)}</p>
+      <p className="text-sm font-bold text-white font-display">{formatCurrency(value)}</p>
     </div>
   );
 };
@@ -111,7 +111,10 @@ export default function VehicleDetailPage() {
   if (loading) return <div className="flex items-center justify-center h-64"><div className="relative w-12 h-12"><div className="absolute inset-0 rounded-full border-2 border-white/10 border-t-accent animate-spin" /></div></div>;
   if (!v) return null;
 
-  const chartData = monthNames.map((name, i) => ({ month: name, total: v.stats?.monthlyExpenses?.find(m => m.month === i+1)?.total || 0 }));
+  const chartData = MONTH_SHORT_LABELS.map((name, i) => ({
+    month: name,
+    total: v.stats?.monthlyExpenses?.find(m => m.month === i + 1)?.total || 0,
+  }));
   const health = v.health;
 
   return (
