@@ -241,23 +241,51 @@ export default function MapPage() {
     setGeoError(null);
     setLoading(true);
     skipNextFetchRef.current = true;
+
     if (Capacitor.isNativePlatform()) {
+      // 1. Vérifier / demander la permission
+      let permissions;
       try {
-        let permissions = await Geolocation.checkPermissions();
-        if (permissions.location !== 'granted') {
+        permissions = await Geolocation.checkPermissions();
+        if (permissions.location !== 'granted' && permissions.coarseLocation !== 'granted') {
           permissions = await Geolocation.requestPermissions();
         }
-        if (permissions.location !== 'granted') {
-          throw new Error('permission-denied');
-        }
+      } catch {
+        // checkPermissions lève une erreur quand les services de localisation
+        // du système sont désactivés — ce n'est pas un refus de l'app.
+        setGeoError('Services de localisation désactivés. Activez-les dans les Réglages.');
+        setLoading(false);
+        return;
+      }
+
+      const granted =
+        permissions.location === 'granted' || permissions.coarseLocation === 'granted';
+      if (!granted) {
+        setGeoError('Accès à la localisation refusé. Activez la position pour Carvio dans les Réglages.');
+        setLoading(false);
+        return;
+      }
+
+      // 2. Récupérer la position, avec repli sans haute précision en cas de timeout
+      try {
         const { coords } = await Geolocation.getCurrentPosition({
           enableHighAccuracy: true,
           timeout: 10000,
+          maximumAge: 60000,
         });
         applyPosition(coords);
       } catch {
-        setGeoError("Accès à la localisation refusé. Activez la position pour Carvio dans Réglages iOS.");
-        setLoading(false);
+        try {
+          const { coords } = await Geolocation.getCurrentPosition({
+            enableHighAccuracy: false,
+            timeout: 20000,
+            maximumAge: 300000,
+          });
+          applyPosition(coords);
+        } catch {
+          setGeoError("Impossible d'obtenir votre position pour le moment. Réessayez dans un instant.");
+          setLoading(false);
+        }
       }
       return;
     }
@@ -267,13 +295,34 @@ export default function MapPage() {
       setLoading(false);
       return;
     }
+
+    const reportWebError = (err) => {
+      if (err && err.code === err.PERMISSION_DENIED) {
+        setGeoError('Accès à la localisation refusé. Autorisez la position dans votre navigateur.');
+      } else if (err && err.code === err.TIMEOUT) {
+        setGeoError("Impossible d'obtenir votre position (délai dépassé). Réessayez.");
+      } else {
+        setGeoError('Position indisponible pour le moment. Réessayez.');
+      }
+      setLoading(false);
+    };
+
     navigator.geolocation.getCurrentPosition(
       ({ coords }) => applyPosition(coords),
-      () => {
-        setGeoError("Accès à la localisation refusé.");
-        setLoading(false);
+      (err) => {
+        // Refus explicite : inutile de réessayer.
+        if (err && err.code === err.PERMISSION_DENIED) {
+          reportWebError(err);
+          return;
+        }
+        // Timeout / position indisponible : repli sans haute précision.
+        navigator.geolocation.getCurrentPosition(
+          ({ coords }) => applyPosition(coords),
+          reportWebError,
+          { timeout: 20000, enableHighAccuracy: false, maximumAge: 300000 }
+        );
       },
-      { timeout: 10000, enableHighAccuracy: true }
+      { timeout: 10000, enableHighAccuracy: true, maximumAge: 60000 }
     );
   }, [applyPosition]);
 

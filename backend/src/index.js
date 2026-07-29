@@ -154,6 +154,8 @@ app.use(helmet({
         'https://plausible.io',
         'https://*.ingest.sentry.io',
         'https://*.ingest.de.sentry.io',
+        'https://*.basemaps.cartocdn.com', // tuiles de la carte (fetch via SW/Leaflet)
+        'https://data.economie.gouv.fr', // API prix des carburants
         ...storageOriginList,
       ],
       workerSrc: ["'self'", 'blob:'],
@@ -166,6 +168,9 @@ app.use(helmet({
   },
   crossOriginEmbedderPolicy: false, // Permet le chargement des images externes (map tiles, etc.)
   crossOriginResourcePolicy: { policy: 'cross-origin' }, // Capacitor / médias cross-origin
+  // Default Helmet = 'no-referrer' : certains serveurs de tuiles (OSM/Carto) exigent
+  // un Referer valide, sinon 403. On envoie l'origine seule.
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
 }));
 
 app.use(cors({

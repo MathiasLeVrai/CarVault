@@ -4,7 +4,7 @@
  * Ne cache jamais les réponses API authentifiées ni les médias privés.
  */
 
-const CACHE_VERSION = 'carvio-v4';
+const CACHE_VERSION = 'carvio-v5';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 
 // Ressources à pré-cacher (shell de l'app)
@@ -68,6 +68,18 @@ self.addEventListener('fetch', (event) => {
 
   if (request.method !== 'GET') return;
   if (!request.url.startsWith('http')) return;
+
+  // Requêtes cross-origin : laisser le navigateur les gérer directement.
+  // Les fonts (Fontshare / Google Fonts) restent cachées via le bloc dédié plus bas.
+  // Sans ça, le SW ré-émet un fetch() soumis à connect-src (CSP), ce qui bloque
+  // les tuiles de la carte (basemaps.cartocdn.com) et l'API carburant.
+  const isFontOrigin = url.hostname === 'fonts.googleapis.com'
+    || url.hostname === 'fonts.gstatic.com'
+    || url.hostname === 'api.fontshare.com'
+    || url.hostname === 'cdn.fontshare.com';
+  if (url.origin !== self.location.origin && !isFontOrigin) {
+    return;
+  }
 
   // API : network-only sauf allowlist publique sans credentials
   if (url.pathname.startsWith('/api/')) {
