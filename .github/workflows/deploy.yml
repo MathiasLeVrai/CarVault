@@ -26,6 +26,12 @@ jobs:
           npm run lint
           npx prisma validate
 
+      # Tests unitaires : règles métier isolées, sans base ni navigateur (~0,5 s).
+      # Ils tournent avant les tests E2E : si une règle est fausse, inutile de lancer un navigateur.
+      - name: Backend — tests unitaires
+        working-directory: backend
+        run: npm test
+
       - name: Frontend — install, lint, build
         working-directory: frontend
         run: |
