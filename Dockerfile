@@ -1,5 +1,5 @@
 # ---- Stage 1: Build frontend ----
-FROM node:20-alpine AS frontend-build
+FROM node:22-alpine AS frontend-build
 
 WORKDIR /app/frontend
 COPY frontend/package.json frontend/package-lock.json ./
@@ -8,7 +8,7 @@ COPY frontend/ ./
 RUN npm run build
 
 # ---- Stage 2: Production backend ----
-FROM node:20-alpine
+FROM node:22-alpine
 
 WORKDIR /app
 
