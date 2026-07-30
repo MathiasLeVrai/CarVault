@@ -22,6 +22,8 @@ primary_region = 'cdg'
   auto_start_machines = true
   min_machines_running = 0
 
+# Local uploads fallback. Keep exactly 1 machine while using volumes
+# (a 2nd machine gets its own volume → intermittent 404s). Prefer R2 in prod.
 [mounts]
   source = 'carvault_uploads'
   destination = '/app/backend/uploads'

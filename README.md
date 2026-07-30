@@ -268,7 +268,6 @@ Variables **recommandées** :
 
 | Variable | Description | Défaut |
 |----------|-------------|--------|
-| `JWT_EXPIRES_IN` | Durée de vie du JWT | `7d` |
 | `PORT` | Port du serveur | `3001` (dev) / `8080` (prod) |
 | `APP_URL` | URL publique du site (liens email, reset password) | `http://localhost:5173` |
 | `CORS_ORIGIN` | Origines autorisées (séparées par virgule) | `http://localhost:5173` |

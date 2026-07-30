@@ -4,7 +4,7 @@ import { Helmet } from 'react-helmet-async';
 import Badge from '../components/ui/Badge';
 import {
   Car, FileText, Wallet, Gauge, Heart, Wrench, FileCheck,
-  PiggyBank, CheckCircle2, FileDown, Shield, Lock,
+  FileDown, Shield, Lock,
 } from 'lucide-react';
 import { downloadPdfFromUrl, getApiUrl } from '../services/api';
 
@@ -314,12 +314,10 @@ export default function SharePage() {
               </div>
               <h2 className="text-sm font-bold text-white font-display">Score Santé Détaillé</h2>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               {[
                 { label: 'Entretien', icon: Wrench, ...health.breakdown.maintenance },
                 { label: 'Documents', icon: FileCheck, ...health.breakdown.documents },
-                { label: 'Coût', icon: PiggyBank, ...health.breakdown.cost },
-                { label: 'Complétude', icon: CheckCircle2, ...health.breakdown.completeness },
               ].map((item) => {
                 const pct = item.max > 0 ? (item.score / item.max) * 100 : 0;
                 return (
